@@ -1,26 +1,32 @@
 # Requirements
 
-[NodeJS v24.13.1<](https://nodejs.org/en/download)
+[NodeJS v24.13.1](https://nodejs.org/en/download)
 
 ## Getting Started
 
-First, install the deppendencies using:
+First, install the dependencies using:
 
 ```bash
-npm i
+pnpm install
 ```
 
 Then run the development server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
+
+## Other scripts
+
+```bash
+pnpm build    # type-check and build for production
+pnpm preview  # preview the production build locally
+pnpm test     # run the Vitest test suite
+pnpm lint     # run ESLint
+```
 
 ## Learn More - For Project Developers
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This is a client-side rendered React app built with [Vite](https://vite.dev), styled with [Tailwind CSS](https://tailwindcss.com), routed with [React Router](https://reactrouter.com), and tested with [Vitest](https://vitest.dev).

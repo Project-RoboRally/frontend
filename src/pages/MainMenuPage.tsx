@@ -1,27 +1,23 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { mockGames } from "@/lib/mock-games";
 import { buttonClassName, inputClassName } from "@/lib/styles";
 import { getUsername, removeUsername } from "@/lib/username";
 
 export default function MainMenuPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [username] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : getUsername(),
-  );
+  const [username] = useState<string | null>(() => getUsername());
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      navigate("/login", { replace: true });
     }
-  }, [router, username]);
+  }, [navigate, username]);
 
   function handleSignOut() {
     removeUsername();
-    router.push("/login");
+    navigate("/login");
   }
 
   const filteredGames = mockGames.filter((game) =>
@@ -43,7 +39,7 @@ export default function MainMenuPage() {
         <section className="flex flex-col items-center gap-4">
           <button
             className={buttonClassName}
-            onClick={() => router.push("/lobby/new-game")}
+            onClick={() => navigate("/lobby/new-game")}
             type="button"
           >
             Create Game
@@ -72,7 +68,7 @@ export default function MainMenuPage() {
               <li key={game.id}>
                 <button
                   className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                  onClick={() => router.push(`/lobby/${game.id}`)}
+                  onClick={() => navigate(`/lobby/${game.id}`)}
                   type="button"
                 >
                   {game.name}

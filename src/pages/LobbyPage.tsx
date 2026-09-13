@@ -1,18 +1,14 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useNavigate, useParams } from "react-router-dom";
 import { getMockGame } from "@/lib/mock-games";
 import { buttonClassName, inputClassName } from "@/lib/styles";
 import { getUsername } from "@/lib/username";
 
 export default function LobbyPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
-  const [username] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : getUsername(),
-  );
-  const game = getMockGame(gameId);
+  const [username] = useState<string | null>(() => getUsername());
+  const game = getMockGame(gameId ?? "");
   const isCreatedByUser = gameId === "new-game";
   const [gameName, setGameName] = useState(
     game?.name ?? (isCreatedByUser ? "New Game" : "Game"),
@@ -26,9 +22,9 @@ export default function LobbyPage() {
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      navigate("/login", { replace: true });
     }
-  }, [router, username]);
+  }, [navigate, username]);
 
   function removePlayer(playerToRemove: string) {
     setPlayers((currentPlayers) =>
@@ -45,7 +41,7 @@ export default function LobbyPage() {
       <header className="mb-10 text-center">
         <button
           className={`${buttonClassName} absolute left-6 top-6`}
-          onClick={() => router.push("/main-menu")}
+          onClick={() => navigate("/main-menu")}
           type="button"
         >
           Exit
@@ -92,7 +88,7 @@ export default function LobbyPage() {
       <div className="flex justify-center">
         <button
           className={buttonClassName}
-          onClick={() => router.push("/game")}
+          onClick={() => navigate("/game")}
           type="button"
         >
           Start

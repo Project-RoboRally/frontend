@@ -1,12 +1,10 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { buttonClassName, inputClassName } from "@/lib/styles";
 import { saveUsername } from "@/lib/username";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -18,7 +16,7 @@ export default function LoginPage() {
         onSubmit={(event) => {
           event.preventDefault();
           saveUsername(username);
-          router.push("/main-menu");
+          navigate("/main-menu");
         }}
       >
         <div>
