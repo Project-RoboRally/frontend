@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 import { useEffect, useState } from 'react';
+import { Robot, RobotPosition, robotColors } from '@/types/game';
 
 const BOARD_SIZE = 12; // Boardsize 12x12
 
@@ -13,6 +14,43 @@ export default function GamePage() {
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
+
+  const [robots, setRobots] = useState<Robot[]>([{
+    robotModel: "Demolition_Bot",
+    position: {row: 0, column: 0, direction: "north"},
+    checkpointsCollected: 0,
+    energycubesCollected: 0,
+    outOfGame: false,
+    damageCount: 0,
+  },
+
+  {
+    robotModel: "Hulk_X90",
+    position: {row: 3, column: 3, direction: "south"},
+    checkpointsCollected: 0,
+    energycubesCollected: 0,
+    outOfGame: false,
+    damageCount: 0,
+  },
+
+  {
+    robotModel: "Spin_Bot",
+    position: {row: 9, column: 9, direction: "east"},
+    checkpointsCollected: 0,
+    energycubesCollected: 0,
+    outOfGame: false,
+    damageCount: 0,
+  },
+
+  {
+    robotModel: "Trundle_Bot",
+    position: {row: 11, column: 11, direction: "west"},
+    checkpointsCollected: 0,
+    energycubesCollected: 0,
+    outOfGame: false,
+    damageCount: 0,
+  },
+]);
 
   useEffect(() => {
     if (!username) {
@@ -48,7 +86,13 @@ export default function GamePage() {
           }}
         >
           {board.map((cell, index) => (
-            <Tile key={index} index={index} value={cell} onClick={() => handleTileClick(index)} />
+            <Tile
+              key={index}
+              index={index}
+              value={cell}
+              onClick={() => handleTileClick(index)}
+              robots={robots}
+            />
           ))}
         </div>
       </section>
@@ -56,9 +100,11 @@ export default function GamePage() {
   );
 }
 
-function Tile({ index, value, onClick }: { index: number; value: any; onClick: () => void }) {
+function Tile({ index, value, onClick, robots }: { index: number; value: any; onClick: () => void; robots: Robot[] }) {
   const row = Math.floor(index / BOARD_SIZE);
   const col = index % BOARD_SIZE;
+
+  const robotExist = robots.find((robot) => (row === robot.position.row) && (col === robot.position.column));
 
   return (
     <button

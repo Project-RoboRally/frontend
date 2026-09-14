@@ -43,8 +43,8 @@ type Register = {
 
 
 /* Robot content definitions*/
-type Robot = {
-    robotModel: "Demolition_Bot" | "Hulk_X90" | "Spin_Bot" | "Trundle_Bot" | "Gym_Bot" | "Twonky" | "Zoom_Bot";
+export type Robot = {
+    robotModel: RobotModel;
     position: RobotPosition;
     checkpointsCollected: number;
     energycubesCollected: number;
@@ -52,11 +52,23 @@ type Robot = {
     damageCount: number;
 }
 
-type RobotPosition = {
+export type RobotPosition = {
     row: number;
     column: number;
     direction: "north" | "south" | "east" | "west";
 }
+
+export type RobotModel = "Demolition_Bot" | "Hulk_X90" | "Spin_Bot" | "Trundle_Bot" | "Gym_Bot" | "Twonky" | "Zoom_Bot";
+
+export const robotColors: Record<RobotModel, string> = {
+    Demolition_Bot: "#FF0000",
+    Hulk_X90: "#008000",
+    Spin_Bot: "#0000FF",
+    Trundle_Bot: "#FFFF00",
+    Gym_Bot: "#800080",
+    Twonky: "#00FFFF",
+    Zoom_Bot: "#80461B"
+};
 
 /* Player content definitions*/
 type Player = {
