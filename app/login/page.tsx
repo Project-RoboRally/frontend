@@ -1,25 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { buttonClassName, inputClassName } from "@/lib/styles";
-import { saveUsername } from "@/lib/username";
+import {useState} from "react";
+import {useRouter} from "next/navigation";
+import {buttonClassName, inputClassName} from "@/lib/styles";
+import {saveUsername} from "@/lib/username";
+import {login} from "@/lib/backend-api";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const loginRes = await login(username, password);
+
+      saveUsername(username);
+      router.push("/main-menu");
+
+    } catch (error) {
+      console.error("Login failed:", error); // TODO: Handle login failure (e.g., show an error message to the user)
+    }
+  }
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center p-6">
       <h1 className="mb-6 text-center text-3xl font-bold">Login</h1>
       <form
         className="w-full space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          saveUsername(username);
-          router.push("/main-menu");
-        }}
+        onSubmit={handleSubmit}
       >
         <div>
           <label className="mb-1 block" htmlFor="username">
