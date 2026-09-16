@@ -3,6 +3,7 @@
 {
   packages = with pkgs; [
     git
+    nodePackages.prettier
   ];
 
   languages.javascript = {
@@ -15,21 +16,12 @@
 
   languages.typescript.enable = true;
 
-  scripts.build.exec = ''
-    pnpm build
-  '';
-
-  scripts.test.exec = ''
-    pnpm test
-  '';
-
-  scripts.lint.exec = ''
-    pnpm lint
-  '';
-
-  scripts.run.exec = ''
-    pnpm run dev
-  '';
+  scripts.build.exec = ''pnpm build'';
+  scripts.test.exec = ''pnpm test'';
+  scripts.lint.exec = ''pnpm lint'';
+  scripts.run.exec = ''pnpm run dev'';
+  scripts.format.exec = ''prettier --write .'';
+  scripts.format-check.exec = ''prettier --check .'';
 
   enterShell = ''
     echo "Devenv active"
