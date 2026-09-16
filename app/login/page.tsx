@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { buttonClassName, inputClassName } from "@/lib/styles";
-import { saveUsername } from "@/lib/username";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { buttonClassName, inputClassName } from '@/lib/styles';
+import { saveUsername } from '@/lib/username';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center p-6">
@@ -18,7 +18,7 @@ export default function LoginPage() {
         onSubmit={(event) => {
           event.preventDefault();
           saveUsername(username);
-          router.push("/main-menu");
+          router.push('/main-menu');
         }}
       >
         <div>
@@ -46,10 +46,7 @@ export default function LoginPage() {
             value={password}
           />
         </div>
-        <button
-          className={buttonClassName}
-          type="submit"
-        >
+        <button className={buttonClassName} type="submit">
           Login
         </button>
       </form>

@@ -10,7 +10,6 @@
     "test": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
-    
   },
   "dependencies": {
     "next": "16.3.4",

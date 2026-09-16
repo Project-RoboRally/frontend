@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { buttonClassName } from "@/lib/styles";
-import { getUsername } from "@/lib/username";
+import { useRouter } from 'next/navigation';
+import { buttonClassName } from '@/lib/styles';
+import { getUsername } from '@/lib/username';
 import { useEffect, useState } from 'react';
 
 const BOARD_SIZE = 12; // Boardsize 12x12
@@ -11,12 +11,12 @@ export default function GamePage() {
   const router = useRouter();
   const [board, setBoard] = useState(Array(BOARD_SIZE * BOARD_SIZE).fill(null));
   const [username] = useState<string | null>(() =>
-      typeof window === "undefined" ? null : getUsername(),
+    typeof window === 'undefined' ? null : getUsername(),
   );
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      router.replace('/login');
     }
   }, [router, username]);
 
@@ -35,29 +35,20 @@ export default function GamePage() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
       <p className="absolute right-6 top-6">Logged in as: {username}</p>
-      <button
-        className={buttonClassName}
-        onClick={() => router.push("/main-menu")}
-        type="button"
-      >
+      <button className={buttonClassName} onClick={() => router.push('/main-menu')} type="button">
         Back to Main Menu
       </button>
-    
+
       {/* Gameboard Grid */}
       <section className="mt-6 border-2 border-slate-700 bg-slate-900 p-2 rounded-lg shadow-xl">
-        <div 
+        <div
           className="grid bg-slate-800 p-1"
           style={{
-            gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`
+            gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
           }}
         >
           {board.map((cell, index) => (
-            <Tile 
-              key={index} 
-              index={index} 
-              value={cell} 
-              onClick={() => handleTileClick(index)} 
-            />
+            <Tile key={index} index={index} value={cell} onClick={() => handleTileClick(index)} />
           ))}
         </div>
       </section>
@@ -73,7 +64,6 @@ function Tile({ index, value, onClick }: { index: number; value: any; onClick: (
     <button
       onClick={onClick}
       className="h-10 w-10 sm:h-12 sm:w-12 border border-slate-700 bg-slate-950 hover:bg-pink-800 transition-colors flex items-center justify-center text-xs font-mono text-slate-400"
-    >
-    </button>
+    ></button>
   );
 }
