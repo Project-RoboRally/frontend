@@ -3,7 +3,7 @@
 {
   packages = with pkgs; [
     git
-    nodePackages.prettier
+    prettier
   ];
 
   languages.javascript = {
