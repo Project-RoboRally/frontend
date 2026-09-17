@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 import { useEffect, useState } from 'react';
-import { Robot, RobotPosition, robotColors } from '@/types/game';
+import { Robot, RobotPosition, ROBOTCOLORS } from '@/types/state';
 
 const BOARD_SIZE = 12; // Boardsize 12x12
 
@@ -15,42 +15,7 @@ export default function GamePage() {
     typeof window === 'undefined' ? null : getUsername(),
   );
 
-  const [robots, setRobots] = useState<Robot[]>([{
-    robotModel: "Demolition_Bot",
-    position: {row: 0, column: 0, direction: "north"},
-    checkpointsCollected: 0,
-    energycubesCollected: 0,
-    outOfGame: false,
-    damageCount: 0,
-  },
-
-  {
-    robotModel: "Hulk_X90",
-    position: {row: 3, column: 3, direction: "south"},
-    checkpointsCollected: 0,
-    energycubesCollected: 0,
-    outOfGame: false,
-    damageCount: 0,
-  },
-
-  {
-    robotModel: "Spin_Bot",
-    position: {row: 9, column: 9, direction: "east"},
-    checkpointsCollected: 0,
-    energycubesCollected: 0,
-    outOfGame: false,
-    damageCount: 0,
-  },
-
-  {
-    robotModel: "Trundle_Bot",
-    position: {row: 11, column: 11, direction: "west"},
-    checkpointsCollected: 0,
-    energycubesCollected: 0,
-    outOfGame: false,
-    damageCount: 0,
-  },
-]);
+  const [robots, setRobots] = useState<Robot[]>([]);
 
   useEffect(() => {
     if (!username) {
