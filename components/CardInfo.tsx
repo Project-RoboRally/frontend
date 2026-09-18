@@ -1,4 +1,4 @@
-import { ProgrammingCard } from '@/types/state';
+import type { ProgrammingCard } from '@/types/cards';
 
 export function CardInfo({card}: {card: ProgrammingCard}) {
   switch(card.cardType) {

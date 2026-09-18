@@ -1,4 +1,4 @@
-import { Player } from '@/types/state';
+import { Player } from '@/types/player';
 import { CardInfo } from '@/components/CardInfo';
 
 export function RegisterInfo({player}: {player: Player}) {

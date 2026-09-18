@@ -1,4 +1,4 @@
-import { Player } from '@/types/state';
+import { Player } from '@/types/player';
 
 export function PlayerInfo({player}: {player: Player}) {
   return (

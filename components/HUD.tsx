@@ -1,4 +1,7 @@
-import { GameState, Player, ProgrammingCard } from '@/types/state';
+import { ProgrammingCard } from '@/types/cards';
+import { GameState } from '@/types/gameState';
+import { Player } from '@/types/player';
+
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { GameInfo } from '@/components/GameInfo';
 

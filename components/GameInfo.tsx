@@ -1,4 +1,4 @@
-import { GameState } from '@/types/state';
+import { GameState } from '@/types/gameState';
 
 export function GameInfo({gameState}: {gameState: GameState}) {
   return (
