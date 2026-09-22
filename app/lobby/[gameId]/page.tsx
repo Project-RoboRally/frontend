@@ -1,39 +1,33 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { getMockGame } from "@/lib/mock-games";
-import { buttonClassName, inputClassName } from "@/lib/styles";
-import { getUsername } from "@/lib/username";
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { getMockGame } from '@/lib/mock-games';
+import { buttonClassName, inputClassName } from '@/lib/styles';
+import { getUsername } from '@/lib/username';
 
 export default function LobbyPage() {
   const router = useRouter();
   const { gameId } = useParams<{ gameId: string }>();
   const [username] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : getUsername(),
+    typeof window === 'undefined' ? null : getUsername(),
   );
   const game = getMockGame(gameId);
-  const isCreatedByUser = gameId === "new-game";
-  const [gameName, setGameName] = useState(
-    game?.name ?? (isCreatedByUser ? "New Game" : "Game"),
-  );
-  const initialPlayers = game?.players ?? ["Ada", "Bjarne", "Clara"];
+  const isCreatedByUser = gameId === 'new-game';
+  const [gameName, setGameName] = useState(game?.name ?? (isCreatedByUser ? 'New Game' : 'Game'));
+  const initialPlayers = game?.players ?? ['Ada', 'Bjarne', 'Clara'];
   const [players, setPlayers] = useState<string[]>(() =>
-    initialPlayers.includes(username ?? "")
-      ? initialPlayers
-      : [...initialPlayers, username ?? ""],
+    initialPlayers.includes(username ?? '') ? initialPlayers : [...initialPlayers, username ?? ''],
   );
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      router.replace('/login');
     }
   }, [router, username]);
 
   function removePlayer(playerToRemove: string) {
-    setPlayers((currentPlayers) =>
-      currentPlayers.filter((player) => player !== playerToRemove),
-    );
+    setPlayers((currentPlayers) => currentPlayers.filter((player) => player !== playerToRemove));
   }
 
   if (!username) {
@@ -45,7 +39,7 @@ export default function LobbyPage() {
       <header className="mb-10 text-center">
         <button
           className={`${buttonClassName} absolute left-6 top-6`}
-          onClick={() => router.push("/main-menu")}
+          onClick={() => router.push('/main-menu')}
           type="button"
         >
           Exit
@@ -90,11 +84,7 @@ export default function LobbyPage() {
       </section>
 
       <div className="flex justify-center">
-        <button
-          className={buttonClassName}
-          onClick={() => router.push("/game")}
-          type="button"
-        >
+        <button className={buttonClassName} onClick={() => router.push('/game')} type="button">
           Start
         </button>
       </div>

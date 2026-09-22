@@ -1,4 +1,4 @@
-const USERNAME_KEY = "username";
+const USERNAME_KEY = 'username';
 
 export function getUsername() {
   return window.localStorage.getItem(USERNAME_KEY);
