@@ -9,7 +9,6 @@ import { saveUsername } from '@/lib/username';
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,7 +23,7 @@ export default function LoginPage() {
           setIsSubmitting(true);
 
           try {
-            const result = await login({ username, password });
+            const result = await login({ username });
             saveUsername(result.username);
             router.push('/main-menu');
           } catch (loginError) {
@@ -45,19 +44,6 @@ export default function LoginPage() {
             required
             type="text"
             value={username}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block" htmlFor="password">
-            Password
-          </label>
-          <input
-            className={inputClassName}
-            id="password"
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            type="password"
-            value={password}
           />
         </div>
         {error ? <p role="alert">{error}</p> : null}
