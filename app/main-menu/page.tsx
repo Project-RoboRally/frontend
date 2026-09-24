@@ -109,7 +109,8 @@ export default function MainMenuPage() {
             type="search"
             value={searchTerm}
           />
-          <ul className="mt-3 h-48 space-y-2 overflow-y-scroll pr-2">
+<<<<<<< HEAD
+          <ul className="mt-3 h-48 space-y-2 overflow-y-auto pr-2">
             {filteredLobbies.map((lobby) => (
               <li key={lobby.id}>
                 <button
