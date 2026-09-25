@@ -11,6 +11,12 @@ import { getUsername } from "@/lib/username";
 import type { GameState } from "@/types/gameState";
 import type { Player } from "@/types/player";
 
+/**
+ * Page for the froentend of the gameboard 
+ * 
+ * @author Caroline, Katarina
+ */
+
 export default function GamePage() {
   const router = useRouter();
 
