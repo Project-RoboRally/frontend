@@ -1,5 +1,11 @@
 import type { Player } from "@/types/player";
 
+/**
+ * Displays the players robot stats in the gameboard scene
+ * 
+ * @author Kerem, Matthias
+ */
+
 export function PlayerInfo({ player }: { player: Player }) {
   return (
     <div className="rounded-md border-2 border-steel-dark bg-charcoal p-3">

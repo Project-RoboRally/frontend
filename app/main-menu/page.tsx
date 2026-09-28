@@ -7,6 +7,10 @@ import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername, removeUsername} from '@/lib/username';
 import type {Lobby} from '@/types/lobby';
 
+/**
+ * @author Anton, Kerem
+ */
+
 export default function MainMenuPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');

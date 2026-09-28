@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/**
+ * CSS Tailwind code
+ * 
+ * @author Kerem, Anton
+ */
+
 :root {
   --background: #1a2229;
   --foreground: #f5f1e8;
@@ -34,6 +40,7 @@
 html, 
 body {
   height: 100%;
+  overflow: hidden;
 }
 
 body {

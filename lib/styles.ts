@@ -1,3 +1,7 @@
+/**
+ * @author Kerem, Anton
+ */
+
 export const buttonClassName = 'rounded bg-cobber hover:bg-cobber-light text-bone font-bold py-2 px-4 border-b-4 border-cobber-dark transition-colors';
 
 export const secondaryButtonClassName = 'rounded bg-steel hover:bg-cobber-light text-bone font-bold py-2 px-4 border-b-4 border-cobber-dark transition-colors';

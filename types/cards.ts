@@ -1,3 +1,9 @@
+/**
+ * Type definitions for the programming cards
+ * 
+ * @author Kerem
+ */
+
 export type ProgrammingCard =
   | MoveCard
   | RotateCard

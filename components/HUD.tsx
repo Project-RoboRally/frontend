@@ -5,6 +5,12 @@ import { GameInfo } from "@/components/GameInfo";
 import { PlayerInfo } from "@/components/PlayerInfo";
 import { buttonClassName } from "@/lib/styles";
 
+/**
+ * CSS Tailwind code for the overall HUD of the gameboard scene
+ * 
+ * @author Kerem, Matthias
+ */
+
 export default function HUD({
                               gameState,
                               player,

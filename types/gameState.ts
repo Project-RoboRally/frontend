@@ -1,5 +1,11 @@
 import type { Player } from "./player";
 
+/**
+ * Type definition for the game states
+ * 
+ * @author Kerem
+ */
+
 export type GameState = {
   round: number;
   timerOut: boolean;

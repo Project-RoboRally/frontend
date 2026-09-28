@@ -83,9 +83,9 @@ export default function GamePage() {
         gameState={gameState}
         player={player}
       >
-        <section className="w-[600px] aspect-square rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
+        <section className="w-[600px] aspect-square rounded-lg border-2 border-slate-900 bg-slate-900 p-2 shadow-xl">
           <div
-            className="grid h-full w-full bg-slate-800 p-1"
+            className="grid h-full w-full bg-slate-900 p-1"
             style={{
               gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
@@ -138,7 +138,7 @@ function Tile({
   return (
     <button
       onClick={onClick}
-      className="flex h-full w-full items-center justify-center border border-slate-700 bg-slate-950 text-xs text-slate-400 transition-colors hover:bg-pink-800"
+      className="flex h-full w-full items-center justify-center border border-slate-700 bg-[#C2A5A5] text-xs text-slate-400 transition-colors hover:bg-pink-800"
     >
       {robot ? robot.robotModel : ""}
     </button>

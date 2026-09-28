@@ -1,5 +1,11 @@
 import { GameState } from '@/types/gameState';
 
+/**
+ * Displays several aspects the games status in the gameboard scene
+ * 
+ * @author Kerem, Matthias
+ */
+
 export function GameInfo({gameState}: {gameState: GameState}) {
   return (
     <div className="rounded-md border-2 border-steel-dark bg-charcoal p-3">

@@ -6,6 +6,10 @@ import { login } from '@/lib/api/login';
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
 import { saveUsername } from '@/lib/username';
 
+/**
+ * @author Anton, Kerem
+ */
+
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
