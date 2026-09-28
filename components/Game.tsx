@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Renders a 12 x 12 interactive game board grid that manages robot positioning 
+ * state
+ * 
+ * @author Matthias, Caroline, Katarina
+ */
+
 import { useState } from "react";
 import Tile from "./Tile";
 

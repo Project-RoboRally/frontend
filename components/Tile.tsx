@@ -1,5 +1,12 @@
 import Image from "next/image";
 
+/**
+ * Renders interactive game board tile at coordinates (x,y) that display the orange 
+ * robot
+ * 
+ * @author Matthias, Caroline, Katarina
+ */
+
 interface TileProps {
   x: number;
   y: number;
@@ -23,7 +30,7 @@ export default function Tile({
       {hasRobot && (
         <div className="relative z-10 flex h-4/5 w-4/5 items-center justify-center">
           <Image
-            src="/orangeRobot1.png"
+            src="/orange_Robot.png"
             alt="Orange Robot"
             width={40}
             height={40}
