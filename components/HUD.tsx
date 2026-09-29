@@ -1,34 +1,29 @@
-import type { ReactNode } from "react";
-import type { GameState } from "@/types/gameState";
-import type { Player } from "@/types/player";
+import type { ReactNode } from 'react';
+import type { Game } from '@/types/game';
+import type { Player } from '@/types/player';
 
 export default function HUD({
-                              gameState,
-                              player,
-                              children,
-                            }: {
-  gameState: GameState;
+  game,
+  player,
+  children,
+}: {
+  game: Game;
   player: Player;
   children: ReactNode;
 }) {
   return (
     <section className="grid grid-cols-[120px_auto_140px] gap-4 rounded-lg bg-sky-100 p-4">
-
       {/* Left HUD */}
       <aside className="flex flex-col justify-between">
         <div>
           <p className="font-bold">Robo Rally</p>
         </div>
 
-        <div className="rounded border bg-green-100 p-3">
-          Deck
-        </div>
+        <div className="rounded border bg-green-100 p-3">Deck</div>
       </aside>
 
       {/* Center */}
       <div className="flex flex-col items-center gap-4">
-
-        {/* Board */}
         {children}
 
         {/* Registers */}
@@ -38,9 +33,7 @@ export default function HUD({
               key={register.registerNumber}
               className="h-16 w-12 rounded border-2 border-slate-700 bg-green-100"
             >
-              {register.registerRevealed
-                ? register.registerNumber
-                : ""}
+              {register.registerRevealed ? register.registerNumber : ''}
             </div>
           ))}
         </div>
@@ -52,12 +45,14 @@ export default function HUD({
           <strong>{player.username}</strong>
         </div>
 
+        <div className="rounded border bg-purple-100 p-2">Status: {game.status}</div>
+
         <div className="rounded border bg-purple-100 p-2">
-          Round: {gameState.round}
+          Register: {game.currentRound.currentRegisterNumber}
         </div>
 
         <div className="rounded border bg-purple-100 p-2">
-          Phase: {gameState.phase}
+          Phase: {game.currentRound.currentPhase}
         </div>
 
         <div className="mt-4">

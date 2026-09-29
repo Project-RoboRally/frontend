@@ -1,34 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import HUD from "@/components/HUD";
-import { buttonClassName } from "@/lib/styles";
-import { getUsername } from "@/lib/username";
+import HUD from '@/components/HUD';
+import { buttonClassName } from '@/lib/styles';
+import { getUsername } from '@/lib/username';
 
-import type { GameState } from "@/types/gameState";
-import type { Player } from "@/types/player";
-import type { Robot } from "@/types/robot";
+import type { Game } from '@/types/game';
+import type { Player } from '@/types/player';
+import type { Robot } from '@/types/robot';
 
 const BOARD_SIZE = 12;
 
 export default function GamePage() {
   const router = useRouter();
 
-  const [board] = useState(
-    Array(BOARD_SIZE * BOARD_SIZE).fill(null),
-  );
+  const [board] = useState(Array(BOARD_SIZE * BOARD_SIZE).fill(null));
 
   const [username] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : getUsername(),
+    typeof window === 'undefined' ? null : getUsername(),
   );
 
   const [robots] = useState<Robot[]>([]);
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      router.replace('/login');
     }
   }, [router, username]);
 
@@ -40,11 +38,11 @@ export default function GamePage() {
   const player: Player = {
     username,
     robot: {
-      robotModel: "twonky",
+      robotModel: 'twonky',
       position: {
         row: 0,
         column: 0,
-        direction: "north",
+        direction: 'north',
       },
       checkpointsCollected: 0,
       energycubesCollected: 0,
@@ -55,22 +53,26 @@ export default function GamePage() {
     priorityOrder: false,
   };
 
-  // TODO: Replace with actual game state from backend.
-  const gameState: GameState = {
-    round: 1,
-    timerOut: false,
-    status: {
-      state: "inprogress",
-    },
+  // TODO: Replace with actual game data from backend.
+  const game: Game = {
+    id: 'test-game',
+    status: 'IN_PROGRESS',
     players: [player],
-    phase: "programming_phase",
+    currentRound: {
+      currentPhase: 'PROGRAMMING',
+      currentRegisterNumber: 1,
+      programmingTimer: {
+        durationSeconds: 30,
+        startedAt: new Date().toISOString(),
+      },
+    },
   };
 
   const handleTileClick = (index: number) => {
     const row = Math.floor(index / BOARD_SIZE);
     const column = index % BOARD_SIZE;
 
-    console.log("Clicked tile:", row, column);
+    console.log('Clicked tile:', row, column);
   };
 
   return (
@@ -79,11 +81,8 @@ export default function GamePage() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
-      <HUD
-        gameState={gameState}
-        player={player}
-      >
-        <section className="w-[600px] aspect-square rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
+      <HUD game={game} player={player}>
+        <section className="aspect-square w-[600px] rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
           <div
             className="grid h-full w-full bg-slate-800 p-1"
             style={{
@@ -106,7 +105,7 @@ export default function GamePage() {
 
       <button
         className={`${buttonClassName} mt-6`}
-        onClick={() => router.push("/main-menu")}
+        onClick={() => router.push('/main-menu')}
         type="button"
       >
         Back to Main Menu
@@ -116,11 +115,11 @@ export default function GamePage() {
 }
 
 function Tile({
-                index,
-                value,
-                onClick,
-                robots,
-              }: {
+  index,
+  value,
+  onClick,
+  robots,
+}: {
   index: number;
   value: unknown;
   onClick: () => void;
@@ -130,9 +129,7 @@ function Tile({
   const column = index % BOARD_SIZE;
 
   const robot = robots.find(
-    (robot) =>
-      robot.position.row === row &&
-      robot.position.column === column,
+    (robot) => robot.position.row === row && robot.position.column === column,
   );
 
   return (
@@ -140,7 +137,7 @@ function Tile({
       onClick={onClick}
       className="flex h-full w-full items-center justify-center border border-slate-700 bg-slate-950 text-xs text-slate-400 transition-colors hover:bg-pink-800"
     >
-      {robot ? robot.robotModel : ""}
+      {robot ? robot.robotModel : ''}
     </button>
   );
 }
