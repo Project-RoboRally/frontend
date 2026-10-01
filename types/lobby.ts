@@ -1,8 +1,8 @@
 export type Lobby = {
   id: string;
   name: string;
-  players: string[];
-  createdBy: string;
+  users: string[];
+  createdBy: string | null;
 };
 
 export type CreateLobbyRequest = {

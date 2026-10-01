@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {ApiError, getErrorMessage} from '@/lib/api/client';
 import {getLobby, kickPlayer, leaveLobby, renameLobby} from '@/lib/api/lobby';
+import {pingLogin} from '@/lib/api/login';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername} from '@/lib/username';
 import type {Lobby} from '@/types/lobby';
@@ -22,15 +23,15 @@ export default function LobbyPage() {
   useEffect(() => {
     if (!username) {
       router.replace('/login');
+      return;
     }
-  }, [router, username]);
-
-  useEffect(() => {
-    if (!username || !gameId) {
+    if (!gameId) {
       return;
     }
 
+    const currentUsername = username;
     let cancelled = false;
+    let interval = 0;
 
     async function loadLobby() {
       try {
@@ -38,7 +39,7 @@ export default function LobbyPage() {
         if (cancelled) {
           return;
         }
-        if (!username || !nextLobby.players.includes(username)) {
+        if (!(nextLobby.users ?? []).includes(currentUsername)) {
           router.replace('/main-menu');
           return;
         }
@@ -78,12 +79,25 @@ export default function LobbyPage() {
       }
     }
 
-    void loadLobby();
-    const interval = window.setInterval(() => {
-      if (!isRenamingRef.current) {
-        void loadLobby();
+    async function start() {
+      const loggedIn = await pingLogin(currentUsername);
+      if (cancelled) {
+        return;
       }
-    }, 2000);
+      if (!loggedIn) {
+        router.replace('/main-menu');
+        return;
+      }
+
+      await loadLobby();
+      interval = window.setInterval(() => {
+        if (!isRenamingRef.current) {
+          void loadLobby();
+        }
+      }, 2000);
+    }
+
+    void start();
 
     return () => {
       cancelled = true;
@@ -191,7 +205,7 @@ export default function LobbyPage() {
           )}
           <h3 className="mb-2 text-lg font-semibold">Players</h3>
           <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
-            {lobby.players.map((player) => (
+            {(lobby.users ?? []).map((player) => (
               <li
                 className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
                 key={player}

@@ -4,6 +4,7 @@ import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {getErrorMessage} from '@/lib/api/client';
 import {createLobby, getLobbies, getLobby, joinLobby} from '@/lib/api/lobby';
+import {pingLogin} from '@/lib/api/login';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername, removeUsername} from '@/lib/username';
 import type {Lobby} from '@/types/lobby';
@@ -31,6 +32,7 @@ export default function MainMenuPage() {
       return;
     }
 
+    const currentUsername = username;
     let cancelled = false;
 
     async function loadLobbies() {
@@ -41,7 +43,7 @@ export default function MainMenuPage() {
         }
 
         const currentLobby = nextLobbies.find((lobby) =>
-          lobby.players.includes(username),
+          (lobby.users ?? []).includes(currentUsername),
         );
         if (currentLobby) {
           router.replace(`/lobby/${currentLobby.id}`);
@@ -95,7 +97,9 @@ export default function MainMenuPage() {
   }
 
   async function handleOpenLobby(id: string) {
-    if (!username) {
+    const storedUsername = getUsername();
+    if (!storedUsername) {
+      router.replace('/login');
       return;
     }
 
@@ -103,9 +107,15 @@ export default function MainMenuPage() {
     setJoiningId(id);
 
     try {
+      const loggedIn = await pingLogin(storedUsername);
+      if (!loggedIn) {
+        router.replace('/main-menu');
+        return;
+      }
+
       const lobby = await getLobby(id);
-      if (!lobby.players.includes(username)) {
-        await joinLobby(id, {username});
+      if (!(lobby.users ?? []).includes(storedUsername)) {
+        await joinLobby(id, {username: storedUsername});
       }
       router.push(`/lobby/${id}`);
     } catch (joinError) {
