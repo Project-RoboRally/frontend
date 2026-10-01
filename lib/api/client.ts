@@ -3,7 +3,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers = new Headers(options?.headers);
   headers.set('Accept', 'application/json');
-  headers.set('Content-Type', 'application/json');
+  if (options?.body != null) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,

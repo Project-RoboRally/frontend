@@ -1,24 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { getMockGame } from '@/lib/mock-games';
-import { buttonClassName, inputClassName } from '@/lib/styles';
-import { getUsername } from '@/lib/username';
+import {useEffect, useRef, useState} from 'react';
+import {useParams, useRouter} from 'next/navigation';
+import {getLobby, kickPlayer, leaveLobby, renameLobby} from '@/lib/api/lobby';
+import {buttonClassName, inputClassName} from '@/lib/styles';
+import {getUsername} from '@/lib/username';
+import type {Lobby} from '@/types/lobby';
 
 export default function LobbyPage() {
   const router = useRouter();
-  const { gameId } = useParams<{ gameId: string }>();
+  const {gameId} = useParams<{gameId: string}>();
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
-  const game = getMockGame(gameId);
-  const isCreatedByUser = gameId === 'new-game';
-  const [gameName, setGameName] = useState(game?.name ?? (isCreatedByUser ? 'New Game' : 'Game'));
-  const initialPlayers = game?.players ?? ['Ada', 'Bjarne', 'Clara'];
-  const [players, setPlayers] = useState<string[]>(() =>
-    initialPlayers.includes(username ?? '') ? initialPlayers : [...initialPlayers, username ?? ''],
-  );
+  const [lobby, setLobby] = useState<Lobby | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState('');
+  const isRenamingRef = useRef(false);
 
   useEffect(() => {
     if (!username) {
@@ -26,20 +24,109 @@ export default function LobbyPage() {
     }
   }, [router, username]);
 
-  function removePlayer(playerToRemove: string) {
-    setPlayers((currentPlayers) => currentPlayers.filter((player) => player !== playerToRemove));
+  useEffect(() => {
+    if (!username || !gameId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadLobby() {
+      try {
+        const nextLobby = await getLobby(gameId);
+        if (cancelled) {
+          return;
+        }
+        setLobby((current) => {
+          if (isRenamingRef.current && current) {
+            return {...nextLobby, name: current.name};
+          }
+          return nextLobby;
+        });
+        setNameDraft((current) =>
+          isRenamingRef.current ? current : nextLobby.name,
+        );
+        setError(null);
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : 'Lobby not found');
+        }
+      }
+    }
+
+    void loadLobby();
+    const interval = window.setInterval(() => {
+      if (!isRenamingRef.current) {
+        void loadLobby();
+      }
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [gameId, username]);
+
+  async function handleRename(name: string) {
+    if (!lobby || name === lobby.name) {
+      return;
+    }
+
+    try {
+      const updated = await renameLobby(lobby.id, {name});
+      setLobby(updated);
+      if (!isRenamingRef.current) {
+        setNameDraft(updated.name);
+      }
+    } catch (renameError) {
+      setError(renameError instanceof Error ? renameError.message : 'Failed to rename lobby');
+    }
+  }
+
+  async function handleExit() {
+    if (!username) {
+      return;
+    }
+
+    try {
+      if (lobby) {
+        await leaveLobby(lobby.id, {username});
+      }
+    } catch {
+      // Owner leave can delete the lobby; still return to the menu.
+    }
+
+    router.push('/main-menu');
+  }
+
+  async function handleKick(playerKicked: string) {
+    if (!lobby || !username) {
+      return;
+    }
+
+    try {
+      const updated = await kickPlayer(lobby.id, {
+        kickedBy: username,
+        playerKicked,
+      });
+      setLobby(updated);
+    } catch (kickError) {
+      setError(kickError instanceof Error ? kickError.message : 'Failed to kick player');
+    }
   }
 
   if (!username) {
     return null;
   }
 
+  const isOwner = lobby?.createdBy === username;
+
   return (
     <main className="relative mx-auto min-h-screen w-full max-w-3xl p-6 pt-20">
       <header className="mb-10 text-center">
         <button
           className={`${buttonClassName} absolute left-6 top-6`}
-          onClick={() => router.push('/main-menu')}
+          onClick={() => void handleExit()}
           type="button"
         >
           Exit
@@ -48,40 +135,59 @@ export default function LobbyPage() {
         <p className="absolute right-6 top-6">Logged in as: {username}</p>
       </header>
 
-      <section className="flex flex-col items-center text-center">
-        {isCreatedByUser ? (
-          <input
-            aria-label="Game name"
-            className={`${inputClassName} mb-4 max-w-md text-center text-2xl font-semibold`}
-            onChange={(event) => setGameName(event.target.value)}
-            type="text"
-            value={gameName}
-          />
-        ) : (
-          <h2 className="mb-4 text-2xl font-semibold">{gameName}</h2>
-        )}
-        <h3 className="mb-2 text-lg font-semibold">Players</h3>
-        <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
-          {players.map((player) => (
-            <li
-              className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
-              key={player}
-            >
-              <span className="truncate">{player}</span>
-              {isCreatedByUser && player !== username && (
-                <button
-                  aria-label={`Kick ${player}`}
-                  className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
-                  onClick={() => removePlayer(player)}
-                  type="button"
-                >
-                  x
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {error ? (
+        <p className="mb-4 text-center" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      {lobby ? (
+        <section className="flex flex-col items-center text-center">
+          {isOwner ? (
+            <input
+              aria-label="Lobby name"
+              className={`${inputClassName} mb-4 max-w-md text-center text-2xl font-semibold`}
+              onBlur={() => {
+                isRenamingRef.current = false;
+              }}
+              onChange={(event) => {
+                isRenamingRef.current = true;
+                const name = event.target.value;
+                setNameDraft(name);
+                void handleRename(name);
+              }}
+              onFocus={() => {
+                isRenamingRef.current = true;
+              }}
+              type="text"
+              value={nameDraft}
+            />
+          ) : (
+            <h2 className="mb-4 text-2xl font-semibold">{lobby.name}</h2>
+          )}
+          <h3 className="mb-2 text-lg font-semibold">Players</h3>
+          <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
+            {lobby.players.map((player) => (
+              <li
+                className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
+                key={player}
+              >
+                <span className="truncate">{player}</span>
+                {isOwner && player !== username ? (
+                  <button
+                    aria-label={`Kick ${player}`}
+                    className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
+                    onClick={() => void handleKick(player)}
+                    type="button"
+                  >
+                    x
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="flex justify-center">
         <button className={buttonClassName} onClick={() => router.push('/game')} type="button">
