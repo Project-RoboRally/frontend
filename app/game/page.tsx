@@ -3,28 +3,26 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import Game from "@/components/Game";
 import HUD from "@/components/HUD";
 import { buttonClassName } from "@/lib/styles";
 import { getUsername } from "@/lib/username";
 
 import type { GameState } from "@/types/gameState";
 import type { Player } from "@/types/player";
-import type { Robot } from "@/types/robot";
 
-const BOARD_SIZE = 12;
+/**
+ * Page for the froentend of the gameboard 
+ * 
+ * @author Caroline, Katarina
+ */
 
 export default function GamePage() {
   const router = useRouter();
 
-  const [board] = useState(
-    Array(BOARD_SIZE * BOARD_SIZE).fill(null),
-  );
-
   const [username] = useState<string | null>(() =>
     typeof window === "undefined" ? null : getUsername(),
   );
-
-  const [robots] = useState<Robot[]>([]);
 
   useEffect(() => {
     if (!username) {
@@ -66,13 +64,6 @@ export default function GamePage() {
     phase: "programming_phase",
   };
 
-  const handleTileClick = (index: number) => {
-    const row = Math.floor(index / BOARD_SIZE);
-    const column = index % BOARD_SIZE;
-
-    console.log("Clicked tile:", row, column);
-  };
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
       <header className="mb-6">
@@ -102,6 +93,12 @@ export default function GamePage() {
             ))}
           </div>
         </section>
+      <p className="absolute right-6 top-6">
+        Logged in as: {username}
+      </p>
+
+      <HUD gameState={gameState} player={player}>
+        <Game />
       </HUD>
 
       <button
