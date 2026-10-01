@@ -20,7 +20,7 @@ export function createLobby(body: CreateLobbyRequest) {
 }
 
 export function renameLobby(id: string, body: RenameLobbyRequest) {
-  return apiPatch<Lobby>(`/api/lobbies/${id}`, body);
+  return apiPost<Lobby>(`/api/lobbies/${id}/rename`, body);
 }
 
 export function joinLobby(id: string, body: JoinLeaveLobbyRequest) {

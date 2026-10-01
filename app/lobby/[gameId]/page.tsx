@@ -2,6 +2,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
+import {ApiError, getErrorMessage} from '@/lib/api/client';
 import {getLobby, kickPlayer, leaveLobby, renameLobby} from '@/lib/api/lobby';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername} from '@/lib/username';
@@ -37,6 +38,10 @@ export default function LobbyPage() {
         if (cancelled) {
           return;
         }
+        if (!username || !nextLobby.players.includes(username)) {
+          router.replace('/main-menu');
+          return;
+        }
         setLobby((current) => {
           if (isRenamingRef.current && current) {
             return {...nextLobby, name: current.name};
@@ -48,9 +53,28 @@ export default function LobbyPage() {
         );
         setError(null);
       } catch (loadError) {
-        if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : 'Lobby not found');
+        if (cancelled) {
+          return;
         }
+        const status =
+          loadError instanceof ApiError
+            ? loadError.status
+            : typeof loadError === 'object' &&
+                loadError !== null &&
+                'status' in loadError &&
+                typeof loadError.status === 'number'
+              ? loadError.status
+              : 0;
+        const message = getErrorMessage(loadError, '');
+        if (
+          status === 404 ||
+          message.toLowerCase().includes('lobby was not found') ||
+          message.toLowerCase().includes('lobby not found')
+        ) {
+          router.replace('/main-menu');
+          return;
+        }
+        setError(getErrorMessage(loadError, 'Could not load lobby'));
       }
     }
 
@@ -65,7 +89,7 @@ export default function LobbyPage() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [gameId, username]);
+  }, [gameId, router, username]);
 
   async function handleRename(name: string) {
     if (!lobby || name === lobby.name) {
@@ -79,7 +103,7 @@ export default function LobbyPage() {
         setNameDraft(updated.name);
       }
     } catch (renameError) {
-      setError(renameError instanceof Error ? renameError.message : 'Failed to rename lobby');
+      setError(getErrorMessage(renameError, 'Failed to rename lobby'));
     }
   }
 
@@ -111,7 +135,7 @@ export default function LobbyPage() {
       });
       setLobby(updated);
     } catch (kickError) {
-      setError(kickError instanceof Error ? kickError.message : 'Failed to kick player');
+      setError(getErrorMessage(kickError, 'Failed to kick player'));
     }
   }
 

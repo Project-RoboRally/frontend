@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {getErrorMessage} from '@/lib/api/client';
 import {createLobby, getLobbies, getLobby, joinLobby} from '@/lib/api/lobby';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername, removeUsername} from '@/lib/username';
@@ -30,12 +31,42 @@ export default function MainMenuPage() {
       return;
     }
 
-    getLobbies()
-      .then(setLobbies)
-      .catch((fetchError) =>
-        setError(fetchError instanceof Error ? fetchError.message : 'Failed to load lobbies'),
-      );
-  }, [username]);
+    let cancelled = false;
+
+    async function loadLobbies() {
+      try {
+        const nextLobbies = await getLobbies();
+        if (cancelled) {
+          return;
+        }
+
+        const currentLobby = nextLobbies.find((lobby) =>
+          lobby.players.includes(username),
+        );
+        if (currentLobby) {
+          router.replace(`/lobby/${currentLobby.id}`);
+          return;
+        }
+
+        setLobbies(nextLobbies);
+        setError(null);
+      } catch (fetchError) {
+        if (!cancelled) {
+          setError(getErrorMessage(fetchError, 'Failed to load lobbies'));
+        }
+      }
+    }
+
+    void loadLobbies();
+    const interval = window.setInterval(() => {
+      void loadLobbies();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [router, username]);
 
   function handleSignOut() {
     removeUsername();
@@ -57,7 +88,7 @@ export default function MainMenuPage() {
       });
       router.push(`/lobby/${lobby.id}`);
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : 'Failed to create lobby');
+      setError(getErrorMessage(createError, 'Failed to create lobby'));
     } finally {
       setIsCreating(false);
     }
@@ -78,7 +109,7 @@ export default function MainMenuPage() {
       }
       router.push(`/lobby/${id}`);
     } catch (joinError) {
-      setError(joinError instanceof Error ? joinError.message : 'Failed to join lobby');
+      setError(getErrorMessage(joinError, 'Failed to join lobby'));
     } finally {
       setJoiningId(null);
     }

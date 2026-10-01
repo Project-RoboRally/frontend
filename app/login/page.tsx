@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
 import { saveUsername, usernameError } from '@/lib/username';
@@ -34,7 +35,7 @@ export default function LoginPage() {
             saveUsername(result.username);
             router.push('/main-menu');
           } catch (loginError) {
-            setError(loginError instanceof Error ? loginError.message : 'Login failed');
+            setError(getErrorMessage(loginError, 'Login failed'));
           } finally {
             setIsSubmitting(false);
           }
