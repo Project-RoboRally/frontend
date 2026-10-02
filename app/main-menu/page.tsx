@@ -49,6 +49,10 @@ export default function MainMenuPage() {
         const currentLobby = nextLobbies.find((lobby) =>
           (lobby.users ?? []).includes(currentUsername),
         );
+        if (currentLobby?.started) {
+          router.replace('/game');
+          return;
+        }
         if (currentLobby) {
           router.replace(`/lobby/${currentLobby.id}`);
           return;

@@ -3,7 +3,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {ApiError, getErrorMessage} from '@/lib/api/client';
-import {getLobby, kickPlayer, leaveLobby, renameLobby} from '@/lib/api/lobby';
+import {getLobby, kickPlayer, leaveLobby, renameLobby, startGame} from '@/lib/api/lobby';
 import {pingLogin} from '@/lib/api/login';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername} from '@/lib/username';
@@ -18,6 +18,7 @@ export default function LobbyPage() {
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
+  const [isStarting, setIsStarting] = useState(false);
   const isRenamingRef = useRef(false);
 
   useEffect(() => {
@@ -41,6 +42,10 @@ export default function LobbyPage() {
         }
         if (!(nextLobby.users ?? []).includes(currentUsername)) {
           router.replace('/main-menu');
+          return;
+        }
+        if (nextLobby.started) {
+          router.replace('/game');
           return;
         }
         setLobby((current) => {
@@ -137,6 +142,27 @@ export default function LobbyPage() {
     router.push('/main-menu');
   }
 
+  async function handleStart() {
+    if (!lobby || !username) {
+      return;
+    }
+
+    setError(null);
+    setIsStarting(true);
+
+    try {
+      const updated = await startGame(lobby.id, {username});
+      setLobby(updated);
+      if (updated.started) {
+        router.push('/game');
+      }
+    } catch (startError) {
+      setError(getErrorMessage(startError, 'Failed to start game'));
+    } finally {
+      setIsStarting(false);
+    }
+  }
+
   async function handleKick(playerKicked: string) {
     if (!lobby || !username) {
       return;
@@ -145,7 +171,7 @@ export default function LobbyPage() {
     try {
       const updated = await kickPlayer(lobby.id, {
         kickedBy: username,
-        playerKicked,
+        userKicked: playerKicked,
       });
       setLobby(updated);
     } catch (kickError) {
@@ -228,8 +254,13 @@ export default function LobbyPage() {
       ) : null}
 
       <div className="flex justify-center">
-        <button className={buttonClassName} onClick={() => router.push('/game')} type="button">
-          Start
+        <button
+          className={buttonClassName}
+          disabled={isStarting}
+          onClick={() => void handleStart()}
+          type="button"
+        >
+          {isStarting ? 'Starting...' : 'Start'}
         </button>
       </div>
     </main>
