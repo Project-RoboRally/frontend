@@ -3,6 +3,7 @@ export type Lobby = {
   name: string;
   users: string[];
   createdBy: string | null;
+  started: boolean;
 };
 
 export type CreateLobbyRequest = {

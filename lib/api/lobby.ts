@@ -34,3 +34,7 @@ export function leaveLobby(id: string, body: JoinLeaveLobbyRequest) {
 export function kickPlayer(id: string, body: KickFromLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/kick`, body);
 }
+
+export function startGame(id: string, body: JoinLeaveLobbyRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/start`, body);
+}
