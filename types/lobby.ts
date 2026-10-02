@@ -6,7 +6,6 @@ export type Lobby = {
 };
 
 export type CreateLobbyRequest = {
-  id: string;
   name: string;
   username: string;
 };
