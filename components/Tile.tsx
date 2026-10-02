@@ -1,9 +1,9 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 /**
- * Renders interactive game board tile at coordinates (x,y) that display the orange 
+ * Renders interactive game board tile at coordinates (x,y) that display the orange
  * robot
- * 
+ *
  * @author Matthias, Caroline, Katarina
  */
 
@@ -14,12 +14,7 @@ interface TileProps {
   onClick: () => void;
 }
 
-export default function Tile({
-                               x,
-                               y,
-                               hasRobot,
-                               onClick,
-                             }: TileProps) {
+export default function Tile({ x, y, hasRobot, onClick }: TileProps) {
   return (
     <button
       type="button"

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import Game from "@/components/Game";
-import HUD from "@/components/HUD";
-import { buttonClassName } from "@/lib/styles";
-import { getUsername } from "@/lib/username";
+import Game from '@/components/Game';
+import HUD from '@/components/HUD';
+import { buttonClassName } from '@/lib/styles';
+import { getUsername } from '@/lib/username';
 
-import type { GameState } from "@/types/gameState";
-import type { Player } from "@/types/player";
+import type { GameState } from '@/types/gameState';
+import type { Player } from '@/types/player';
 
 /**
- * Page for the froentend of the gameboard 
- * 
+ * Page for the froentend of the gameboard
+ *
  * @author Caroline, Katarina
  */
 
@@ -21,12 +21,12 @@ export default function GamePage() {
   const router = useRouter();
 
   const [username] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : getUsername(),
+    typeof window === 'undefined' ? null : getUsername(),
   );
 
   useEffect(() => {
     if (!username) {
-      router.replace("/login");
+      router.replace('/login');
     }
   }, [router, username]);
 
@@ -38,11 +38,11 @@ export default function GamePage() {
   const player: Player = {
     username,
     robot: {
-      robotModel: "twonky",
+      robotModel: 'twonky',
       position: {
         row: 0,
         column: 0,
-        direction: "north",
+        direction: 'north',
       },
       checkpointsCollected: 0,
       energycubesCollected: 0,
@@ -58,10 +58,10 @@ export default function GamePage() {
     round: 1,
     timerOut: false,
     status: {
-      state: "inprogress",
+      state: 'inprogress',
     },
     players: [player],
-    phase: "programming_phase",
+    phase: 'programming_phase',
   };
 
   return (
@@ -76,7 +76,7 @@ export default function GamePage() {
 
       <button
         className={`${buttonClassName} mt-6`}
-        onClick={() => router.push("/main-menu")}
+        onClick={() => router.push('/main-menu')}
         type="button"
       >
         Back to Main Menu

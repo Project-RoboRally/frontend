@@ -1,8 +1,8 @@
-import type { Player } from "./player";
+import type { Player } from './player';
 
 /**
  * Type definition for the game states
- * 
+ *
  * @author Kerem
  */
 
@@ -14,33 +14,30 @@ export type GameState = {
 } & (UpgradePhase | ProgrammingPhase | ActivationPhase);
 
 export type UpgradePhase = {
-  phase: "upgrade_phase";
+  phase: 'upgrade_phase';
 };
 
 export type ProgrammingPhase = {
-  phase: "programming_phase";
+  phase: 'programming_phase';
 };
 
 export type ActivationPhase = {
-  phase: "activation_phase";
+  phase: 'activation_phase';
   activeRegister: 1 | 2 | 3 | 4 | 5;
 };
 
-export type GameStatus =
-  | WaitingStatus
-  | ProgressStatus
-  | OverStatus;
+export type GameStatus = WaitingStatus | ProgressStatus | OverStatus;
 
 export type WaitingStatus = {
-  state: "waiting";
+  state: 'waiting';
   playerCount: number;
 };
 
 export type ProgressStatus = {
-  state: "inprogress";
+  state: 'inprogress';
 };
 
 export type OverStatus = {
-  state: "over";
+  state: 'over';
   winner: Player;
 };
