@@ -2,7 +2,9 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {createLobby, getLobbies} from '@/lib/api/lobby';
+import {getErrorMessage} from '@/lib/api/client';
+import {createLobby, getLobbies, getLobby, joinLobby} from '@/lib/api/lobby';
+import {pingLogin} from '@/lib/api/login';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername, removeUsername} from '@/lib/username';
 import type {Lobby} from '@/types/lobby';
@@ -14,8 +16,10 @@ import type {Lobby} from '@/types/lobby';
 export default function MainMenuPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [lobbyName, setLobbyName] = useState('My Lobby');
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
@@ -32,20 +36,50 @@ export default function MainMenuPage() {
       return;
     }
 
-    getLobbies()
-      .then(setLobbies)
-      .catch((fetchError) =>
-        setError(fetchError instanceof Error ? fetchError.message : 'Failed to load lobbies'),
-      );
-  }, [username]);
+    const currentUsername = username;
+    let cancelled = false;
+
+    async function loadLobbies() {
+      try {
+        const nextLobbies = await getLobbies();
+        if (cancelled) {
+          return;
+        }
+
+        const currentLobby = nextLobbies.find((lobby) =>
+          (lobby.users ?? []).includes(currentUsername),
+        );
+        if (currentLobby) {
+          router.replace(`/lobby/${currentLobby.id}`);
+          return;
+        }
+
+        setLobbies(nextLobbies);
+        setError(null);
+      } catch (fetchError) {
+        if (!cancelled) {
+          setError(getErrorMessage(fetchError, 'Failed to load lobbies'));
+        }
+      }
+    }
+
+    void loadLobbies();
+    const interval = window.setInterval(() => {
+      void loadLobbies();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [router, username]);
 
   function handleSignOut() {
     removeUsername();
     router.push('/login');
   }
 
-  // TODO: id is will be created in the backend, but for now we generate it on the client, i looked at the wrong page
-  async function handleCreateGame() {
+  async function handleCreateLobby() {
     if (!username) {
       return;
     }
@@ -55,15 +89,43 @@ export default function MainMenuPage() {
 
     try {
       const lobby = await createLobby({
-        id: "new-game",
-        name: "New Game",
+        name: lobbyName.trim() || 'My Lobby',
         username,
       });
       router.push(`/lobby/${lobby.id}`);
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : 'Failed to create game');
+      setError(getErrorMessage(createError, 'Failed to create lobby'));
     } finally {
       setIsCreating(false);
+    }
+  }
+
+  async function handleOpenLobby(id: string) {
+    const storedUsername = getUsername();
+    if (!storedUsername) {
+      router.replace('/login');
+      return;
+    }
+
+    setError(null);
+    setJoiningId(id);
+
+    try {
+      const loggedIn = await pingLogin(storedUsername);
+      if (!loggedIn) {
+        router.replace('/main-menu');
+        return;
+      }
+
+      const lobby = await getLobby(id);
+      if (!(lobby.users ?? []).includes(storedUsername)) {
+        await joinLobby(id, {username: storedUsername});
+      }
+      router.push(`/lobby/${id}`);
+    } catch (joinError) {
+      setError(getErrorMessage(joinError, 'Failed to join lobby'));
+    } finally {
+      setJoiningId(null);
     }
   }
 
@@ -90,13 +152,21 @@ export default function MainMenuPage() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <section className="flex flex-col items-center gap-4">
+          <input
+            aria-label="Lobby name"
+            className={inputClassName}
+            onChange={(event) => setLobbyName(event.target.value)}
+            placeholder="Lobby name"
+            type="text"
+            value={lobbyName}
+          />
           <button
             className={buttonClassName}
             disabled={isCreating}
-            onClick={handleCreateGame}
+            onClick={handleCreateLobby}
             type="button"
           >
-            {isCreating ? 'Creating...' : 'Create Game'}
+            {isCreating ? 'Creating...' : 'Create Lobby'}
           </button>
 
           <button className={buttonClassName} onClick={handleSignOut} type="button">
@@ -106,10 +176,10 @@ export default function MainMenuPage() {
 
         <section className="border-2 border-white p-4">
           <input
-            aria-label="Search available games"
+            aria-label="Search available lobbies"
             className={inputClassName}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search available games"
+            placeholder="Search available lobbies"
             type="search"
             value={searchTerm}
           />
@@ -118,7 +188,8 @@ export default function MainMenuPage() {
               <li key={lobby.id}>
                 <button
                   className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                  onClick={() => router.push(`/lobby/${lobby.id}`)}
+                  disabled={joiningId === lobby.id}
+                  onClick={() => handleOpenLobby(lobby.id)}
                   type="button"
                 >
                   {lobby.name}
