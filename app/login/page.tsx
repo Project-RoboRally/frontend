@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
 
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
-import { saveUsername, usernameError } from '@/lib/username';
+import { getUsername, saveUsername, usernameError } from '@/lib/username';
 
 /**
  * @author Anton, Kerem
@@ -17,6 +17,41 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const restoreStarted = useRef(false);
+
+  async function signIn(nextUsername: string) {
+    setError(null);
+    setIsSubmitting(true);
+
+    const validationError = usernameError(nextUsername);
+    if (validationError) {
+      setError(validationError);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const result = await login({ username: nextUsername });
+      saveUsername(result.username);
+      router.push('/main-menu');
+    } catch (loginError) {
+      setError(getErrorMessage(loginError, 'Login failed'));
+      setIsSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    const savedUsername = getUsername();
+    if (!savedUsername || restoreStarted.current) {
+      return;
+    }
+
+    restoreStarted.current = true;
+    setUsername(savedUsername);
+    void signIn(savedUsername);
+    // Restore once from the saved username when this screen opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center p-6">
@@ -25,27 +60,9 @@ export default function LoginPage() {
       <div className={`${panelClassName} w-full`}>
         <form
           className="w-full space-y-4"
-          onSubmit={async (event) => {
+          onSubmit={(event) => {
             event.preventDefault();
-            setError(null);
-            setIsSubmitting(true);
-
-            const validationError = usernameError(username);
-            if (validationError) {
-              setError(validationError);
-              setIsSubmitting(false);
-              return;
-            }
-
-            try {
-              const result = await login({ username });
-              saveUsername(result.username);
-              router.push('/main-menu');
-            } catch (loginError) {
-              setError(getErrorMessage(loginError, 'Login failed'));
-            } finally {
-              setIsSubmitting(false);
-            }
+            void signIn(username);
           }}
         >
           <div>

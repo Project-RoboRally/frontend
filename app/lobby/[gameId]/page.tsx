@@ -145,7 +145,7 @@ export default function LobbyPage() {
     try {
       const updated = await kickPlayer(lobby.id, {
         kickedBy: username,
-        playerKicked,
+        userKicked: playerKicked,
       });
       setLobby(updated);
     } catch (kickError) {
