@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
-import { saveUsername } from '@/lib/username';
+import { saveUsername, usernameError } from '@/lib/username';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,12 +23,19 @@ export default function LoginPage() {
           setError(null);
           setIsSubmitting(true);
 
+          const validationError = usernameError(username);
+          if (validationError) {
+            setError(validationError);
+            setIsSubmitting(false);
+            return;
+          }
+
           try {
             const result = await login({ username });
             saveUsername(result.username);
             router.push('/main-menu');
           } catch (loginError) {
-            setError(loginError instanceof Error ? loginError.message : 'Login failed');
+            setError(getErrorMessage(loginError, 'Login failed'));
           } finally {
             setIsSubmitting(false);
           }
@@ -40,6 +48,8 @@ export default function LoginPage() {
           <input
             className={inputClassName}
             id="username"
+            maxLength={16}
+            minLength={3}
             onChange={(event) => setUsername(event.target.value)}
             required
             type="text"
