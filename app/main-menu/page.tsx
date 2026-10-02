@@ -9,6 +9,10 @@ import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername, removeUsername} from '@/lib/username';
 import type {Lobby} from '@/types/lobby';
 
+/**
+ * @author Anton, Kerem
+ */
+
 export default function MainMenuPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -179,7 +183,7 @@ export default function MainMenuPage() {
             type="search"
             value={searchTerm}
           />
-          <ul className="mt-3 h-48 space-y-2 overflow-y-scroll pr-2">
+          <ul className="mt-3 h-48 space-y-2 overflow-y-auto pr-2">
             {filteredLobbies.map((lobby) => (
               <li key={lobby.id}>
                 <button

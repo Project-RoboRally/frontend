@@ -1,3 +1,9 @@
+/**
+ * Type definitions for the robots
+ * 
+ * @author Kerem
+ */
+
 export type Robot = {
   robotModel: RobotModel;
   position: RobotPosition;
