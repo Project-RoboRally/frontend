@@ -1,3 +1,9 @@
+/**
+ * Declaring the different robots
+ * 
+ * @author Caroline, Katarina
+ */
+
 export type Robot = {
   robotModel: RobotModel;
   position: RobotPosition;
@@ -14,20 +20,18 @@ export type RobotPosition = {
 };
 
 export type RobotModel =
-  | "demolitionBot"
-  | "hulkX90"
-  | "spinBot"
-  | "trundleBot"
-  | "gymBot"
-  | "twonky"
-  | "zoomBot";
+  | "redRobot"
+  | "orangeRobot"
+  | "greenRobot"
+  | "blueRobot"
+  | "purpleRobot"
+  | "pinkRobot";
 
 export const ROBOTCOLORS: Record<RobotModel, string> = {
-  demolitionBot: "#FF0000",
-  hulkX90: "#008000",
-  spinBot: "#0000FF",
-  trundleBot: "#FFFF00",
-  gymBot: "#800080",
-  twonky: "#00FFFF",
-  zoomBot: "#80461B",
+  redRobot: "#DD1313",
+  orangeRobot: "#F16D24",
+  greenRobot: "#00974E",
+  blueRobot: "#3498DB",
+  purpleRobot: "#A400C7",
+  pinkRobot: "#FE7EDE",
 };
