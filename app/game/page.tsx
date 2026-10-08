@@ -65,7 +65,7 @@ export default function GamePage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
+    <main className="mx-auto flex h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
       <header className="mb-6">
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>

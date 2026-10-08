@@ -30,7 +30,7 @@ export default function Game() {
   };
 
   return (
-    <section className="aspect-square w-[600px] rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
+    <section className="aspect-square h-full max-h-full rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
       <div
         className="grid h-full w-full bg-slate-800 p-1"
         style={{

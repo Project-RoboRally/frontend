@@ -23,14 +23,14 @@ export default function HUD({
   onRun?: () => void; // Does nothing rn. Delete 'q' when implemented
 }) {
   return (
-    <section className="w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
-      <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
+    <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
+      <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
 
         {/* --- Left side (top/bottom) --- */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 min-h-0 flex-col gap-4">
 
           {/* Top */}
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-1 min-h-0 items-center justify-center">
             {children}
           </div>
 
