@@ -1,5 +1,6 @@
 import type { Robot } from "./robot";
 import type { Register } from "./register";
+import type { ProgrammingCard } from "./cards";
 
 /**
  * Type definition for the players
@@ -10,6 +11,9 @@ import type { Register } from "./register";
 export type Player = {
   username: string;
   robot: Robot;
+  deck: ProgrammingCard[];
+  hand: ProgrammingCard[];
   register: Register[];
+  discardPile: ProgrammingCard[];
   priorityOrder: boolean;
 };

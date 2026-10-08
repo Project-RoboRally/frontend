@@ -10,6 +10,8 @@ import { getUsername } from "@/lib/username";
 
 import type { GameState } from "@/types/gameState";
 import type { Player } from "@/types/player";
+import { mockCards } from "@/lib/mock-cards";
+import { mockRegister } from "@/lib/mock-register";
 
 /**
  * Page for the froentend of the gameboard 
@@ -49,7 +51,10 @@ export default function GamePage() {
       outOfGame: false,
       damageCount: 0,
     },
-    register: [],
+    deck: [],
+    hand: mockCards,
+    register: mockRegister,
+    discardPile: [],
     priorityOrder: false,
   };
 

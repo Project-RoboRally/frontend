@@ -12,7 +12,7 @@ export function RegisterInfo({player}: {player: Player}) {
     <div>
       {player.register.map((register) => (
         <p key = {register.registerNumber}>
-          Register {register.registerNumber} : {register.registerRevealed ? <CardInfo card = {register.registerCard}/> : "hidden"}
+          Register {register.registerNumber} : {register.registerCard != null && register.registerRevealed ? <CardInfo card = {register.registerCard}/> : "hidden"}
         </p>
       ))}
     </div>
