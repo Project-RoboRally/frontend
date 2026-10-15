@@ -1,5 +1,11 @@
 import { GameState } from '@/types/gameState';
 
+/**
+ * Displays the state of the games in the lobby bar hub (Waiting, active, unactive)
+ * 
+ * @author Kerem, Matthias
+ */
+
 export function LobbyStatus({ gameState }: { gameState: GameState }) {
   return (
     <div>

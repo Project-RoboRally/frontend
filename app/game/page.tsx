@@ -70,10 +70,6 @@ export default function GamePage() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
-      <p className="absolute right-6 top-6">
-        Logged in as: {username}
-      </p>
-
       <HUD gameState={gameState} player={player}>
         <Game />
       </HUD>

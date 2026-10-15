@@ -1,7 +1,7 @@
 /**
- * Declaring the different robots
+ * Type definitions for the robots
  * 
- * @author Caroline, Katarina
+ * @author Kerem, Caroline, Katarina
  */
 
 export type Robot = {
