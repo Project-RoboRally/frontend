@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import Tile from "./Tile";
+import Tile from "../Tile";
 
 const BOARD_SIZE = 12;
 
@@ -17,7 +17,7 @@ interface Position {
   y: number;
 }
 
-export default function Game() {
+export default function GameBoard() {
   // x = column
   // y = row, where negative values point upward.
   const [robotPos, setRobotPos] = useState<Position>({

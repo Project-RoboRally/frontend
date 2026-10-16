@@ -228,7 +228,11 @@ export default function LobbyPage() {
       ) : null}
 
       <div className="flex justify-center">
-        <button className={buttonClassName} onClick={() => router.push('/game')} type="button">
+        <button
+          className={buttonClassName}
+          onClick={() => router.push(`/game/${gameId}`)}
+          type="button"
+        >
           Start
         </button>
       </div>

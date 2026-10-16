@@ -1,11 +1,13 @@
-import {apiGet, apiPatch, apiPost} from './client';
+import { apiGet, apiPost } from './client';
 import type {
   CreateLobbyRequest,
   JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
-  RenameLobbyRequest
+  RenameLobbyRequest,
 } from '@/types/lobby';
+
+import type { GameDTO } from '@/types/gameDTO';
 
 export function getLobbies() {
   return apiGet<Lobby[]>('/api/lobbies');
@@ -33,4 +35,8 @@ export function leaveLobby(id: string, body: JoinLeaveLobbyRequest) {
 
 export function kickPlayer(id: string, body: KickFromLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/kick`, body);
+}
+
+export function startGame(id: string) {
+  return apiPost<GameDTO>(`/api/lobbies/${id}/start`, {});
 }
