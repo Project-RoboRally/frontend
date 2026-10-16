@@ -1,10 +1,10 @@
-import {apiGet, apiPatch, apiPost} from './client';
+import { apiGet, apiPatch, apiPost } from './client';
 import type {
   CreateLobbyRequest,
   JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
-  RenameLobbyRequest
+  RenameLobbyRequest,
 } from '@/types/lobby';
 
 export function getLobbies() {

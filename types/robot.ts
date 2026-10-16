@@ -1,6 +1,6 @@
 /**
  * Type definitions for the robots
- * 
+ *
  * @author Kerem, Caroline, Katarina
  */
 
@@ -16,22 +16,17 @@ export type Robot = {
 export type RobotPosition = {
   row: number;
   column: number;
-  direction: "north" | "south" | "east" | "west";
+  direction: 'north' | 'south' | 'east' | 'west';
 };
 
 export type RobotModel =
-  | "redRobot"
-  | "orangeRobot"
-  | "greenRobot"
-  | "blueRobot"
-  | "purpleRobot"
-  | "pinkRobot";
+  'redRobot' | 'orangeRobot' | 'greenRobot' | 'blueRobot' | 'purpleRobot' | 'pinkRobot';
 
 export const ROBOTCOLORS: Record<RobotModel, string> = {
-  redRobot: "#DD1313",
-  orangeRobot: "#F16D24",
-  greenRobot: "#00974E",
-  blueRobot: "#3498DB",
-  purpleRobot: "#A400C7",
-  pinkRobot: "#FE7EDE",
+  redRobot: '#DD1313',
+  orangeRobot: '#F16D24',
+  greenRobot: '#00974E',
+  blueRobot: '#3498DB',
+  purpleRobot: '#A400C7',
+  pinkRobot: '#FE7EDE',
 };

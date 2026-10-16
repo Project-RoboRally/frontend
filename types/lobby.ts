@@ -19,7 +19,7 @@ export type JoinLeaveLobbyRequest = {
 export type KickFromLobbyRequest = {
   kickedBy: string;
   userKicked: string;
-}
+};
 
 export type RenameLobbyRequest = {
   name: string;

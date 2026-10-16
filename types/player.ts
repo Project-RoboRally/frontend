@@ -1,9 +1,9 @@
-import type { Robot } from "./robot";
-import type { Register } from "./register";
+import type { Robot } from './robot';
+import type { Register } from './register';
 
 /**
  * Type definition for the players
- * 
+ *
  * @author Kerem
  */
 
