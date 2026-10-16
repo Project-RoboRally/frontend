@@ -10,7 +10,7 @@ export function PlayerInfo({ player }: { player: Player }) {
   return (
     <div className="rounded-md border-2 border-steel-dark bg-charcoal p-3">
 
-      <div className="mb-3 text-[10px] font-bold uppercase text.cobber-light">
+      <div className="mb-3 text-[10px] font-bold uppercase text-cobber-light">
         Robot Status
       </div>
 
@@ -32,7 +32,7 @@ export function PlayerInfo({ player }: { player: Player }) {
             Damage
           </span>
 
-          <span className={player.robot.damageCount > 0 ? "font-bold text-amber" : "font-bold test-bone"}>
+          <span className={player.robot.damageCount > 0 ? "font-bold text-amber" : "font-bold text-bone"}>
             {player.robot.damageCount}  
           </span> 
         </div>

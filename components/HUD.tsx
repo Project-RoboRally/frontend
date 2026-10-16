@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { GameState } from "@/types/gameState";
 import type { Player } from "@/types/player";
+import { CardInfo } from "@/components/CardInfo";
 import { GameInfo } from "@/components/GameInfo";
 import { PlayerInfo } from "@/components/PlayerInfo";
 import { buttonClassName } from "@/lib/styles";
@@ -54,13 +55,18 @@ export default function HUD({
             {/* Register */}
             <div className="flex items-center gap-1.5">
               {player.register.map((register) => (
-                <div key={register.registerNumber} 
-                className="flex h-16 w-12 items-center justify-center rounded-md border-2 border-steel-dark bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30">
-                  {register.registerRevealed ? register.registerNumber : "?"}</div>))}
+                <div 
+                key={register.registerNumber} 
+                className="flex h-16 w-12 items-center justify-center rounded-md border-2 border-steel-dark bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30"
+              >
+                {register.registerCard === null
+                  ? null : register.registerRevealed
+                  ? <CardInfo card={register.registerCard}/> : "?"}
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
               
         {/* --- Right side ---*/}
         <aside className="flex flex-col gap-3">

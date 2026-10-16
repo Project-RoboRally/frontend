@@ -9,16 +9,16 @@ import type { ProgrammingCard } from '@/types/cards';
 export function CardInfo({card}: {card: ProgrammingCard}) {
   switch(card.cardType) {
     case "move":
-      return "move " + card.cardStrength;
+      return <span>move {card.cardStrength}</span>;
     case "rotate":
-      return "rotate " + card.cardDirection;
+      return <span>rotate {card.cardDirection}</span>;
     case "uTurn":
-      return "uTurn";
+      return <span>uTurn</span>;
     case "back":
-      return "back";
+      return <span>back</span>;
     case "power":
-      return "power";
+      return <span>power</span>;
     case "again":
-      return "again";
+      return <span>again</span>;
   }
 }

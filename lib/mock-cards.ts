@@ -1,45 +1,35 @@
 import type { ProgrammingCard } from "@/types/cards";
 
-export const mockCards: ProgrammingCard[] = [
-  {
+export const MockCards: Record<string, ProgrammingCard> = {
+  "1move3": {
     cardId: "1move3",
     cardType: "move",
-    cardStrength: 3,
+    cardStrength: 3
   },
-  {
+
+  "1rotateRight": {
     cardId: "1rotateRight",
     cardType: "rotate",
-    cardDirection: "right",
+    cardDirection: "right"
   },
-  {
+
+  "1uTurn": {
     cardId: "1uTurn",
     cardType: "uTurn",
   },
-  {
+
+  "1back": {
     cardId: "1back",
-    cardType: "back",
+    cardType: "back"
   },
-  {
+
+  "1power": {
     cardId: "1power",
-    cardType: "power",
+    cardType: "power"
   },
-  {
+
+  "1again": {
     cardId: "1again",
-    cardType: "again",
+    cardType: "again"
   },
-  {
-    cardId: "2move3",
-    cardType: "move",
-    cardStrength: 3,
-  },
-  {
-    cardId: "1rotateLeft",
-    cardType: "rotate",
-    cardDirection: "left",
-  },
-  {
-    cardId: "1move1",
-    cardType: "move",
-    cardStrength: 1,
-  },
-];
+};
