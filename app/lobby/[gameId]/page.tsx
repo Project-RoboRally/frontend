@@ -3,7 +3,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {ApiError, getErrorMessage} from '@/lib/api/client';
-import {getLobby, kickPlayer, leaveLobby, renameLobby} from '@/lib/api/lobby';
+import { getLobby, kickPlayer, leaveLobby, renameLobby, startGame } from '@/lib/api/lobby';
 import {pingLogin} from '@/lib/api/login';
 import {buttonClassName, inputClassName} from '@/lib/styles';
 import {getUsername} from '@/lib/username';
@@ -153,6 +153,19 @@ export default function LobbyPage() {
     }
   }
 
+  async function handleStart() {
+    if (!gameId) {
+      return;
+    }
+
+    try {
+      const game = await startGame(gameId);
+      router.push(`/game/${game.gameId}`);
+    } catch (startError) {
+      setError(getErrorMessage(startError, 'Could not start game'));
+    }
+  }
+
   if (!username) {
     return null;
   }
@@ -228,11 +241,7 @@ export default function LobbyPage() {
       ) : null}
 
       <div className="flex justify-center">
-        <button
-          className={buttonClassName}
-          onClick={() => router.push(`/game/${gameId}`)}
-          type="button"
-        >
+        <button className={buttonClassName} onClick={() => void handleStart()} type="button">
           Start
         </button>
       </div>
