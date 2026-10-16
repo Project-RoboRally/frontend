@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
+import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
@@ -18,11 +19,22 @@ import type { Player } from '@/types/player';
  */
 
 export default function GamePage() {
+  return (
+    <Suspense fallback={null}>
+      <GameView />
+    </Suspense>
+  );
+}
+
+function GameView() {
   const router = useRouter();
 
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
+  // page renders before the browser URL is updated.
+  const lobbyId = useSearchParams().get('lobby');
+  const board = useLobbyBoard(lobbyId);
 
   useEffect(() => {
     if (!username) {
@@ -71,7 +83,7 @@ export default function GamePage() {
       </header>
 
       <HUD gameState={gameState} player={player}>
-        <Game />
+        <Game board={board} />
       </HUD>
 
       <button

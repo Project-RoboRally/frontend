@@ -45,7 +45,7 @@ export default function LobbyPage() {
           return;
         }
         if (nextLobby.started) {
-          router.replace('/game');
+          router.replace(`/game?lobby=${nextLobby.id}`);
           return;
         }
         setLobby((current) => {
@@ -152,7 +152,7 @@ export default function LobbyPage() {
       const updated = await startGame(lobby.id, { username });
       setLobby(updated);
       if (updated.started) {
-        router.push('/game');
+        router.push(`/game?lobby=${updated.id}`);
       }
     } catch (startError) {
       setError(getErrorMessage(startError, 'Failed to start game'));
