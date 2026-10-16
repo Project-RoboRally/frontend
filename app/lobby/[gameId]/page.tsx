@@ -1,17 +1,17 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
-import {useParams, useRouter} from 'next/navigation';
-import {ApiError, getErrorMessage} from '@/lib/api/client';
-import {getLobby, kickPlayer, leaveLobby, renameLobby, startGame} from '@/lib/api/lobby';
-import {pingLogin} from '@/lib/api/login';
-import {buttonClassName, inputClassName} from '@/lib/styles';
-import {getUsername} from '@/lib/username';
-import type {Lobby} from '@/types/lobby';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ApiError, getErrorMessage } from '@/lib/api/client';
+import { getLobby, kickPlayer, leaveLobby, renameLobby, startGame } from '@/lib/api/lobby';
+import { pingLogin } from '@/lib/api/login';
+import { buttonClassName, inputClassName } from '@/lib/styles';
+import { getUsername } from '@/lib/username';
+import type { Lobby } from '@/types/lobby';
 
 export default function LobbyPage() {
   const router = useRouter();
-  const {gameId} = useParams<{gameId: string}>();
+  const { gameId } = useParams<{ gameId: string }>();
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
@@ -50,13 +50,11 @@ export default function LobbyPage() {
         }
         setLobby((current) => {
           if (isRenamingRef.current && current) {
-            return {...nextLobby, name: current.name};
+            return { ...nextLobby, name: current.name };
           }
           return nextLobby;
         });
-        setNameDraft((current) =>
-          isRenamingRef.current ? current : nextLobby.name,
-        );
+        setNameDraft((current) => (isRenamingRef.current ? current : nextLobby.name));
         setError(null);
       } catch (loadError) {
         if (cancelled) {
@@ -116,7 +114,7 @@ export default function LobbyPage() {
     }
 
     try {
-      const updated = await renameLobby(lobby.id, {name});
+      const updated = await renameLobby(lobby.id, { name });
       setLobby(updated);
       if (!isRenamingRef.current) {
         setNameDraft(updated.name);
@@ -133,7 +131,7 @@ export default function LobbyPage() {
 
     try {
       if (lobby) {
-        await leaveLobby(lobby.id, {username});
+        await leaveLobby(lobby.id, { username });
       }
     } catch {
       // Owner leave can delete the lobby; still return to the menu.
@@ -151,7 +149,7 @@ export default function LobbyPage() {
     setIsStarting(true);
 
     try {
-      const updated = await startGame(lobby.id, {username});
+      const updated = await startGame(lobby.id, { username });
       setLobby(updated);
       if (updated.started) {
         router.push('/game');
