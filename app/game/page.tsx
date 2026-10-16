@@ -38,7 +38,7 @@ export default function GamePage() {
   const player: Player = {
     username,
     robot: {
-      robotModel: "twonky",
+      robotModel: "orangeRobot",
       position: {
         row: 0,
         column: 0,
