@@ -9,6 +9,7 @@
 # Optional env (SSH host, not an http URL):
 #   DEPLOY_HOST=se2-h.compute.dtu.dk ./scripts/deploy-se2-h.sh
 #   DEPLOY_USER=sXXXXXX ./scripts/deploy-se2-h.sh   # skips the username prompt
+#   NEXT_PUBLIC_API_URL=http://se2-h.compute.dtu.dk:8080 ./scripts/deploy-se2-h.sh
 
 set -euo pipefail
 
@@ -34,7 +35,8 @@ DEPLOY_HOST="$(ssh_host "${DEPLOY_HOST:-se2-h.compute.dtu.dk}")"
 REMOTE="${DEPLOY_USER}@${DEPLOY_HOST}"
 STAGING="roborally-frontend-upload"
 DEST="/opt/roborally-frontend"
-API_URL="${NEXT_PUBLIC_API_URL:-http://se2-h.compute.dtu.dk:8080}"
+# Baked into the client at build time. localhost is the viewer's machine, not se2-h.
+API_URL="${NEXT_PUBLIC_API_URL:-http://${DEPLOY_HOST}:8080}"
 NODE_BIN="/usr/local/bin/node"
 NPM_BIN="/usr/local/bin/npm"
 
@@ -61,6 +63,7 @@ rsync -az --delete \
   ./ "${REMOTE}:~/${STAGING}/"
 
 echo "Installing, building, and restarting on ${DEPLOY_HOST}"
+echo "API base URL baked into the client: ${API_URL}"
 # -t so sudo can ask for your se2-h password. Nothing GitHub-related is sent.
 ssh -t "$REMOTE" "set -euo pipefail
   ${NODE_BIN} -v
@@ -86,4 +89,5 @@ ssh -t "$REMOTE" "set -euo pipefail
 "
 
 echo "Deployed. Frontend: http://${DEPLOY_HOST}:3000"
+echo "It calls the API at ${API_URL}"
 echo "Logs: ssh ${REMOTE} 'sudo journalctl -u roborally-frontend.service -n 50 --no-pager'"
