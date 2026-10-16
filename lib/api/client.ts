@@ -68,7 +68,7 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
     return 'Username must be 3-16 characters.';
   }
 
-  if (text === 'Player already exists' || (status === 500 && path.includes('/api/login'))) {
+  if (text === 'Player already exists' || lower.includes('username already taken')) {
     return 'That username is already in use. Pick another.';
   }
 
