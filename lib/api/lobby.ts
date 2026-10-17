@@ -5,6 +5,8 @@ import type {
   KickFromLobbyRequest,
   Lobby,
   RenameLobbyRequest,
+  SetColorRequest,
+  SetReadyRequest,
 } from '@/types/lobby';
 
 export function getLobbies() {
@@ -33,6 +35,14 @@ export function leaveLobby(id: string, body: JoinLeaveLobbyRequest) {
 
 export function kickPlayer(id: string, body: KickFromLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/kick`, body);
+}
+
+export function setReady(id: string, body: SetReadyRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/ready`, body);
+}
+
+export function setColor(id: string, body: SetColorRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/color`, body);
 }
 
 export function startGame(id: string, body: JoinLeaveLobbyRequest) {
