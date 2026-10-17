@@ -1,11 +1,12 @@
 import Image from 'next/image';
 
-import type { BoardElement, Direction } from '@/types/board';
+import { robotSprite } from '@/lib/playerColors';
+import type { BoardElement, BoardRobot, Direction } from '@/types/board';
 
 /**
- * Renders interactive game board tile at coordinates (x,y). The background
- * color shows which board element is on the space, walls are drawn as a thick
- * border on their side, and the tile can display the orange robot.
+ * Renders a game board cell at coordinates (x, y). The background color shows
+ * which board element is on the space, walls are drawn as a thick border on
+ * their side, and a robot on the space is drawn facing its orientation.
  *
  * @author Matthias, Caroline, Katarina, Elias
  */
@@ -15,8 +16,7 @@ interface TileProps {
   y: number;
   // Undefined when the space is not part of the loaded board.
   elements: BoardElement[] | undefined;
-  hasRobot: boolean;
-  onClick: () => void;
+  robot: BoardRobot | undefined;
 }
 
 const EMPTY_SPACE_COLOR = '#334155';
@@ -44,6 +44,14 @@ const BORDER_SIDE: Record<Direction, 'borderTop' | 'borderRight' | 'borderBottom
     WEST: 'borderLeft',
   };
 
+// Artwork faces north. CSS rotation is clockwise.
+const FACING: Record<Direction, string> = {
+  NORTH: 'rotate(0deg)',
+  EAST: 'rotate(90deg)',
+  SOUTH: 'rotate(180deg)',
+  WEST: 'rotate(270deg)',
+};
+
 function backgroundColor(elements: BoardElement[] | undefined) {
   if (!elements) {
     return MISSING_SPACE_COLOR;
@@ -63,7 +71,7 @@ function backgroundColor(elements: BoardElement[] | undefined) {
   return EMPTY_SPACE_COLOR;
 }
 
-export default function Tile({ x, y, elements, hasRobot, onClick }: TileProps) {
+export default function Tile({ x, y, elements, robot }: TileProps) {
   const wallBorders = Object.fromEntries(
     (elements ?? []).flatMap((element) =>
       element.type === 'WALL' ? [[BORDER_SIDE[element.side], `4px solid ${WALL_COLOR}`]] : [],
@@ -72,25 +80,24 @@ export default function Tile({ x, y, elements, hasRobot, onClick }: TileProps) {
   const label = elements?.map((element) => element.type).join(', ') || 'EMPTY';
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       aria-label={`Tile ${x}, ${y}: ${label}`}
       title={`(${x}, ${y}) ${label}`}
       style={{ backgroundColor: backgroundColor(elements), ...wallBorders }}
-      className="relative flex h-full w-full items-center justify-center border border-slate-700 text-xs text-slate-400 transition-opacity hover:opacity-75"
+      className="relative flex h-full w-full items-center justify-center border border-slate-700 text-xs text-slate-400"
     >
-      {hasRobot && (
+      {robot && (
         <div className="relative z-10 flex h-4/5 w-4/5 items-center justify-center">
           <Image
-            src="/orange_Robot.png"
-            alt="Orange Robot"
+            src={robotSprite(robot.color)}
+            alt={`${robot.username}'s robot`}
             width={40}
             height={40}
             className="object-contain"
+            style={{ transform: FACING[robot.orientation] }}
           />
         </div>
       )}
-    </button>
+    </div>
   );
 }

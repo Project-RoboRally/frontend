@@ -5,6 +5,8 @@
  * @author Elias
  */
 
+import type { PlayerColor } from '@/types/lobby';
+
 export type Direction = 'NORTH' | 'EAST' | 'SOUTH' | 'WEST';
 
 export type BoardElement =
@@ -26,8 +28,17 @@ export type BoardSpace = {
   elements: BoardElement[];
 };
 
+export type BoardRobot = {
+  username: string;
+  color: PlayerColor;
+  x: number;
+  y: number;
+  orientation: Direction;
+};
+
 export type Board = {
   width: number;
   height: number;
   spaces: BoardSpace[];
+  robots: BoardRobot[];
 };
