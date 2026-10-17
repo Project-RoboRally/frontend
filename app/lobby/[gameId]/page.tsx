@@ -1,13 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { ApiError, getErrorMessage } from '@/lib/api/client';
-import { getLobby, kickPlayer, leaveLobby, renameLobby, startGame } from '@/lib/api/lobby';
+import {
+  getLobby,
+  kickPlayer,
+  leaveLobby,
+  renameLobby,
+  setColor,
+  setReady,
+  startGame,
+} from '@/lib/api/lobby';
 import { pingLogin } from '@/lib/api/login';
-import { buttonClassName, inputClassName } from '@/lib/styles';
+import { colorLabel, PLAYER_COLORS, robotSprite } from '@/lib/playerColors';
+import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
-import type { Lobby } from '@/types/lobby';
+import type { Lobby, PlayerColor } from '@/types/lobby';
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -19,6 +29,8 @@ export default function LobbyPage() {
   const [error, setError] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
   const [isStarting, setIsStarting] = useState(false);
+  const [isTogglingReady, setIsTogglingReady] = useState(false);
+  const [isChangingColor, setIsChangingColor] = useState(false);
   const isRenamingRef = useRef(false);
 
   useEffect(() => {
@@ -108,6 +120,31 @@ export default function LobbyPage() {
     };
   }, [gameId, router, username]);
 
+  const players = lobby?.users ?? [];
+  const isOwner = lobby?.createdBy === username;
+  // Without member data (older backend) readiness is unknown, so don't gate Start on it.
+  const readyKnown = lobby?.members !== undefined;
+
+  function isPlayerReady(player: string) {
+    return (lobby?.members ?? []).some((member) => member.username === player && member.ready);
+  }
+
+  function colorOf(player: string) {
+    return lobby?.members?.find((member) => member.username === player)?.color;
+  }
+
+  function takenBy(color: PlayerColor) {
+    return lobby?.members?.find((member) => member.color === color && member.username !== username)
+      ?.username;
+  }
+
+  const myColor = username ? colorOf(username) : undefined;
+
+  const otherPlayers = players.filter((player) => player !== lobby?.createdBy);
+  const readyCount = otherPlayers.filter(isPlayerReady).length;
+  const hasEnoughPlayers = players.length >= 2;
+  const canStart = hasEnoughPlayers && (!readyKnown || readyCount === otherPlayers.length);
+
   async function handleRename(name: string) {
     if (!lobby || name === lobby.name) {
       return;
@@ -161,6 +198,42 @@ export default function LobbyPage() {
     }
   }
 
+  async function handleToggleReady() {
+    if (!lobby || !username) {
+      return;
+    }
+
+    setError(null);
+    setIsTogglingReady(true);
+
+    try {
+      const updated = await setReady(lobby.id, { username, ready: !isPlayerReady(username) });
+      setLobby(updated);
+    } catch (readyError) {
+      setError(getErrorMessage(readyError, 'Failed to change ready state'));
+    } finally {
+      setIsTogglingReady(false);
+    }
+  }
+
+  async function handleChangeColor(color: PlayerColor) {
+    if (!lobby || !username || color === myColor) {
+      return;
+    }
+
+    setError(null);
+    setIsChangingColor(true);
+
+    try {
+      const updated = await setColor(lobby.id, { username, color });
+      setLobby(updated);
+    } catch (colorError) {
+      setError(getErrorMessage(colorError, 'Failed to change color'));
+    } finally {
+      setIsChangingColor(false);
+    }
+  }
+
   async function handleKick(playerKicked: string) {
     if (!lobby || !username) {
       return;
@@ -180,8 +253,6 @@ export default function LobbyPage() {
   if (!username) {
     return null;
   }
-
-  const isOwner = lobby?.createdBy === username;
 
   return (
     <main className="relative mx-auto min-h-screen w-full max-w-3xl p-6 pt-20">
@@ -229,38 +300,150 @@ export default function LobbyPage() {
           )}
           <h3 className="mb-2 text-lg font-semibold">Players</h3>
           <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
-            {(lobby.users ?? []).map((player) => (
-              <li
-                className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
-                key={player}
-              >
-                <span className="truncate">{player}</span>
-                {isOwner && player !== username ? (
-                  <button
-                    aria-label={`Kick ${player}`}
-                    className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
-                    onClick={() => void handleKick(player)}
-                    type="button"
-                  >
-                    x
-                  </button>
-                ) : null}
-              </li>
-            ))}
+            {players.map((player) => {
+              const color = colorOf(player);
+              return (
+                <li
+                  className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
+                  key={player}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    {player === lobby.createdBy ? (
+                      <span className="shrink-0 rounded bg-cobber px-1.5 text-xs font-bold text-bone">
+                        Owner
+                      </span>
+                    ) : readyKnown ? (
+                      isPlayerReady(player) ? (
+                        <span
+                          aria-label="Ready"
+                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verdigris font-bold text-bone"
+                          role="img"
+                          title="Ready"
+                        >
+                          ✓
+                        </span>
+                      ) : (
+                        <span
+                          aria-label="Not ready"
+                          className="h-6 w-6 shrink-0 rounded-full border-2 border-bone/30"
+                          role="img"
+                          title="Not ready"
+                        />
+                      )
+                    ) : null}
+                    {color ? (
+                      <Image
+                        alt={`${colorLabel(color)} robot`}
+                        className="shrink-0 object-contain"
+                        height={28}
+                        src={robotSprite(color)}
+                        title={`${colorLabel(color)} robot`}
+                        width={28}
+                      />
+                    ) : null}
+                    <span className="truncate">{player}</span>
+                  </span>
+                  {isOwner && player !== username ? (
+                    <button
+                      aria-label={`Kick ${player}`}
+                      className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
+                      onClick={() => void handleKick(player)}
+                      type="button"
+                    >
+                      x
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
+          {myColor ? (
+            <>
+              <h3 className="mb-2 text-lg font-semibold">Your robot</h3>
+              <div
+                aria-label="Robot color"
+                className="mb-8 flex flex-wrap justify-center gap-3"
+                role="radiogroup"
+              >
+                {PLAYER_COLORS.map((color) => {
+                  const selected = color === myColor;
+                  const owner = takenBy(color);
+                  return (
+                    <button
+                      aria-checked={selected}
+                      aria-label={colorLabel(color)}
+                      className={`flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+                        selected
+                          ? 'border-cobber bg-iron ring-2 ring-cobber'
+                          : 'border-iron hover:border-cobber-light'
+                      }`}
+                      disabled={owner !== undefined || isChangingColor}
+                      key={color}
+                      onClick={() => void handleChangeColor(color)}
+                      role="radio"
+                      title={owner ? `${colorLabel(color)}: taken by ${owner}` : colorLabel(color)}
+                      type="button"
+                    >
+                      <Image
+                        alt=""
+                        className="object-contain"
+                        height={48}
+                        src={robotSprite(color)}
+                        width={48}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
         </section>
       ) : null}
 
-      <div className="flex justify-center">
-        <button
-          className={buttonClassName}
-          disabled={isStarting}
-          onClick={() => void handleStart()}
-          type="button"
-        >
-          {isStarting ? 'Starting...' : 'Start'}
-        </button>
-      </div>
+      {lobby ? (
+        <div className="flex flex-col items-center gap-2">
+          {isOwner ? (
+            <>
+              <button
+                className={`${buttonClassName} disabled:cursor-not-allowed disabled:opacity-50`}
+                disabled={isStarting || !canStart}
+                onClick={() => void handleStart()}
+                type="button"
+              >
+                {isStarting ? 'Starting...' : 'Start'}
+              </button>
+              {!hasEnoughPlayers ? (
+                <p className="text-sm text-bone/70">Waiting for at least one more player.</p>
+              ) : !canStart ? (
+                <p className="text-sm text-bone/70">
+                  Waiting for players to be ready ({readyCount}/{otherPlayers.length}).
+                </p>
+              ) : null}
+            </>
+          ) : readyKnown ? (
+            <>
+              <button
+                aria-pressed={isPlayerReady(username)}
+                className={`${
+                  isPlayerReady(username) ? secondaryButtonClassName : buttonClassName
+                } disabled:cursor-not-allowed disabled:opacity-50`}
+                disabled={isTogglingReady}
+                onClick={() => void handleToggleReady()}
+                type="button"
+              >
+                {isPlayerReady(username) ? 'Not ready' : 'Ready'}
+              </button>
+              <p className="text-sm text-bone/70">
+                {isPlayerReady(username)
+                  ? 'Waiting for the owner to start the game.'
+                  : 'Press Ready when you are set to play.'}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-bone/70">Waiting for the owner to start the game.</p>
+          )}
+        </div>
+      ) : null}
     </main>
   );
 }
