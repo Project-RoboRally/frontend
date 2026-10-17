@@ -12,7 +12,7 @@ export type Lobby = {
   name: string;
   users: string[];
   createdBy: string | null;
-  members?: LobbyMember[]; 
+  members?: LobbyMember[];
   gameId?: string | null;
   started: boolean;
 };
