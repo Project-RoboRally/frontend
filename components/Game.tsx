@@ -1,22 +1,16 @@
 'use client';
 
 /**
- * Renders the game board grid loaded from the backend and manages robot
- * positioning state. Falls back to an empty 12 x 12 grid until a board arrives.
+ * Renders the game board grid loaded from the backend. Robots are drawn from
+ * the board snapshot. Falls back to an empty 12 x 12 grid until a board arrives.
  *
  * @author Matthias, Caroline, Katarina, Elias
  */
 
-import { useState } from 'react';
 import Tile from './Tile';
-import type { Board, BoardElement } from '@/types/board';
+import type { Board, BoardElement, BoardRobot } from '@/types/board';
 
 const FALLBACK_SIZE = 12;
-
-interface Position {
-  x: number;
-  y: number;
-}
 
 interface GameProps {
   board: Board | null;
@@ -24,15 +18,13 @@ interface GameProps {
 
 export default function Game({ board }: GameProps) {
   // Backend coordinates: x = column, y = row counted from the top.
-  const [robotPos, setRobotPos] = useState<Position>({
-    x: 0,
-    y: 0,
-  });
-
   const width = board?.width ?? FALLBACK_SIZE;
   const height = board?.height ?? FALLBACK_SIZE;
   const elementsAt = new Map<string, BoardElement[]>(
     (board?.spaces ?? []).map((space) => [`${space.x},${space.y}`, space.elements]),
+  );
+  const robotsAt = new Map<string, BoardRobot>(
+    (board?.robots ?? []).map((robot) => [`${robot.x},${robot.y}`, robot]),
   );
 
   return (
@@ -47,7 +39,6 @@ export default function Game({ board }: GameProps) {
         {Array.from({ length: width * height }).map((_, index) => {
           const x = index % width;
           const y = Math.floor(index / width);
-          const hasRobot = robotPos.x === x && robotPos.y === y;
 
           return (
             <Tile
@@ -55,8 +46,7 @@ export default function Game({ board }: GameProps) {
               x={x}
               y={y}
               elements={elementsAt.get(`${x},${y}`)}
-              hasRobot={hasRobot}
-              onClick={() => setRobotPos({ x, y })}
+              robot={robotsAt.get(`${x},${y}`)}
             />
           );
         })}
