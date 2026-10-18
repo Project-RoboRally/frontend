@@ -11,7 +11,8 @@ export type ProgramCard = {
 export const PROGRAM_CARDS: readonly ProgramCard[] = [
   { instruction: 'MOVE_1', label: 'Move 1' },
   { instruction: 'MOVE_2', label: 'Move 2' },
-  { instruction: 'RIGHT_TURN', label: 'Rotate' },
+  { instruction: 'LEFT_TURN', label: 'Turn left' },
+  { instruction: 'RIGHT_TURN', label: 'Turn right' },
 ];
 
 export const REGISTER_COUNT = 5;
