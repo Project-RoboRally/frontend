@@ -26,6 +26,30 @@ export default function GamePage() {
   const [username] = useState<string | null>(() =>
     typeof window === "undefined" ? null : getUsername(),
   );
+  
+  // Registrene ligger i state, så de kan ændres (bytte rundt) senere
+  const [registers, setRegisters] = useState<Register[]>(mockRegister);
+
+  const swapRegisters = (indexA: number, indexB: number) => {
+    setRegisters((current) => {
+      const next = [...current]; // copies the current object to a new one
+
+      // The register number stays the same since they don't move, so the actuall card and the revealed boolean moves together
+      next[indexA] = {
+        ...current[indexA],
+        registerRevealed: current[indexB].registerRevealed,
+        registerCard: current[indexB].registerCard,
+      };
+
+      next[indexB] = {
+        ...current[indexB],
+        registerRevealed: current[indexA].registerRevealed,
+        registerCard: current[indexA].registerCard,
+      };
+
+      return next;
+    })
+  }
 
   useEffect(() => {
     if (!username) {
@@ -54,7 +78,7 @@ export default function GamePage() {
     },
     deck: [],
     hand: Object.values(MockCards),
-    register: mockRegister,
+    register: registers,
     discardPile: [],
     priorityOrder: false,
   };
@@ -76,7 +100,7 @@ export default function GamePage() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
-      <HUD gameState={gameState} player={player}>
+      <HUD gameState={gameState} player={player} swapRegisters={swapRegisters}>
         <Game />
       </HUD>
 

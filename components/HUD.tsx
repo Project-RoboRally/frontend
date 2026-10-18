@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { GameState } from "@/types/gameState";
 import type { Player } from "@/types/player";
+import { useState } from "react";
 import { CardInfo } from "@/components/CardInfo";
 import { GameInfo } from "@/components/GameInfo";
 import { PlayerInfo } from "@/components/PlayerInfo";
@@ -16,13 +17,29 @@ export default function HUD({
                               gameState,
                               player,
                               children,
-                              onRun,
+                              run,
+                              swapRegisters,
                             }: {
   gameState: GameState;
   player: Player;
   children: ReactNode;
-  onRun?: () => void; // Does nothing rn. Delete 'q' when implemented
+  run?: () => void; // Does nothing rn. Delete 'q' when implemented
+  swapRegisters: (indexA: number, indexB: number) => void;
 }) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const registerClick = (index: number) => {
+    console.log("clicked", index, "selected before:", selectedIndex); // debug
+    if (selectedIndex === null) { // If I haven't clicked on a register yet
+      setSelectedIndex(index);
+    } else if (selectedIndex === index) { // If I click on a register, that I already clicked on
+      setSelectedIndex(null);
+    } else {
+      swapRegisters(selectedIndex, index); 
+      setSelectedIndex(null);
+    }
+  };
+
   return (
     <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
       <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
@@ -54,15 +71,18 @@ export default function HUD({
 
             {/* Register */}
             <div className="flex items-center gap-1.5">
-              {player.register.map((register) => (
-                <div 
+              {player.register.map((register, index) => (
+                <button 
+                type="button"
+                onClick={() => registerClick(index)} 
                 key={register.registerNumber} 
-                className="flex h-16 w-12 items-center justify-center rounded-md border-2 border-steel-dark bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30"
+                className={`flex h-16 w-12 cursor-pointer items-center justify-center rounded-md border-2 bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30 transition ${
+                  selectedIndex === index ? "border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris" : "border-steel-dark bg-charcoal hover:border-cobber-light"}`} 
               >
                 {register.registerCard === null
-                  ? null : register.registerRevealed
+                  ? null : register.registerRevealed // If it's false it asks for a boolean value again
                   ? <CardInfo card={register.registerCard}/> : "?"}
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -86,7 +106,7 @@ export default function HUD({
           <PlayerInfo player={player} />
           
           {/* Run */}
-          <button type="button" className={`${buttonClassName} w-full`} onClick={onRun}>
+          <button type="button" className={`${buttonClassName} w-full`}>
             Run
           </button>
         </aside>
