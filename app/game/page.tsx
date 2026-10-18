@@ -1,14 +1,18 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
+import { getErrorMessage } from '@/lib/api/client';
+import { submitProgram } from '@/lib/api/lobby';
+import { emptyRegisters, REGISTER_COUNT } from '@/lib/programCards';
 import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
+import type { Board } from '@/types/board';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
 
@@ -35,6 +39,12 @@ function GameView() {
   // page renders before the browser URL is updated.
   const lobbyId = useSearchParams().get('lobby');
   const board = useLobbyBoard(lobbyId);
+  const [selectedInstruction, setSelectedInstruction] = useState<string | null>(null);
+  const [registers, setRegisters] = useState<(string | null)[]>(emptyRegisters);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const boardAtWait = useRef<Board | null>(null);
 
   useEffect(() => {
     if (!username) {
@@ -42,8 +52,90 @@ function GameView() {
     }
   }, [router, username]);
 
+  useEffect(() => {
+    if (!isWaiting) {
+      return;
+    }
+    if (board === boardAtWait.current) {
+      return;
+    }
+    if (boardAtWait.current == null) {
+      boardAtWait.current = board;
+      return;
+    }
+    setRegisters(emptyRegisters());
+    setSelectedInstruction(null);
+    setIsWaiting(false);
+    setError(null);
+  }, [board, isWaiting]);
+
   if (!username) {
     return null;
+  }
+
+  const filled = registers.filter((slot): slot is string => slot != null);
+  const locked = isSubmitting || isWaiting;
+  const canRun = filled.length === REGISTER_COUNT && !locked;
+
+  function handleSelectCard(instruction: string) {
+    if (locked) {
+      return;
+    }
+    setError(null);
+    setSelectedInstruction((current) => (current === instruction ? null : instruction));
+  }
+
+  function handleRegisterClick(index: number) {
+    if (locked) {
+      return;
+    }
+    setError(null);
+    setRegisters((current) => {
+      const next = emptyRegisters();
+      for (let slot = 0; slot < REGISTER_COUNT; slot += 1) {
+        next[slot] = current[slot] ?? null;
+      }
+      if (selectedInstruction) {
+        next[index] = selectedInstruction;
+        return next;
+      }
+      if (next[index]) {
+        next[index] = null;
+        return next;
+      }
+      return current;
+    });
+  }
+
+  async function handleRun() {
+    if (filled.length !== REGISTER_COUNT || locked || !username) {
+      return;
+    }
+    if (!lobbyId) {
+      setError('This game is not in a lobby.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const response = await submitProgram(lobbyId, {
+        username,
+        registers: filled,
+      });
+      if (!response.executed) {
+        boardAtWait.current = board;
+        setIsWaiting(true);
+        return;
+      }
+      setRegisters(emptyRegisters());
+      setSelectedInstruction(null);
+      setIsWaiting(false);
+    } catch (runError) {
+      setError(getErrorMessage(runError, 'Could not run the program.'));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   // TODO: Replace with actual player data from backend/game state.
@@ -82,7 +174,19 @@ function GameView() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
-      <HUD gameState={gameState} player={player}>
+      <HUD
+        canRun={canRun}
+        error={error}
+        gameState={gameState}
+        locked={locked}
+        onRegisterClick={handleRegisterClick}
+        onRun={() => void handleRun()}
+        onSelectCard={handleSelectCard}
+        player={player}
+        registers={registers}
+        selectedInstruction={selectedInstruction}
+        waiting={isWaiting}
+      >
         <Game board={board} />
       </HUD>
 

@@ -4,6 +4,8 @@ import type {
   JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
+  ProgramRequest,
+  ProgramResponse,
   RenameLobbyRequest,
   SetColorRequest,
   SetReadyRequest,
@@ -47,4 +49,8 @@ export function setColor(id: string, body: SetColorRequest) {
 
 export function startGame(id: string, body: JoinLeaveLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/start`, body);
+}
+
+export function submitProgram(id: string, body: ProgramRequest) {
+  return apiPost<ProgramResponse>(`/api/lobbies/${id}/program`, body);
 }

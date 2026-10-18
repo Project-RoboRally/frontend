@@ -41,4 +41,6 @@ export type Board = {
   height: number;
   spaces: BoardSpace[];
   robots: BoardRobot[];
+  // One pose per robot after each turn or step. Empty when nothing just moved.
+  steps?: BoardRobot[][];
 };

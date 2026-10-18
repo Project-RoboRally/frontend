@@ -44,3 +44,12 @@ export type KickFromLobbyRequest = {
 export type RenameLobbyRequest = {
   name: string;
 };
+
+export type ProgramRequest = {
+  username: string;
+  registers: string[];
+};
+
+export type ProgramResponse = {
+  executed: boolean;
+};
