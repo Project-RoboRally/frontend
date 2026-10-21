@@ -15,7 +15,7 @@ import { getUsername } from '@/lib/username';
 import type { Board } from '@/types/board';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
-import { RobotModel, ROBOTCOLORS } from '@/types/robot';
+import { RobotModel, ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
 /**
  * Page for the froentend of the gameboard
@@ -148,7 +148,8 @@ function GameView() {
     : 'orangeRobot'; // Fallback if not found yet
 
   
-  const playerColorHex = ROBOTCOLORS[robotModel];
+  const playerColorHex = ROBOT_COLORS[robotModel];
+  const bacgroundColor = ROBOT_BG_COLORS[robotModel];
 
   // Construct the player object
   const player: Player = {
