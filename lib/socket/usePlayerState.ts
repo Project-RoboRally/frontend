@@ -1,9 +1,9 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 
-import {connectStomp} from './stomp';
-import type {PlayerGameState} from '@/types/playerGameState';
+import { connectStomp } from './stomp';
+import type { PlayerGameState } from '@/types/playerGameState';
 
 /**
  * Loads this player's game state over the websocket. The /app subscription

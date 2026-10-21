@@ -5,7 +5,7 @@
  * @author Nicoleta
  */
 
-import type {Board, Direction} from '@/types/board';
+import type { Board, Direction } from '@/types/board';
 
 // GAME_STARTED is sent once when the game starts; CURRENT_STATE replies to a
 // new subscription, such as for after a page reload.
