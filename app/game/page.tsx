@@ -15,6 +15,7 @@ import { getUsername } from '@/lib/username';
 import type { Board } from '@/types/board';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
+import { RobotModel, ROBOTCOLORS } from '@/types/robot';
 
 /**
  * Page for the froentend of the gameboard
@@ -138,15 +139,26 @@ function GameView() {
     }
   }
 
-  // TODO: Replace with actual player data from backend/game state.
+  // Find the robot corresponding to the current user on the board
+  const userBoardRobot = board?.robots?.find((r) => r.username === username);
+
+  // Generate the RobotModel from the users robot color
+  const robotModel: RobotModel = userBoardRobot 
+    ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel) 
+    : 'orangeRobot'; // Fallback if not found yet
+
+  
+  const playerColorHex = ROBOTCOLORS[robotModel];
+
+  // Construct the player object
   const player: Player = {
     username,
     robot: {
-      robotModel: 'orangeRobot',
+      robotModel,
       position: {
-        row: 0,
-        column: 0,
-        direction: 'north',
+        row: userBoardRobot?.y ?? 0,
+        column: userBoardRobot?.x ?? 0,
+        direction: (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ?? 'north',
       },
       checkpointsCollected: 0,
       energycubesCollected: 0,
@@ -156,6 +168,7 @@ function GameView() {
     register: [],
     priorityOrder: false,
   };
+  
 
   // TODO: Replace with actual game state from backend.
   const gameState: GameState = {

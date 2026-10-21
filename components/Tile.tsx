@@ -15,7 +15,7 @@ interface TileProps {
   elements: BoardElement[] | undefined;
 }
 
-const EMPTY_SPACE_COLOR = '#334155';
+const EMPTY_SPACE_COLOR = '#303c4c';
 const MISSING_SPACE_COLOR = '#020617';
 const WALL_COLOR = '#facc15';
 

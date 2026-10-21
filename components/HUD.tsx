@@ -5,11 +5,12 @@ import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { labelForInstruction, PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
+import { ROBOTCOLORS } from '@/types/robot';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
  *
- * @author Kerem, Matthias
+ * @author Kerem, Matthias, Caroline, Katarina
  */
 
 const squareClassName =
@@ -44,6 +45,9 @@ export default function HUD({
 }) {
   const slots = Array.from({ length: REGISTER_COUNT }, (_, index) => registers[index] ?? null);
 
+  const robotModel = player.robot?.robotModel;
+  const playerColorHex = robotModel ? ROBOTCOLORS[robotModel] : undefined;
+
   return (
     <section className="w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
       <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
@@ -53,7 +57,8 @@ export default function HUD({
           <div className="flex flex-1 items-center justify-center">{children}</div>
 
           {/* Bottom */}
-          <div className="flex flex-col gap-2 rounded-md border-2 border-steel-dark bg-charcoal/40 p-3">
+          <div className="flex flex-col gap-2 rounded-md border-2 bg-charcoal/40 p-3"
+          style={{borderColor: playerColorHex}}>
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-1.5" aria-label="Programming cards">
                 {PROGRAM_CARDS.map((card) => {
