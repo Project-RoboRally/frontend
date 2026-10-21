@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getErrorMessage } from '@/lib/api/client';
-import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
-import { pingLogin } from '@/lib/api/login';
-import { buttonClassName, inputClassName } from '@/lib/styles';
-import { getUsername, removeUsername } from '@/lib/username';
-import type { Lobby } from '@/types/lobby';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {getErrorMessage} from '@/lib/api/client';
+import {createLobby, getLobbies, getLobby, joinLobby} from '@/lib/api/lobby';
+import {pingLogin} from '@/lib/api/login';
+import {buttonClassName, inputClassName} from '@/lib/styles';
+import {getUsername, removeUsername} from '@/lib/username';
+import type {Lobby} from '@/types/lobby';
 
 /**
  * @author Anton, Kerem
@@ -50,7 +50,7 @@ export default function MainMenuPage() {
           (lobby.users ?? []).includes(currentUsername),
         );
         if (currentLobby?.started) {
-          router.replace('/game');
+          router.replace(`/game?lobby=${currentLobby.id}`);
           return;
         }
         if (currentLobby) {
