@@ -19,12 +19,42 @@ const FALLBACK_SIZE = 12;
 const STEP_MS = 420;
 
 // Artwork faces north. CSS rotation is clockwise.
-const FACING: Record<Direction, string> = {
-  NORTH: 'rotate(0deg)',
-  EAST: 'rotate(90deg)',
-  SOUTH: 'rotate(180deg)',
-  WEST: 'rotate(270deg)',
+const FACING: Record<Direction, number> = {
+  NORTH: 0,
+  EAST: 90,
+  SOUTH: 180,
+  WEST: 270,
 };
+
+// Signed turn in (-180, 180] from the current angle to the target facing,
+// so WEST -> NORTH animates +90 instead of -270.
+function shortestTurn(angle: number, target: Direction) {
+  const delta = (((FACING[target] - angle) % 360) + 360) % 360;
+  return delta > 180 ? delta - 360 : delta;
+}
+
+// Keeps an unbounded angle per robot (e.g. 360, -90) so CSS always
+// transitions the short way round.
+function RobotSprite({ robot }: { robot: BoardRobot }) {
+  const [orientation, setOrientation] = useState(robot.orientation);
+  const [angle, setAngle] = useState(FACING[robot.orientation]);
+
+  if (robot.orientation !== orientation) {
+    setOrientation(robot.orientation);
+    setAngle(angle + shortestTurn(angle, robot.orientation));
+  }
+
+  return (
+    <Image
+      src={robotSprite(robot.color)}
+      alt={`${robot.username}'s robot`}
+      width={40}
+      height={40}
+      className="h-4/5 w-4/5 object-contain transition-transform duration-300 ease-linear"
+      style={{ transform: `rotate(${angle}deg)` }}
+    />
+  );
+}
 
 function useAnimatedRobots(board: Board | null) {
   const [robots, setRobots] = useState<BoardRobot[]>(board?.robots ?? []);
@@ -98,14 +128,7 @@ export default function Game({ board }: GameProps) {
                 height: `${100 / height}%`,
               }}
             >
-              <Image
-                src={robotSprite(robot.color)}
-                alt={`${robot.username}'s robot`}
-                width={40}
-                height={40}
-                className="h-4/5 w-4/5 object-contain transition-transform duration-300 ease-linear"
-                style={{ transform: FACING[robot.orientation] }}
-              />
+              <RobotSprite robot={robot} />
             </div>
           ))}
         </div>
