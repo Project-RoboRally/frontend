@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import Game from "@/components/Game";
 import HUD from "@/components/HUD";
+import { CardInfo } from "@/components/CardInfo";
 import { buttonClassName } from "@/lib/styles";
 import { getUsername } from "@/lib/username";
 
@@ -17,7 +18,7 @@ import { mockRegister } from "@/lib/mock-register";
 /**
  * Page for the froentend of the gameboard 
  * 
- * @author Caroline, Katarina
+ * @author Caroline, Katarina, Kerem
  */
 
 export default function GamePage() {
@@ -29,6 +30,8 @@ export default function GamePage() {
   
   // Registrene ligger i state, så de kan ændres (bytte rundt) senere
   const [registers, setRegisters] = useState<Register[]>(mockRegister);
+  const [handOpen, setHandOpen] = useState<boolean>(false); // Open or close the hand
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const swapRegisters = (indexA: number, indexB: number) => {
     setRegisters((current) => {
@@ -49,6 +52,21 @@ export default function GamePage() {
 
       return next;
     })
+  }
+
+  const placeCard = (index: number) => {
+    if(selectedCardId === null) return; // NO card choosen
+
+    // Copying the hand-index card over to the register-index (also deleting itself hand-index)
+    const card = MockCards[selectedCardId];
+    const next = registers.map((register, i) => i === index ? {...register, registerCard: card} : register);
+    setRegisters(next);
+    setSelectedCardId(null);
+
+    // Closing the hand, when all 5 registers has a card
+    if(next.every((register) => register.registerCard !== null)) {
+      setHandOpen(false);
+    }
   }
 
   useEffect(() => {
@@ -100,9 +118,47 @@ export default function GamePage() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
-      <HUD gameState={gameState} player={player} swapRegisters={swapRegisters}>
+      <HUD 
+        gameState={gameState} 
+        player={player} 
+        onSwapRegisters={swapRegisters} 
+        onHandOpen={() => setHandOpen(true)}
+        placingCard={handOpen}
+        onPlaceCard={placeCard}
+      >
         <Game />
       </HUD>
+      
+      {/* When the hand is shown */}
+      {handOpen && ( 
+        <>
+          {/* Invisible overlay, so you can't click on other stuff, other than the hand and register */}
+          <div className="fixed inset-0 z-40"/>
+
+          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-steel-dark bg-black/85 p-6 shadow-2xl">
+            <div className="flex flex-wrap justify-center gap-3">
+              {Object.values(MockCards)
+                // Deletes the cards which is already in the register, so they can't be used twice
+                .filter((card) =>
+                  !registers.some((register) => register.registerCard?.cardId === card.cardId))
+                
+                // Creating one button for each card there is left
+                .map((card) => (
+                  <button 
+                  key={card.cardId}
+                  type="button" 
+                  onClick={() => setSelectedCardId(selectedCardId === card.cardId ? null : card.cardId)}
+                  className={`flex h-24 w-16 items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition ${
+                      selectedCardId === card.cardId ? "border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris" : "border-steel-dark bg-charcoal hover:border-cobber-light"
+                          }`}
+                > 
+                  <CardInfo card={card}/>
+                </button>
+                ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <button
         className={`${buttonClassName} mt-6`}

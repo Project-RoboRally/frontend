@@ -17,25 +17,37 @@ export default function HUD({
                               gameState,
                               player,
                               children,
-                              run,
-                              swapRegisters,
+                              onRun,
+                              onSwapRegisters,
+                              onHandOpen,
+                              placingCard,
+                              onPlaceCard,
                             }: {
   gameState: GameState;
   player: Player;
   children: ReactNode;
-  run?: () => void; // Does nothing rn. Delete 'q' when implemented
-  swapRegisters: (indexA: number, indexB: number) => void;
+  onRun?: () => void; // Does nothing rn. Delete 'q' when implemented
+  onSwapRegisters: (indexA: number, indexB: number) => void;
+  onHandOpen: () => void;
+  placingCard: boolean; // true when the hand is opened
+  onPlaceCard: (index: number) => void;
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const registerClick = (index: number) => {
-    console.log("clicked", index, "selected before:", selectedIndex); // debug
+    // Hand
+    if(placingCard) {
+      onPlaceCard(index);
+      return
+    }
+    
+    // Register
     if (selectedIndex === null) { // If I haven't clicked on a register yet
       setSelectedIndex(index);
     } else if (selectedIndex === index) { // If I click on a register, that I already clicked on
       setSelectedIndex(null);
     } else {
-      swapRegisters(selectedIndex, index); 
+      onSwapRegisters(selectedIndex, index); 
       setSelectedIndex(null);
     }
   };
@@ -56,7 +68,7 @@ export default function HUD({
           <div className="flex items-center gap-8 rounded-md border-2 border-steel-dark bg-charcoal/40 p-3">
 
             {/* Programming deck */}
-            <button type="button" className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark">
+            <button type="button" onClick={onHandOpen} className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark">
               <div className="text-[10px] font-bold uppercase text-cobber-light">
                 Programming
               </div>
@@ -70,7 +82,7 @@ export default function HUD({
             <div className="h-12 w-px shrink-0 bg-steel-dark" />
 
             {/* Register */}
-            <div className="flex items-center gap-1.5">
+            <div className="relative z-50 flex items-center gap-1.5">
               {player.register.map((register, index) => (
                 <button 
                 type="button"
@@ -80,8 +92,7 @@ export default function HUD({
                   selectedIndex === index ? "border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris" : "border-steel-dark bg-charcoal hover:border-cobber-light"}`} 
               >
                 {register.registerCard === null
-                  ? null : register.registerRevealed // If it's false it asks for a boolean value again
-                  ? <CardInfo card={register.registerCard}/> : "?"}
+                  ? null : <CardInfo card={register.registerCard}/>}
                 </button>
               ))}
             </div>
