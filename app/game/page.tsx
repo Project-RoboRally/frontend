@@ -7,7 +7,7 @@ import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { getErrorMessage } from '@/lib/api/client';
 import { submitProgram } from '@/lib/api/lobby';
-import { emptyRegisters, REGISTER_COUNT } from '@/lib/programCards';
+import { emptyRegisters, REGISTER_COUNT, PROGRAM_CARDS } from '@/lib/programCards';
 import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
@@ -169,18 +169,31 @@ function GameView() {
     register: [],
     priorityOrder: false,
   };
-  
 
   // TODO: Replace with actual game state from backend.
   const gameState: GameState = {
     round: 1,
     timerOut: false,
-    status: {
-      state: 'inprogress',
-    },
-    players: [player],
+    status: { state: 'inprogress' },
+    players: [
+      player,
+      {
+        username: 'BotPlayer',
+        robot: {
+          robotModel: 'blueRobot',
+          position: { row: 1, column: 1, direction: 'north' },
+          checkpointsCollected: 0,
+          energycubesCollected: 0,
+          outOfGame: false,
+          damageCount: 0,
+        },
+        register: [],
+        priorityOrder: false,
+      }
+    ],
     phase: 'programming_phase',
   };
+
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
