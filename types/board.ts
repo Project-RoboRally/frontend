@@ -14,7 +14,7 @@ export type BoardElement =
   | { type: 'CONVEYOR_BELT'; direction: Direction; beltType: 'GREEN' | 'BLUE'; length: number }
   | { type: 'GEAR'; rotationDirection: 'CLOCKWISE' | 'COUNTERCLOCKWISE' }
   | { type: 'LASER_EMITTER'; direction: Direction; damage: number }
-  | { type: 'PUSH_PANEL'; pushDirection: Direction, registers: number[] }
+  | { type: 'PUSH_PANEL'; pushDirection: Direction; registers: number[] }
   | { type: 'CHECKPOINT'; number: number }
   | { type: 'ENERGY_SPACE'; cubeAmount: number }
   | { type: 'PIT' }

@@ -28,7 +28,7 @@ const BORDER_SIDE: Record<Direction, 'borderTop' | 'borderRight' | 'borderBottom
     WEST: 'borderLeft',
   };
 
-  export default function Tile({ x, y, elements }: TileProps) {
+export default function Tile({ x, y, elements }: TileProps) {
   // TODO: Replace with images
   const wallBorders = Object.fromEntries(
     (elements ?? []).flatMap((element) =>

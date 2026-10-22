@@ -143,11 +143,10 @@ function GameView() {
   const userBoardRobot = board?.robots?.find((r) => r.username === username);
 
   // Generate the RobotModel from the users robot color
-  const robotModel: RobotModel = userBoardRobot 
-    ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel) 
+  const robotModel: RobotModel = userBoardRobot
+    ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel)
     : 'orangeRobot'; // Fallback if not found yet
 
-  
   const playerColorHex = ROBOT_COLORS[robotModel];
   const bacgroundColor = ROBOT_BG_COLORS[robotModel];
 
@@ -159,7 +158,9 @@ function GameView() {
       position: {
         row: userBoardRobot?.y ?? 0,
         column: userBoardRobot?.x ?? 0,
-        direction: (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ?? 'north',
+        direction:
+          (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
+          'north',
       },
       checkpointsCollected: 0,
       energycubesCollected: 0,
@@ -189,11 +190,10 @@ function GameView() {
         },
         register: [],
         priorityOrder: false,
-      }
+      },
     ],
     phase: 'programming_phase',
   };
-
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center p-6 text-center">

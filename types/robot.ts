@@ -20,7 +20,12 @@ export type RobotPosition = {
 };
 
 export type RobotModel =
-  'redRobot' | 'orangeRobot' | 'greenRobot' | 'blueRobot' | 'purpleRobot' | 'pinkRobot';
+  | 'redRobot'
+  | 'orangeRobot'
+  | 'greenRobot'
+  | 'blueRobot'
+  | 'purpleRobot'
+  | 'pinkRobot';
 
 export const ROBOT_COLORS: Record<RobotModel, string> = {
   redRobot: '#DD1313',

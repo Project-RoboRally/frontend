@@ -54,7 +54,6 @@ export default function HUD({
       <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
         {/* --- Left side (top/bottom) --- */}
         <div className="flex min-w-0 flex-col gap-4">
-          
           {/* Top */}
           <div className="flex flex-col gap-2 items-center justify-center w-full mb-2">
             {/* Simple row of boxes for other players' cards */}
@@ -69,9 +68,10 @@ export default function HUD({
                     <div
                       key={p.username}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-lg border-2 shadow"
-                      style={{ borderColor: playerColorHex,
-                              backgroundColor: ROBOT_BG_COLORS[robotModel]
-                       }}
+                      style={{
+                        borderColor: playerColorHex,
+                        backgroundColor: ROBOT_BG_COLORS[robotModel],
+                      }}
                     >
                       {/* Player Name */}
                       <span className="text-xs font-bold text-bone">{p.username}</span>
