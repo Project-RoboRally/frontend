@@ -5,11 +5,12 @@ import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { labelForInstruction, PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
+import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
  *
- * @author Kerem, Matthias
+ * @author Kerem, Matthias, Caroline, Katarina
  */
 
 const squareClassName =
@@ -44,16 +45,74 @@ export default function HUD({
 }) {
   const slots = Array.from({ length: REGISTER_COUNT }, (_, index) => registers[index] ?? null);
 
+  const robotModel = player.robot?.robotModel;
+  const playerColorHex = robotModel ? ROBOT_COLORS[robotModel] : undefined;
+  const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
+
   return (
     <section className="w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
       <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
         {/* --- Left side (top/bottom) --- */}
         <div className="flex min-w-0 flex-col gap-4">
           {/* Top */}
-          <div className="flex flex-1 items-center justify-center">{children}</div>
+          <div className="flex flex-col gap-2 items-center justify-center w-full mb-2">
+            {/* Simple row of boxes for other players' cards */}
+            <div className="flex flex-wrap gap-4 justify-center w-full">
+              {gameState.players
+                .filter((p) => p.username !== player.username)
+                .map((p) => {
+                  const robotModel = p.robot?.robotModel || 'orangeRobot';
+                  const playerColorHex = ROBOT_COLORS[robotModel] || '#334155';
+
+                  return (
+                    <div
+                      key={p.username}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg border-2 shadow"
+                      style={{
+                        borderColor: playerColorHex,
+                        backgroundColor: ROBOT_BG_COLORS[robotModel],
+                      }}
+                    >
+                      {/* Player Name */}
+                      <span className="text-xs font-bold text-bone">{p.username}</span>
+
+                      {/* 5 Card Boxes */}
+                      <div className="flex gap-1">
+                        {Array.from({ length: REGISTER_COUNT }).map((_, index) => {
+                          const registerCard = p.register?.[index];
+
+                          // Extract the instruction string whether Register is an object or string
+                          const instruction =
+                            typeof registerCard === 'string'
+                              ? registerCard
+                              : ((registerCard as any)?.instruction ??
+                                (registerCard as any)?.card ??
+                                null);
+
+                          return (
+                            <div
+                              key={index}
+                              className="w-6 h-8 bg-iron border border-steel-dark rounded flex items-center justify-center text-[10px] text-bone font-bold"
+                            >
+                              {instruction ? labelForInstruction(instruction) : ''}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* The Game Board */}
+            <div className="flex flex-1 items-center justify-center w-full">{children}</div>
+          </div>
 
           {/* Bottom */}
-          <div className="flex flex-col gap-2 rounded-md border-2 border-steel-dark bg-charcoal/40 p-3">
+          <div
+            className="flex flex-col gap-2 rounded-md border-2 bg-charcoal/40 p-3"
+            style={{ borderColor: playerColorHex, backgroundColor: backgroundColorHex }}
+          >
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-1.5" aria-label="Programming cards">
                 {PROGRAM_CARDS.map((card) => {

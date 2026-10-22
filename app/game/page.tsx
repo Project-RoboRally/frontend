@@ -7,7 +7,7 @@ import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { getErrorMessage } from '@/lib/api/client';
 import { submitProgram } from '@/lib/api/lobby';
-import { emptyRegisters, REGISTER_COUNT } from '@/lib/programCards';
+import { emptyRegisters, REGISTER_COUNT, PROGRAM_CARDS } from '@/lib/programCards';
 import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
@@ -15,6 +15,7 @@ import { getUsername } from '@/lib/username';
 import type { Board } from '@/types/board';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
+import { RobotModel, ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
 /**
  * Page for the froentend of the gameboard
@@ -138,15 +139,28 @@ function GameView() {
     }
   }
 
-  // TODO: Replace with actual player data from backend/game state.
+  // Find the robot corresponding to the current user on the board
+  const userBoardRobot = board?.robots?.find((r) => r.username === username);
+
+  // Generate the RobotModel from the users robot color
+  const robotModel: RobotModel = userBoardRobot
+    ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel)
+    : 'orangeRobot'; // Fallback if not found yet
+
+  const playerColorHex = ROBOT_COLORS[robotModel];
+  const bacgroundColor = ROBOT_BG_COLORS[robotModel];
+
+  // Construct the player object
   const player: Player = {
     username,
     robot: {
-      robotModel: 'orangeRobot',
+      robotModel,
       position: {
-        row: 0,
-        column: 0,
-        direction: 'north',
+        row: userBoardRobot?.y ?? 0,
+        column: userBoardRobot?.x ?? 0,
+        direction:
+          (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
+          'north',
       },
       checkpointsCollected: 0,
       energycubesCollected: 0,
@@ -161,10 +175,23 @@ function GameView() {
   const gameState: GameState = {
     round: 1,
     timerOut: false,
-    status: {
-      state: 'inprogress',
-    },
-    players: [player],
+    status: { state: 'inprogress' },
+    players: [
+      player,
+      {
+        username: 'BotPlayer',
+        robot: {
+          robotModel: 'blueRobot',
+          position: { row: 1, column: 1, direction: 'north' },
+          checkpointsCollected: 0,
+          energycubesCollected: 0,
+          outOfGame: false,
+          damageCount: 0,
+        },
+        register: [],
+        priorityOrder: false,
+      },
+    ],
     phase: 'programming_phase',
   };
 

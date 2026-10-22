@@ -71,9 +71,9 @@ export default function Game({ board }: GameProps) {
   const robots = useAnimatedRobots(board);
 
   return (
-    <section className="aspect-square w-[600px] rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
+    <section className="aspect-square w-[600px] rounded-lg border-2 border-slate-900 bg-slate-900 p-2 shadow-xl">
       <div
-        className="relative grid h-full w-full bg-slate-800 p-1"
+        className="relative grid h-full w-full bg-slate-900 p-1"
         style={{
           gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,

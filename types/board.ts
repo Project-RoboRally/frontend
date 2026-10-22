@@ -14,13 +14,14 @@ export type BoardElement =
   | { type: 'CONVEYOR_BELT'; direction: Direction; beltType: 'GREEN' | 'BLUE'; length: number }
   | { type: 'GEAR'; rotationDirection: 'CLOCKWISE' | 'COUNTERCLOCKWISE' }
   | { type: 'LASER_EMITTER'; direction: Direction; damage: number }
-  | { type: 'PUSH_PANEL'; pushDirection: Direction }
+  | { type: 'PUSH_PANEL'; pushDirection: Direction; registers: number[] }
   | { type: 'CHECKPOINT'; number: number }
   | { type: 'ENERGY_SPACE'; cubeAmount: number }
   | { type: 'PIT' }
   | { type: 'STARTING_POINT' }
   | { type: 'REBOOT_POINT' }
-  | { type: 'PRIORITY_ANTENNA' };
+  | { type: 'PRIORITY_ANTENNA' }
+  | { type: 'EMPTY_TILE' };
 
 export type BoardSpace = {
   x: number;
