@@ -1,5 +1,5 @@
 import type { BoardElement, Direction } from '@/types/board';
-import { getElementImage, getElementRotation } from '@/types/boardElements';
+import { getElementColor, getElementImage, getElementRotation } from '@/types/boardElements';
 
 /**
  * Renders a game board cell at coordinates (x, y). The background color shows
@@ -34,27 +34,33 @@ export default function Tile({ x, y, elements }: TileProps) {
       element.type === 'WALL' ? [[BORDER_SIDE[element.side], `4px solid ${WALL_COLOR}`]] : [],
     ),
   );
+
   const label = elements?.map((element) => element.type).join(', ') || 'EMPTY';
   const imageSrc = getElementImage(elements);
   const rotationClass = getElementRotation(elements);
+
+  // Placeholder color for elements without images.
+  const placeholderColor = getElementColor(elements);
 
   return (
     <div
       aria-label={`Tile ${x}, ${y}: ${label}`}
       title={`(${x}, ${y}) ${label}`}
       style={{
-        backgroundColor: elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR,
+        backgroundColor: imageSrc
+          ? EMPTY_SPACE_COLOR
+          : (placeholderColor ?? (elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR)),
         ...wallBorders,
       }}
       className="relative flex h-full w-full items-center justify-center border border-slate-700 overflow-hidden"
     >
-      {imageSrc ? (
+      {imageSrc && (
         <img
           src={imageSrc}
           alt={label}
           className={`h-full w-full object-contain pointer-events-none transition-transform ${rotationClass}`}
         />
-      ) : null}
+      )}
     </div>
   );
 }

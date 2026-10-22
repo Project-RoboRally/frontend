@@ -3,29 +3,43 @@ import type { BoardElement } from '@/types/board';
 /**
  * Returns the image path for the highest priority board element.
  *
- * @author Caroline, Katarina
+ * @author Caroline, Katarina, Matthias
  */
 
-// Map each element type to its corresponding image path in your public folder
+// TODO: Add images for these board elements.
+const missingImages: Partial<Record<BoardElement['type'], string>> = {
+  CHECKPOINT: '#facc15',
+  STARTING_POINT: '#22c55e',
+  PIT: '#1f2937',
+  PRIORITY_ANTENNA: '#a855f7',
+  REBOOT_POINT: '#3b82f6',
+  ENERGY_SPACE: '#06b6d4',
+};
+
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
-    if (!elements || elements.length === 0) return null;
+  if (!elements || elements.length === 0) return null;
 
-    // Priority order for elements (same as your previous background colors)
-    const priorityTypes: BoardElement['type'][] = [
-        'CHECKPOINT',
-        'STARTING_POINT',
-        'PIT',
-        'PRIORITY_ANTENNA',
-        'REBOOT_POINT',
-        'LASER_EMITTER',
-        'ENERGY_SPACE',
-    ];
+  // Priority order for elements (same as your previous background colors)
+  const priorityTypes: BoardElement['type'][] = [
+      'CHECKPOINT',
+      'STARTING_POINT',
+      'PIT',
+      'PRIORITY_ANTENNA',
+      'REBOOT_POINT',
+      'LASER_EMITTER',
+      'ENERGY_SPACE',
+  ];
 
-    for (const type of priorityTypes) {
-        if (elements.some((el) => el.type === type)) {
-            return `/${type.toLowerCase()}.png`;
-        }
+  for (const type of priorityTypes) {
+    if (elements.some((el) => el.type === type)) {
+      // TODO: Add image for this element type.
+      if (type in missingImages) return null;
+
+      if (type === 'LASER_EMITTER') {
+        return '/one_laser_shooter.png';
+      }
     }
+  }
 
     // Handle gears based on their rotation direction
     const gear = elements.find((element) => element.type === 'GEAR');
@@ -52,12 +66,51 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
         return belt.beltType === 'BLUE' ? '/conveyor_belt_blue_straight.png' : '/conveyor_belt_green_straight.png';
     }
 
-    return null;
+  return null;
 }
 
-// Helper to determine rotation classes based on directional elements
+/**
+ * Placeholder colors for board elements.
+ * TODO: Replace these with images when artwork is available.
+ */
+const PLACEHOLDER_COLORS: Partial<Record<BoardElement['type'], string>> = {
+  CHECKPOINT: '#eab308',       // Yellow
+  STARTING_POINT: '#ffffff',   // White
+  PIT: '#000000',              // Black
+  PRIORITY_ANTENNA: '#a16207', // Brown
+  REBOOT_POINT: '#16a34a',     // Green
+  ENERGY_SPACE: '#06b6d4',     // Cyan
+};
+
+export function getElementColor(
+  elements: BoardElement[] | undefined,
+): string | null {
+  if (!elements) return null;
+
+  const priorityTypes: BoardElement['type'][] = [
+    'CHECKPOINT',
+    'STARTING_POINT',
+    'PIT',
+    'PRIORITY_ANTENNA',
+    'REBOOT_POINT',
+    'LASER_EMITTER',
+    'ENERGY_SPACE',
+  ];
+
+  for (const type of priorityTypes) {
+    if (elements.some((element) => element.type === type)) {
+      return PLACEHOLDER_COLORS[type] ?? null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Determines rotation classes for directional elements.
+ */
 export function getElementRotation(elements: BoardElement[] | undefined): string {
-    if (!elements) return '';
+  if (!elements) return '';
 
     const directionalElement = elements.find(
         (e) => 'direction' in e || 'pushDirection' in e
@@ -65,14 +118,14 @@ export function getElementRotation(elements: BoardElement[] | undefined): string
 
     const direction = (directionalElement as any)?.direction || (directionalElement as any)?.pushDirection;
 
-    switch (direction) {
-        case 'EAST':
-            return 'rotate-90';
-        case 'SOUTH':
-            return 'rotate-180';
-        case 'WEST':
-            return '-rotate-90';
-        default:
-            return '';
-    }
+  switch (direction) {
+    case 'EAST':
+      return 'rotate-90';
+    case 'SOUTH':
+      return 'rotate-180';
+    case 'WEST':
+      return '-rotate-90';
+    default:
+      return '';
+  }
 }
