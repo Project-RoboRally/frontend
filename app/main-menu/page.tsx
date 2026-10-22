@@ -50,7 +50,7 @@ export default function MainMenuPage() {
           (lobby.users ?? []).includes(currentUsername),
         );
         if (currentLobby?.started) {
-          router.replace('/game');
+          router.replace(`/game?lobby=${currentLobby.id}`);
           return;
         }
         if (currentLobby) {
