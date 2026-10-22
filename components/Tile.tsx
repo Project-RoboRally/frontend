@@ -16,7 +16,7 @@ interface TileProps {
   elements: BoardElement[] | undefined;
 }
 
-const EMPTY_SPACE_COLOR = '#303c4c';
+const EMPTY_SPACE_COLOR = '#878581';
 const MISSING_SPACE_COLOR = '#020617';
 const WALL_COLOR = '#facc15';
 
@@ -28,7 +28,8 @@ const BORDER_SIDE: Record<Direction, 'borderTop' | 'borderRight' | 'borderBottom
     WEST: 'borderLeft',
   };
 
-export default function Tile({ x, y, elements }: TileProps) {
+  export default function Tile({ x, y, elements }: TileProps) {
+  // TODO: Replace with images
   const wallBorders = Object.fromEntries(
     (elements ?? []).flatMap((element) =>
       element.type === 'WALL' ? [[BORDER_SIDE[element.side], `4px solid ${WALL_COLOR}`]] : [],
@@ -52,7 +53,7 @@ export default function Tile({ x, y, elements }: TileProps) {
           : (placeholderColor ?? (elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR)),
         ...wallBorders,
       }}
-      className="relative flex h-full w-full items-center justify-center border border-slate-700 overflow-hidden"
+      className="relative flex h-full w-full items-center justify-center border border-stone-600 overflow-hidden"
     >
       {imageSrc && (
         <img

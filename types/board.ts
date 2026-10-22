@@ -20,7 +20,8 @@ export type BoardElement =
   | { type: 'PIT' }
   | { type: 'STARTING_POINT' }
   | { type: 'REBOOT_POINT' }
-  | { type: 'PRIORITY_ANTENNA' };
+  | { type: 'PRIORITY_ANTENNA' }
+  | { type: 'EMPTY_TILE' };
 
 export type BoardSpace = {
   x: number;

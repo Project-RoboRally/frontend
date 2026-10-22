@@ -8,18 +8,14 @@ import type { BoardElement } from '@/types/board';
 
 // TODO: Add images for these board elements.
 const missingImages: Partial<Record<BoardElement['type'], string>> = {
-  CHECKPOINT: '#facc15',
-  STARTING_POINT: '#22c55e',
-  PIT: '#1f2937',
   PRIORITY_ANTENNA: '#a855f7',
   REBOOT_POINT: '#3b82f6',
-  ENERGY_SPACE: '#06b6d4',
 };
 
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
   if (!elements || elements.length === 0) return null;
 
-  // Priority order for elements (same as your previous background colors)
+  // Priority order for elements
   const priorityTypes: BoardElement['type'][] = [
       'CHECKPOINT',
       'STARTING_POINT',
@@ -28,6 +24,7 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
       'REBOOT_POINT',
       'LASER_EMITTER',
       'ENERGY_SPACE',
+      'EMPTY_TILE'
   ];
 
   for (const type of priorityTypes) {
@@ -37,6 +34,10 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
 
       if (type === 'LASER_EMITTER') {
         return '/one_laser_shooter.png';
+      } else if (type === 'CHECKPOINT') {
+        return '/checkpoint_1.png';
+      } else {
+        return `/${type.toLowerCase()}.png`;
       }
     }
   }
@@ -63,7 +64,7 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     // Handle conveyors based on their beltType
     const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
     if (belt) {
-        return belt.beltType === 'BLUE' ? '/conveyor_belt_blue_straight.png' : '/conveyor_belt_green_straight.png';
+        return belt.beltType === 'BLUE' ? '/conveyor_blue_straight.png' : '/conveyor_green_straight.png';
     }
 
   return null;
@@ -74,12 +75,8 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
  * TODO: Replace these with images when artwork is available.
  */
 const PLACEHOLDER_COLORS: Partial<Record<BoardElement['type'], string>> = {
-  CHECKPOINT: '#eab308',       // Yellow
-  STARTING_POINT: '#ffffff',   // White
-  PIT: '#000000',              // Black
   PRIORITY_ANTENNA: '#a16207', // Brown
   REBOOT_POINT: '#16a34a',     // Green
-  ENERGY_SPACE: '#06b6d4',     // Cyan
 };
 
 export function getElementColor(
@@ -88,13 +85,8 @@ export function getElementColor(
   if (!elements) return null;
 
   const priorityTypes: BoardElement['type'][] = [
-    'CHECKPOINT',
-    'STARTING_POINT',
-    'PIT',
     'PRIORITY_ANTENNA',
     'REBOOT_POINT',
-    'LASER_EMITTER',
-    'ENERGY_SPACE',
   ];
 
   for (const type of priorityTypes) {
