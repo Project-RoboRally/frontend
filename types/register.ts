@@ -1,8 +1,8 @@
-import type { ProgrammingCard } from "./cards";
+import type { ProgrammingCard } from './cards';
 
 /**
  * Type definition for the register
- * 
+ *
  * @author Kerem
  */
 

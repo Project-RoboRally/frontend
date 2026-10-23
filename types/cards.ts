@@ -1,43 +1,39 @@
 /**
  * Type definitions for the programming cards
- * 
+ *
  * @author Kerem
  */
 
 export type ProgrammingCard =
-  | MoveCard 
+  | MoveCard
   | RotateCard
   | UTurnCard
   | BackCard
   | PowerCard
   | AgainCard;
 
-export type MoveCard = CardId & {
+export type MoveCard = {
   cardType: "move";
   cardStrength: number;
 };
 
-export type RotateCard = CardId & {
+export type RotateCard = {
   cardType: "rotate";
   cardDirection: "left" | "right";
 };
 
-export type UTurnCard = CardId & {
+export type UTurnCard = {
   cardType: "uTurn";
 };
 
-export type BackCard = CardId & {
+export type BackCard = {
   cardType: "back";
 };
 
-export type PowerCard = CardId & {
+export type PowerCard = {
   cardType: "power";
 };
 
-export type AgainCard = CardId & {
+export type AgainCard = {
   cardType: "again";
 };
-
-export type CardId = {
-  cardId: string;
-}

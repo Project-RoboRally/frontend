@@ -1,7 +1,7 @@
 /**
  * Type definitions for the robots
- * 
- * @author Kerem
+ *
+ * @author Kerem, Caroline, Katarina
  */
 
 export type Robot = {
@@ -16,24 +16,26 @@ export type Robot = {
 export type RobotPosition = {
   row: number;
   column: number;
-  direction: "north" | "south" | "east" | "west";
+  direction: 'north' | 'south' | 'east' | 'west';
 };
 
 export type RobotModel =
-  | "demolitionBot"
-  | "hulkX90"
-  | "spinBot"
-  | "trundleBot"
-  | "gymBot"
-  | "twonky"
-  | "zoomBot";
+  'redRobot' | 'orangeRobot' | 'greenRobot' | 'blueRobot' | 'purpleRobot' | 'pinkRobot';
 
-export const ROBOTCOLORS: Record<RobotModel, string> = {
-  demolitionBot: "#FF0000",
-  hulkX90: "#008000",
-  spinBot: "#0000FF",
-  trundleBot: "#FFFF00",
-  gymBot: "#800080",
-  twonky: "#00FFFF",
-  zoomBot: "#80461B",
+export const ROBOT_COLORS: Record<RobotModel, string> = {
+  redRobot: '#DD1313',
+  orangeRobot: '#F16D24',
+  greenRobot: '#00974E',
+  blueRobot: '#3498DB',
+  purpleRobot: '#A400C7',
+  pinkRobot: '#FE7EDE',
+};
+
+export const ROBOT_BG_COLORS: Record<RobotModel, string> = {
+  redRobot: '#7f1010',
+  orangeRobot: '#993d0b',
+  greenRobot: '#0d5d36',
+  blueRobot: '#205477',
+  purpleRobot: '#6d1a80',
+  pinkRobot: '#863873',
 };

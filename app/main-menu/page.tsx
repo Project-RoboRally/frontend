@@ -1,13 +1,13 @@
 'use client';
 
-import {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {getErrorMessage} from '@/lib/api/client';
-import {createLobby, getLobbies, getLobby, joinLobby} from '@/lib/api/lobby';
-import {pingLogin} from '@/lib/api/login';
-import {buttonClassName, inputClassName} from '@/lib/styles';
-import {getUsername, removeUsername} from '@/lib/username';
-import type {Lobby} from '@/types/lobby';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getErrorMessage } from '@/lib/api/client';
+import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
+import { pingLogin } from '@/lib/api/login';
+import { buttonClassName, inputClassName } from '@/lib/styles';
+import { getUsername, removeUsername } from '@/lib/username';
+import type { Lobby } from '@/types/lobby';
 
 /**
  * @author Anton, Kerem
@@ -49,6 +49,10 @@ export default function MainMenuPage() {
         const currentLobby = nextLobbies.find((lobby) =>
           (lobby.users ?? []).includes(currentUsername),
         );
+        if (currentLobby?.started) {
+          router.replace(`/game?lobby=${currentLobby.id}`);
+          return;
+        }
         if (currentLobby) {
           router.replace(`/lobby/${currentLobby.id}`);
           return;
@@ -119,7 +123,7 @@ export default function MainMenuPage() {
 
       const lobby = await getLobby(id);
       if (!(lobby.users ?? []).includes(storedUsername)) {
-        await joinLobby(id, {username: storedUsername});
+        await joinLobby(id, { username: storedUsername });
       }
       router.push(`/lobby/${id}`);
     } catch (joinError) {

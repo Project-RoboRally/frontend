@@ -24,7 +24,11 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
   const text = raw.trim();
   const lower = text.toLowerCase();
 
-  if (lower.includes('failed to fetch') || lower.includes('networkerror') || lower.includes('load failed')) {
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('networkerror') ||
+    lower.includes('load failed')
+  ) {
     return `Could not reach the backend at ${API_URL}. Is it running?`;
   }
 
@@ -68,7 +72,7 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
     return 'Username must be 3-16 characters.';
   }
 
-  if (text === 'Player already exists' || (status === 500 && path.includes('/api/login'))) {
+  if (text === 'Player already exists' || lower.includes('username already taken')) {
     return 'That username is already in use. Pick another.';
   }
 
@@ -122,7 +126,11 @@ async function readErrorBody(response: Response) {
     }
 
     const record = body as Record<string, unknown>;
-    if (typeof record.message === 'string' && record.message && record.message !== 'No message available') {
+    if (
+      typeof record.message === 'string' &&
+      record.message &&
+      record.message !== 'No message available'
+    ) {
       return record.message;
     }
     if (typeof record.error === 'string') {
@@ -158,11 +166,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const raw = await readErrorBody(response);
-    throw new ApiError(
-      friendlyMessage(raw, response.status, method, path),
-      response.status,
-      path,
-    );
+    throw new ApiError(friendlyMessage(raw, response.status, method, path), response.status, path);
   }
 
   return response.json() as Promise<T>;

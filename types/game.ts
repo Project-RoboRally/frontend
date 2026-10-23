@@ -1,6 +1,6 @@
 /**
  * Type definition for the game (Gameboard scene)
- * 
+ *
  * @author Kerem
  */
 
