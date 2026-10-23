@@ -66,14 +66,14 @@ export default function HUD({
   const playerColorHex = robotModel ? ROBOT_COLORS[robotModel] : undefined;
   const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
   return (
-    <section className="w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
-      <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
+    <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
+      <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
 
         {/* --- Left side (top/bottom) --- */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 min-h-0 flex-col gap-4">
 
           {/* Top */}
-          <div className="flex flex-col gap-2 items-center justify-center w-full mb-2">
+          <div className="flex flex-1 min-h-0 flex-col gap-2 items-center justify-center w-full mb-2">
             
             {/* Simple row of boxes for other players' cards */}
             <div className="flex flex-wrap gap-4 justify-center w-full">
@@ -124,7 +124,7 @@ export default function HUD({
             </div>
             
             {/* The Game Board */}
-            <div className="flex flex-1 items-center justify-center w-full">{children}</div>
+            <div className="flex flex-1 min-h-0 items-center justify-center w-full">{children}</div>
           </div>
 
           {/* Bottom */}
