@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
+import { useState } from 'react';
+import { CardInfo } from '@/components/CardInfo';
 import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
-import { labelForInstruction, PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
+import { labelForInstruction, REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
@@ -13,49 +15,65 @@ import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
  * @author Kerem, Matthias, Caroline, Katarina
  */
 
-const squareClassName =
-  'flex h-16 w-16 shrink-0 items-center justify-center rounded-md border-2 bg-charcoal px-1 text-center text-[10px] font-bold leading-tight text-bone transition-colors hover:border-cobber-light disabled:cursor-not-allowed disabled:opacity-50';
-
 export default function HUD({
   gameState,
   player,
   children,
-  registers,
-  selectedInstruction,
   locked,
   canRun,
   waiting,
   error,
-  onSelectCard,
-  onRegisterClick,
   onRun,
+  onSwapRegisters,
+  onHandOpen,
+  placingCard,
+  onPlaceCard,
 }: {
   gameState: GameState;
   player: Player;
   children: ReactNode;
-  registers: readonly (string | null)[];
-  selectedInstruction: string | null;
   locked: boolean;
   canRun: boolean;
   waiting: boolean;
   error: string | null;
-  onSelectCard: (instruction: string) => void;
-  onRegisterClick: (index: number) => void;
   onRun: () => void;
+  onSwapRegisters: (indexA: number, indexB: number) => void;
+  onHandOpen: () => void;
+  placingCard: boolean; //true when the hand is opened
+  onPlaceCard: (index: number) => void;
 }) {
-  const slots = Array.from({ length: REGISTER_COUNT }, (_, index) => registers[index] ?? null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const registerClick = (index: number) => {
+    // Hand
+    if (placingCard) {
+      onPlaceCard(index);
+      return;
+    }
+
+    // Register
+    if (selectedIndex === null) {
+      // If I haven't clicked on a register yet
+      setSelectedIndex(index);
+    } else if (selectedIndex === index) {
+      // If I click on a register, that I already clicked on
+      setSelectedIndex(null);
+    } else {
+      onSwapRegisters(selectedIndex, index);
+      setSelectedIndex(null);
+    }
+  };
 
   const robotModel = player.robot?.robotModel;
   const playerColorHex = robotModel ? ROBOT_COLORS[robotModel] : undefined;
   const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
-
   return (
-    <section className="w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
-      <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-4">
+    <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
+      <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
         {/* --- Left side (top/bottom) --- */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 min-h-0 flex-col gap-4">
           {/* Top */}
-          <div className="flex flex-col gap-2 items-center justify-center w-full mb-2">
+          <div className="flex flex-1 min-h-0 flex-col gap-2 items-center justify-center w-full mb-2">
             {/* Simple row of boxes for other players' cards */}
             <div className="flex flex-wrap gap-4 justify-center w-full">
               {gameState.players
@@ -105,7 +123,7 @@ export default function HUD({
             </div>
 
             {/* The Game Board */}
-            <div className="flex flex-1 items-center justify-center w-full">{children}</div>
+            <div className="flex flex-1 min-h-0 items-center justify-center w-full">{children}</div>
           </div>
 
           {/* Bottom */}
@@ -114,43 +132,38 @@ export default function HUD({
             style={{ borderColor: playerColorHex, backgroundColor: backgroundColorHex }}
           >
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-1.5" aria-label="Programming cards">
-                {PROGRAM_CARDS.map((card) => {
-                  const selected = card.instruction === selectedInstruction;
-                  return (
-                    <button
-                      key={card.instruction}
-                      type="button"
-                      aria-pressed={selected}
-                      className={`${squareClassName} ${
-                        selected ? 'border-cobber-light' : 'border-steel-dark'
-                      }`}
-                      disabled={locked}
-                      onClick={() => onSelectCard(card.instruction)}
-                    >
-                      {card.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Programming deck */}
+              <button
+                type="button"
+                disabled={locked}
+                onClick={onHandOpen}
+                className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="text-[10px] font-bold uppercase text-cobber-light">Programming</div>
 
+                <div className="mt-1 font-bold uppercase tracking-wider text-bone">Deck</div>
+              </button>
+
+              {/* Deck and register space */}
               <div className="h-12 w-px shrink-0 bg-steel-dark" />
 
-              <div className="flex items-center gap-1.5" aria-label="Registers">
-                {slots.map((instruction, index) => (
+              {/* Register */}
+              <div className="relative z-50 flex items-center gap-1.5" aria-label="Registers">
+                {player.register.map((register, index) => (
                   <button
-                    key={index}
                     type="button"
-                    aria-label={
-                      instruction
-                        ? `Register ${index + 1}: ${labelForInstruction(instruction)}`
-                        : `Register ${index + 1}`
-                    }
-                    className={`${squareClassName} border-steel-dark`}
                     disabled={locked}
-                    onClick={() => onRegisterClick(index)}
+                    onClick={() => registerClick(index)}
+                    key={register.registerNumber}
+                    className={`flex h-16 w-12 cursor-pointer items-center justify-center rounded-md border-2 bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                      selectedIndex === index
+                        ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                        : 'border-steel-dark bg-charcoal hover:border-cobber-light'
+                    }`}
                   >
-                    {instruction ? labelForInstruction(instruction) : index + 1}
+                    {register.registerCard === null ? null : (
+                      <CardInfo card={register.registerCard} />
+                    )}
                   </button>
                 ))}
               </div>

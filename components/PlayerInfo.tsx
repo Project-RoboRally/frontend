@@ -9,7 +9,7 @@ import type { Player } from '@/types/player';
 export function PlayerInfo({ player }: { player: Player }) {
   return (
     <div className="rounded-md border-2 border-steel-dark bg-charcoal p-3">
-      <div className="mb-3 text-[10px] font-bold uppercase text.cobber-light">Robot Status</div>
+      <div className="mb-3 text-[10px] font-bold uppercase text-cobber-light">Robot Status</div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -25,7 +25,7 @@ export function PlayerInfo({ player }: { player: Player }) {
 
           <span
             className={
-              player.robot.damageCount > 0 ? 'font-bold text-amber' : 'font-bold test-bone'
+              player.robot.damageCount > 0 ? 'font-bold text-amber' : 'font-bold text-bone'
             }
           >
             {player.robot.damageCount}

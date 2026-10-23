@@ -5,23 +5,41 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
+import { CardInfo } from '@/components/CardInfo';
 import { getErrorMessage } from '@/lib/api/client';
 import { submitProgram } from '@/lib/api/lobby';
-import { emptyRegisters, REGISTER_COUNT, PROGRAM_CARDS } from '@/lib/programCards';
+import { MockCards } from '@/lib/mock-cards';
+import { mockRegister } from '@/lib/mock-register';
+import { PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
 import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
 import type { Board } from '@/types/board';
+import type { ProgrammingCard } from '@/types/cards';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
-import { RobotModel, ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
+import type { Register } from '@/types/register';
+import type { RobotModel } from '@/types/robot';
 
 /**
  * Page for the froentend of the gameboard
  *
- * @author Caroline, Katarina
+ * @author Caroline, Katarina, Kerem
  */
+
+// turns a card object into the text instruction the backend expects. Returns null if the backend doesn't know the card (Only knows PROGRAM_CARDS)
+function cardToInstruction(card: ProgrammingCard): string | null {
+  let instruction: string | null = null;
+
+  if (card.cardType === 'move') {
+    instruction = `MOVE_${card.cardStrength}`;
+  } else if (card.cardType === 'rotate') {
+    instruction = card.cardDirection === 'left' ? 'LEFT_TURN' : 'RIGHT_TURN';
+  }
+
+  return PROGRAM_CARDS.some((c) => c.instruction === instruction) ? instruction : null;
+}
 
 export default function GamePage() {
   return (
@@ -40,12 +58,15 @@ function GameView() {
   // page renders before the browser URL is updated.
   const lobbyId = useSearchParams().get('lobby');
   const board = useLobbyBoard(lobbyId);
-  const [selectedInstruction, setSelectedInstruction] = useState<string | null>(null);
-  const [registers, setRegisters] = useState<(string | null)[]>(emptyRegisters);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const boardAtWait = useRef<Board | null>(null);
+
+  // Registrene ligger i state, så de kan ændres (bytte rundt) senere
+  const [registers, setRegisters] = useState<Register[]>(mockRegister);
+  const [handOpen, setHandOpen] = useState<boolean>(false); // Open or close the hand
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!username) {
@@ -64,8 +85,9 @@ function GameView() {
       boardAtWait.current = board;
       return;
     }
-    setRegisters(emptyRegisters());
-    setSelectedInstruction(null);
+    setRegisters(mockRegister);
+    setSelectedCardId(null);
+    setHandOpen(false); // NEW CODE
     setIsWaiting(false);
     setError(null);
   }, [board, isWaiting]);
@@ -74,42 +96,55 @@ function GameView() {
     return null;
   }
 
-  const filled = registers.filter((slot): slot is string => slot != null);
+  // counts the registers that have a card
+  const filledCount = registers.filter((register) => register.registerCard !== null).length;
   const locked = isSubmitting || isWaiting;
-  const canRun = filled.length === REGISTER_COUNT && !locked;
+  const canRun = filledCount === REGISTER_COUNT && !locked;
 
-  function handleSelectCard(instruction: string) {
-    if (locked) {
-      return;
-    }
-    setError(null);
-    setSelectedInstruction((current) => (current === instruction ? null : instruction));
-  }
+  const swapRegisters = (indexA: number, indexB: number) => {
+    if (locked) return;
 
-  function handleRegisterClick(index: number) {
-    if (locked) {
-      return;
-    }
-    setError(null);
     setRegisters((current) => {
-      const next = emptyRegisters();
-      for (let slot = 0; slot < REGISTER_COUNT; slot += 1) {
-        next[slot] = current[slot] ?? null;
-      }
-      if (selectedInstruction) {
-        next[index] = selectedInstruction;
-        return next;
-      }
-      if (next[index]) {
-        next[index] = null;
-        return next;
-      }
-      return current;
+      const next = [...current]; // copies the current object to a new one
+
+      // The register number stays the same since they don't move, so the actuall card and the revealed boolean moves together
+      next[indexA] = {
+        ...current[indexA],
+        registerRevealed: current[indexB].registerRevealed,
+        registerCard: current[indexB].registerCard,
+      };
+
+      next[indexB] = {
+        ...current[indexB],
+        registerRevealed: current[indexA].registerRevealed,
+        registerCard: current[indexA].registerCard,
+      };
+
+      return next;
     });
-  }
+  };
+
+  const placeCard = (index: number) => {
+    if (locked) return;
+    if (selectedCardId === null) return; // NO card choosen
+
+    // Copying the hand-index card over to the register-index (also deleting itself hand-index)
+    const card = MockCards[selectedCardId];
+    const next = registers.map((register, i) =>
+      i === index ? { ...register, registerCard: card } : register,
+    );
+    setRegisters(next);
+    setSelectedCardId(null);
+    setError(null);
+
+    // Closing the hand, when all 5 registers has a card
+    if (next.every((register) => register.registerCard !== null)) {
+      setHandOpen(false);
+    }
+  };
 
   async function handleRun() {
-    if (filled.length !== REGISTER_COUNT || locked || !username) {
+    if (!canRun || !username) {
       return;
     }
     if (!lobbyId) {
@@ -120,17 +155,28 @@ function GameView() {
     setIsSubmitting(true);
     setError(null);
     try {
+      // Backend expects text instructions, so each card object is converted
+      const instructions = registers
+        .map((register) => cardToInstruction(register.registerCard!))
+        .filter((instruction): instruction is string => instruction !== null);
+
+      // Stops if a card isn't supported by the backend yet
+      if (instructions.length !== REGISTER_COUNT) {
+        setError('One or more cards are not supported by the backend yet.');
+        return;
+      }
+
       const response = await submitProgram(lobbyId, {
         username,
-        registers: filled,
+        registers: instructions,
       });
       if (!response.executed) {
         boardAtWait.current = board;
         setIsWaiting(true);
         return;
       }
-      setRegisters(emptyRegisters());
-      setSelectedInstruction(null);
+      setRegisters(mockRegister);
+      setSelectedCardId(null);
       setIsWaiting(false);
     } catch (runError) {
       setError(getErrorMessage(runError, 'Could not run the program.'));
@@ -146,9 +192,6 @@ function GameView() {
   const robotModel: RobotModel = userBoardRobot
     ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel)
     : 'orangeRobot'; // Fallback if not found yet
-
-  const playerColorHex = ROBOT_COLORS[robotModel];
-  const bacgroundColor = ROBOT_BG_COLORS[robotModel];
 
   // Construct the player object
   const player: Player = {
@@ -167,7 +210,7 @@ function GameView() {
       outOfGame: false,
       damageCount: 0,
     },
-    register: [],
+    register: registers,
     priorityOrder: false,
   };
 
@@ -196,7 +239,7 @@ function GameView() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
+    <main className="mx-auto flex h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
       <header className="mb-6">
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
@@ -206,16 +249,53 @@ function GameView() {
         error={error}
         gameState={gameState}
         locked={locked}
-        onRegisterClick={handleRegisterClick}
+        onHandOpen={() => setHandOpen(true)}
+        onPlaceCard={placeCard}
         onRun={() => void handleRun()}
-        onSelectCard={handleSelectCard}
+        onSwapRegisters={swapRegisters}
+        placingCard={handOpen}
         player={player}
-        registers={registers}
-        selectedInstruction={selectedInstruction}
         waiting={isWaiting}
       >
         <Game board={board} />
       </HUD>
+
+      {/* When the hand is shown */}
+      {handOpen && (
+        <>
+          {/* Invisible overlay, so you can't click on other stuff, other than the hand and register */}
+          <div className="fixed inset-0 z-40" />
+
+          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-steel-dark bg-black/85 p-6 shadow-2xl">
+            <div className="flex flex-wrap justify-center gap-3">
+              {Object.values(MockCards)
+                // Deletes the cards which is already in the register, so they can't be used twice
+                .filter(
+                  (card) =>
+                    !registers.some((register) => register.registerCard?.cardId === card.cardId),
+                )
+
+                // Creating one button for each card there is left
+                .map((card) => (
+                  <button
+                    key={card.cardId}
+                    type="button"
+                    onClick={() =>
+                      setSelectedCardId(selectedCardId === card.cardId ? null : card.cardId)
+                    }
+                    className={`flex h-24 w-16 items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition ${
+                      selectedCardId === card.cardId
+                        ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                        : 'border-steel-dark bg-charcoal hover:border-cobber-light'
+                    }`}
+                  >
+                    <CardInfo card={card} />
+                  </button>
+                ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <button
         className={`${buttonClassName} mt-6`}
