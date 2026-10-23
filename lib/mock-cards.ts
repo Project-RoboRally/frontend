@@ -16,7 +16,7 @@ export const MockCards: Record<string, ProgrammingCard> = {
   '1move1': {
     cardId: '1move1',
     cardType: 'move',
-    cardStrength: 2,
+    cardStrength: 1,
   },
 
   '1rotateRight': {
