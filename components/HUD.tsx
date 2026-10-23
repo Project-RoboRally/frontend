@@ -32,7 +32,7 @@ export default function HUD({
   gameState: GameState;
   player: Player;
   children: ReactNode;
-  locked: boolean; // true when the hand is opened
+  locked: boolean;
   canRun: boolean;
   waiting: boolean;
   error: string | null;

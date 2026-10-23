@@ -12,28 +12,32 @@ export type ProgrammingCard =
   | PowerCard
   | AgainCard;
 
-export type MoveCard = {
-  cardType: "move";
+export type MoveCard = CardId & {
+  cardType: 'move';
   cardStrength: number;
 };
 
-export type RotateCard = {
-  cardType: "rotate";
-  cardDirection: "left" | "right";
+export type RotateCard = CardId & {
+  cardType: 'rotate';
+  cardDirection: 'left' | 'right';
 };
 
-export type UTurnCard = {
-  cardType: "uTurn";
+export type UTurnCard = CardId & {
+  cardType: 'uTurn';
 };
 
-export type BackCard = {
-  cardType: "back";
+export type BackCard = CardId & {
+  cardType: 'back';
 };
 
-export type PowerCard = {
-  cardType: "power";
+export type PowerCard = CardId & {
+  cardType: 'power';
 };
 
-export type AgainCard = {
-  cardType: "again";
+export type AgainCard = CardId & {
+  cardType: 'again';
+};
+
+export type CardId = {
+  cardId: string;
 };
