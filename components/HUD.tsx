@@ -1,13 +1,13 @@
-import type { ReactNode } from "react";
-import type { GameState } from "@/types/gameState";
-import type { Player } from "@/types/player";
-import { useState } from "react";
-import { CardInfo } from "@/components/CardInfo";
-import { GameInfo } from "@/components/GameInfo";
-import { PlayerInfo } from "@/components/PlayerInfo";
-import { labelForInstruction, REGISTER_COUNT } from "@/lib/programCards";
-import { buttonClassName } from "@/lib/styles";
-import { ROBOT_COLORS, ROBOT_BG_COLORS } from "@/types/robot";
+import type { ReactNode } from 'react';
+import type { GameState } from '@/types/gameState';
+import type { Player } from '@/types/player';
+import { useState } from 'react';
+import { CardInfo } from '@/components/CardInfo';
+import { GameInfo } from '@/components/GameInfo';
+import { PlayerInfo } from '@/components/PlayerInfo';
+import { labelForInstruction, REGISTER_COUNT } from '@/lib/programCards';
+import { buttonClassName } from '@/lib/styles';
+import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
@@ -16,19 +16,19 @@ import { ROBOT_COLORS, ROBOT_BG_COLORS } from "@/types/robot";
  */
 
 export default function HUD({
-                              gameState,
-                              player,
-                              children,
-                              locked,
-                              canRun,
-                              waiting,
-                              error,
-                              onRun,
-                              onSwapRegisters,
-                              onHandOpen,
-                              placingCard,
-                              onPlaceCard
-                            }: {
+  gameState,
+  player,
+  children,
+  locked,
+  canRun,
+  waiting,
+  error,
+  onRun,
+  onSwapRegisters,
+  onHandOpen,
+  placingCard,
+  onPlaceCard,
+}: {
   gameState: GameState;
   player: Player;
   children: ReactNode;
@@ -40,24 +40,26 @@ export default function HUD({
   onSwapRegisters: (indexA: number, indexB: number) => void;
   onHandOpen: () => void;
   placingCard: boolean; //true when the hand is opened
-  onPlaceCard: (index: number) => void
+  onPlaceCard: (index: number) => void;
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const registerClick = (index: number) => {
     // Hand
-    if(placingCard) {
+    if (placingCard) {
       onPlaceCard(index);
-      return
+      return;
     }
-    
+
     // Register
-    if (selectedIndex === null) { // If I haven't clicked on a register yet
+    if (selectedIndex === null) {
+      // If I haven't clicked on a register yet
       setSelectedIndex(index);
-    } else if (selectedIndex === index) { // If I click on a register, that I already clicked on
+    } else if (selectedIndex === index) {
+      // If I click on a register, that I already clicked on
       setSelectedIndex(null);
     } else {
-      onSwapRegisters(selectedIndex, index); 
+      onSwapRegisters(selectedIndex, index);
       setSelectedIndex(null);
     }
   };
@@ -68,20 +70,17 @@ export default function HUD({
   return (
     <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
       <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
-
         {/* --- Left side (top/bottom) --- */}
         <div className="flex min-w-0 min-h-0 flex-col gap-4">
-
           {/* Top */}
           <div className="flex flex-1 min-h-0 flex-col gap-2 items-center justify-center w-full mb-2">
-            
             {/* Simple row of boxes for other players' cards */}
             <div className="flex flex-wrap gap-4 justify-center w-full">
               {gameState.players
                 .filter((p) => p.username !== player.username)
                 .map((p) => {
-                  const robotModel = p.robot?.robotModel || "orangeRobot";
-                  const playerColorHex = ROBOT_COLORS[robotModel] || "#334155";
+                  const robotModel = p.robot?.robotModel || 'orangeRobot';
+                  const playerColorHex = ROBOT_COLORS[robotModel] || '#334155';
 
                   return (
                     <div
@@ -102,7 +101,7 @@ export default function HUD({
 
                           // Extract the instruction string whether Register is an object or string
                           const instruction =
-                            typeof registerCard === "string"
+                            typeof registerCard === 'string'
                               ? registerCard
                               : ((registerCard as any)?.instruction ??
                                 (registerCard as any)?.card ??
@@ -113,7 +112,7 @@ export default function HUD({
                               key={index}
                               className="w-6 h-8 bg-iron border border-steel-dark rounded flex items-center justify-center text-[10px] text-bone font-bold"
                             >
-                              {instruction ? labelForInstruction(instruction) : ""}
+                              {instruction ? labelForInstruction(instruction) : ''}
                             </div>
                           );
                         })}
@@ -122,7 +121,7 @@ export default function HUD({
                   );
                 })}
             </div>
-            
+
             {/* The Game Board */}
             <div className="flex flex-1 min-h-0 items-center justify-center w-full">{children}</div>
           </div>
@@ -140,9 +139,7 @@ export default function HUD({
                 onClick={onHandOpen}
                 className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <div className="text-[10px] font-bold uppercase text-cobber-light">
-                  Programming
-                </div>
+                <div className="text-[10px] font-bold uppercase text-cobber-light">Programming</div>
 
                 <div className="mt-1 font-bold uppercase tracking-wider text-bone">Deck</div>
               </button>
@@ -160,8 +157,8 @@ export default function HUD({
                     key={register.registerNumber}
                     className={`flex h-16 w-12 cursor-pointer items-center justify-center rounded-md border-2 bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 ${
                       selectedIndex === index
-                        ? "border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris"
-                        : "border-steel-dark bg-charcoal hover:border-cobber-light"
+                        ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                        : 'border-steel-dark bg-charcoal hover:border-cobber-light'
                     }`}
                   >
                     {register.registerCard === null ? null : (
@@ -184,7 +181,6 @@ export default function HUD({
           </div>
         </div>
 
-              
         {/* --- Right side ---*/}
         <aside className="flex flex-col gap-3">
           {/* Player */}

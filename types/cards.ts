@@ -4,13 +4,7 @@
  * @author Kerem
  */
 
-export type ProgrammingCard =
-  | MoveCard
-  | RotateCard
-  | UTurnCard
-  | BackCard
-  | PowerCard
-  | AgainCard;
+export type ProgrammingCard = MoveCard | RotateCard | UTurnCard | BackCard | PowerCard | AgainCard;
 
 export type MoveCard = CardId & {
   cardType: 'move';
