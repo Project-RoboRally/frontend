@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import Game from '@/components/Game';
@@ -11,7 +11,7 @@ import { submitProgram } from '@/lib/api/lobby';
 import { MockCards } from '@/lib/mock-cards';
 import { mockRegister } from '@/lib/mock-register';
 import { PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
-import { useLobbyBoard } from '@/lib/socket/useLobbyBoard';
+import { usePlayerState } from '@/lib/socket/usePlayerState';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
@@ -55,13 +55,24 @@ function GameView() {
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
+
+  const [completedBoard, setCompletedBoard] = useState<Board | null>(null);
+
+  const handleAnimationComplete = useCallback((animatedBoard: Board) => {
+    setCompletedBoard(animatedBoard);
+  }, []);
+
   // page renders before the browser URL is updated.
   const lobbyId = useSearchParams().get('lobby');
-  const board = useLobbyBoard(lobbyId);
+  const playerState = usePlayerState(lobbyId, username);
+  const board = playerState?.board ?? null;
+  const finished = playerState?.status === 'FINISHED';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const boardAtWait = useRef<Board | null>(null);
+
+  const showWinner = finished && completedBoard === board;
 
   // Registrene ligger i state, så de kan ændres (bytte rundt) senere
   const [registers, setRegisters] = useState<Register[]>(mockRegister);
@@ -98,7 +109,7 @@ function GameView() {
 
   // counts the registers that have a card
   const filledCount = registers.filter((register) => register.registerCard !== null).length;
-  const locked = isSubmitting || isWaiting;
+  const locked = isSubmitting || isWaiting || !playerState || finished;
   const canRun = filledCount === REGISTER_COUNT && !locked;
 
   const swapRegisters = (indexA: number, indexB: number) => {
@@ -194,6 +205,7 @@ function GameView() {
     : 'orangeRobot'; // Fallback if not found yet
 
   // Construct the player object
+  const backendPlayer = playerState?.players.find((player) => player.username === username);
   const player: Player = {
     username,
     robot: {
@@ -205,7 +217,7 @@ function GameView() {
           (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
           'north',
       },
-      checkpointsCollected: 0,
+      checkpointsCollected: backendPlayer?.checkpointsReached ?? 0,
       energycubesCollected: 0,
       outOfGame: false,
       damageCount: 0,
@@ -244,6 +256,14 @@ function GameView() {
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
 
+      {showWinner && (
+        <p role="status" className="mb-4 text-xl font-bold">
+          {playerState?.winnerUsername
+            ? `${playerState.winnerUsername} wins!`
+            : 'The game has finished.'}
+        </p>
+      )}
+
       <HUD
         canRun={canRun}
         error={error}
@@ -257,7 +277,7 @@ function GameView() {
         player={player}
         waiting={isWaiting}
       >
-        <Game board={board} />
+        <Game board={board} onAnimationComplete={handleAnimationComplete} />
       </HUD>
 
       {/* When the hand is shown */}

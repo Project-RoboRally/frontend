@@ -65,4 +65,5 @@ export type PlayerGameState = {
   players: GamePlayer[];
   you: string;
   playerMat: PlayerMat;
+  winnerUsername: string | null;
 };
