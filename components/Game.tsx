@@ -56,7 +56,7 @@ function RobotSprite({ robot }: { robot: BoardRobot }) {
   );
 }
 
-function useAnimatedRobots(board: Board | null) {
+function useAnimatedRobots(board: Board | null, onAnimationComplete?: (board: Board) => void) {
   const [robots, setRobots] = useState<BoardRobot[]>(board?.robots ?? []);
 
   useEffect(() => {
@@ -67,6 +67,7 @@ function useAnimatedRobots(board: Board | null) {
     const frames = board.steps ?? [];
     if (frames.length === 0) {
       setRobots(board.robots ?? []);
+      onAnimationComplete?.(board);
       return;
     }
 
@@ -75,6 +76,7 @@ function useAnimatedRobots(board: Board | null) {
       if (index >= frames.length) {
         setRobots(board.robots ?? []);
         window.clearInterval(timer);
+        onAnimationComplete?.(board);
         return;
       }
       setRobots(frames[index]);
@@ -82,23 +84,25 @@ function useAnimatedRobots(board: Board | null) {
     }, STEP_MS);
 
     return () => window.clearInterval(timer);
-  }, [board]);
+  }, [board, onAnimationComplete]);
 
   return robots;
 }
 
 interface GameProps {
   board: Board | null;
+  onAnimationComplete?: (board: Board) => void;
 }
 
-export default function Game({ board }: GameProps) {
+export default function Game({ board, onAnimationComplete }: GameProps) {
   // Backend coordinates: x = column, y = row counted from the top.
   const width = board?.width ?? FALLBACK_SIZE;
   const height = board?.height ?? FALLBACK_SIZE;
   const elementsAt = new Map<string, BoardElement[]>(
     (board?.spaces ?? []).map((space) => [`${space.x},${space.y}`, space.elements]),
   );
-  const robots = useAnimatedRobots(board);
+
+  const robots = useAnimatedRobots(board, onAnimationComplete);
 
   return (
     <section className="aspect-square h-full max-h-full rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
