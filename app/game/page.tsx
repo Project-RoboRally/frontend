@@ -40,8 +40,8 @@ function robotModelFromColor(color: PlayerColor | undefined): RobotModel {
   return color ? (`${color.toLowerCase()}Robot` as RobotModel) : 'orangeRobot';
 }
 
-/* This function is used to get the registers from the board for the current player. 
-* It is used to display the registers on the gameboard. */
+/* This function is used to get the registers from the board for the current player.
+ * It is used to display the registers on the gameboard. */
 function registersFromPlayed(board: Board | null, username: string): Register[] {
   return Array.from({ length: REGISTER_COUNT }, (_, index) => {
     const played = board?.registers
@@ -119,9 +119,9 @@ function GameView() {
     }
   }, [router, username]);
 
-  // If the user is waiting, set the registers to empty, 
-  // the card to null, 
-  // the hand to closed, 
+  // If the user is waiting, set the registers to empty,
+  // the card to null,
+  // the hand to closed,
   // the waiting flag to false and the error to null.
   useEffect(() => {
     if (!isWaiting) {
@@ -141,7 +141,7 @@ function GameView() {
     setError(null);
   }, [board, isWaiting]);
 
-  // Get player state 
+  // Get player state
   const finished = playerState?.status === 'FINISHED';
   const phase = playerState?.round.phase;
   const isProgramming = phase === 'PROGRAMMING';
@@ -156,8 +156,8 @@ function GameView() {
   // Did the game finish?
   const showWinner = finished && completedBoard === board;
 
-  // If the live board is not the same as the held live board, 
-  // set the held live board to the live board and if the live board has steps, 
+  // If the live board is not the same as the held live board,
+  // set the held live board to the live board and if the live board has steps,
   // set the animating board to the live board.
   //
   // In other words, if the board changed, update it by animations.
@@ -213,7 +213,7 @@ function GameView() {
   const waiting = isWaiting || (youSubmitted && isProgramming && !finished);
   const activeRegisterIndex = activePlayedRegister(board?.registers, stepIndex);
 
-  // If the username is not set, return null as the user is not logged in. 
+  // If the username is not set, return null as the user is not logged in.
   // The user will be redirected to the login page from the logic above.
   if (!username) {
     return null;
