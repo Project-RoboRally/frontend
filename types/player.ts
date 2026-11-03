@@ -12,4 +12,5 @@ export type Player = {
   robot: Robot;
   register: Register[];
   priorityOrder: boolean;
+  programSubmitted?: boolean;
 };

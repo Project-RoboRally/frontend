@@ -39,6 +39,7 @@ export default function Tile({ x, y, elements }: TileProps) {
   const label = elements?.map((element) => element.type).join(', ') || 'EMPTY';
   const imageSrc = getElementImage(elements);
   const rotationClass = getElementRotation(elements);
+  const energySpace = elements?.find((element) => element.type === 'ENERGY_SPACE');
 
   // Placeholder color for elements without images.
   const placeholderColor = getElementColor(elements);
@@ -62,6 +63,11 @@ export default function Tile({ x, y, elements }: TileProps) {
           className={`h-full w-full object-contain pointer-events-none transition-transform ${rotationClass}`}
         />
       )}
+      {energySpace ? (
+        <span className="absolute bottom-0 right-0 px-0.5 text-[8px] font-bold leading-none text-amber">
+          {energySpace.cubeAmount}
+        </span>
+      ) : null}
     </div>
   );
 }

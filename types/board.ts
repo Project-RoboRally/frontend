@@ -37,6 +37,18 @@ export type BoardRobot = {
   orientation: Direction;
 };
 
+export type PlayedCard = {
+  username: string;
+  card: { type: string; instruction: string };
+  firstStep: number;
+  stepCount: number;
+};
+
+export type BoardRegister = {
+  register: number;
+  cards: PlayedCard[];
+};
+
 export type Board = {
   width: number;
   height: number;
@@ -44,4 +56,5 @@ export type Board = {
   robots: BoardRobot[];
   // One pose per robot after each turn or step. Empty when nothing just moved.
   steps?: BoardRobot[][];
+  registers?: BoardRegister[];
 };
