@@ -40,6 +40,7 @@ export function UpgradeShop({
       </p>
 
       <div className="flex flex-wrap gap-2">
+        {/* There are no upgrades left this round so say that to the user */}
         {shop.length === 0 ? (
           <span className="text-xs text-bone/60">No upgrades left this round.</span>
         ) : (
