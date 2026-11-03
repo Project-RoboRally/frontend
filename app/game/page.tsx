@@ -6,21 +6,29 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
+import { UpgradeShop } from '@/components/UpgradeShop';
 import { getErrorMessage } from '@/lib/api/client';
-import { submitProgram } from '@/lib/api/lobby';
-import { MockCards } from '@/lib/mock-cards';
-import { mockRegister } from '@/lib/mock-register';
-import { PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
+import { buyUpgrade, skipUpgrade, submitProgram } from '@/lib/api/lobby';
+import { activePlayedRegister } from '@/lib/playedRegisters';
+import {
+  cardFromInstruction,
+  emptyRegisters,
+  handCardsFromMat,
+  instructionFromCard,
+  REGISTER_COUNT,
+  repeatsPreviousRegister,
+} from '@/lib/programCards';
 import { usePlayerState } from '@/lib/socket/usePlayerState';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
 import type { Board } from '@/types/board';
-import type { ProgrammingCard } from '@/types/cards';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
+import type { UpgradeType } from '@/types/playerGameState';
 import type { Register } from '@/types/register';
 import type { RobotModel } from '@/types/robot';
+import type { PlayerColor } from '@/types/lobby';
 
 /**
  * Page for the froentend of the gameboard
@@ -28,17 +36,24 @@ import type { RobotModel } from '@/types/robot';
  * @author Caroline, Katarina, Kerem
  */
 
-// turns a card object into the text instruction the backend expects. Returns null if the backend doesn't know the card (Only knows PROGRAM_CARDS)
-function cardToInstruction(card: ProgrammingCard): string | null {
-  let instruction: string | null = null;
+function robotModelFromColor(color: PlayerColor | undefined): RobotModel {
+  return color ? (`${color.toLowerCase()}Robot` as RobotModel) : 'orangeRobot';
+}
 
-  if (card.cardType === 'move') {
-    instruction = `MOVE_${card.cardStrength}`;
-  } else if (card.cardType === 'rotate') {
-    instruction = card.cardDirection === 'left' ? 'LEFT_TURN' : 'RIGHT_TURN';
-  }
+function registersFromPlayed(board: Board | null, username: string): Register[] {
+  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
+    const played = board?.registers
+      ?.find((register) => register.register === index)
+      ?.cards.find((card) => card.username === username);
 
-  return PROGRAM_CARDS.some((c) => c.instruction === instruction) ? instruction : null;
+    return {
+      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
+      registerRevealed: true,
+      registerCard: played
+        ? cardFromInstruction(played.card.instruction, `${username}-${index}`)
+        : null,
+    };
+  });
 }
 
 export default function GamePage() {
@@ -57,27 +72,36 @@ function GameView() {
   );
 
   const [completedBoard, setCompletedBoard] = useState<Board | null>(null);
+  const [animatingBoard, setAnimatingBoard] = useState<Board | null>(null);
+  const [heldLiveBoard, setHeldLiveBoard] = useState<Board | null>(null);
+  const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [registers, setRegisters] = useState<Register[]>(emptyRegisters);
+  const [handOpen, setHandOpen] = useState<boolean>(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [appliedHandKey, setAppliedHandKey] = useState<string | null>(null);
+  const [seenPhase, setSeenPhase] = useState<string | undefined>(undefined);
+  const boardAtWait = useRef<Board | null>(null);
+
+  const handleStepIndexChange = useCallback((index: number | null) => {
+    setStepIndex(index);
+  }, []);
 
   const handleAnimationComplete = useCallback((animatedBoard: Board) => {
     setCompletedBoard(animatedBoard);
+    setAnimatingBoard((current) => (current === animatedBoard ? null : current));
+    setStepIndex(null);
   }, []);
 
   // page renders before the browser URL is updated.
   const lobbyId = useSearchParams().get('lobby');
   const playerState = usePlayerState(lobbyId, username);
-  const board = playerState?.board ?? null;
-  const finished = playerState?.status === 'FINISHED';
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const boardAtWait = useRef<Board | null>(null);
 
-  const showWinner = finished && completedBoard === board;
-
-  // Registrene ligger i state, så de kan ændres (bytte rundt) senere
-  const [registers, setRegisters] = useState<Register[]>(mockRegister);
-  const [handOpen, setHandOpen] = useState<boolean>(false); // Open or close the hand
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const liveBoard = playerState?.board ?? null;
+  const board = animatingBoard ?? liveBoard;
 
   useEffect(() => {
     if (!username) {
@@ -96,59 +120,118 @@ function GameView() {
       boardAtWait.current = board;
       return;
     }
-    setRegisters(mockRegister);
+    setRegisters(emptyRegisters());
     setSelectedCardId(null);
-    setHandOpen(false); // NEW CODE
+    setHandOpen(false);
     setIsWaiting(false);
     setError(null);
   }, [board, isWaiting]);
+
+  const finished = playerState?.status === 'FINISHED';
+  const phase = playerState?.round.phase;
+  const isProgramming = phase === 'PROGRAMMING';
+  const isUpgrade = phase === 'UPGRADE';
+  const programmingHandKey =
+    playerState?.type === 'PROGRAMMING_STARTED'
+      ? JSON.stringify(playerState.playerMat?.hand ?? [])
+      : null;
+  const showWinner = finished && completedBoard === board;
+
+  if (liveBoard !== heldLiveBoard) {
+    setHeldLiveBoard(liveBoard);
+    if ((liveBoard?.steps?.length ?? 0) > 0) {
+      setAnimatingBoard(liveBoard);
+    }
+  }
+
+  if (programmingHandKey != null && programmingHandKey !== appliedHandKey) {
+    setAppliedHandKey(programmingHandKey);
+    setRegisters(emptyRegisters());
+    setSelectedCardId(null);
+    setHandOpen(false);
+    setIsWaiting(false);
+    setError(null);
+  }
+
+  if (phase !== seenPhase) {
+    setSeenPhase(phase);
+    if (phase === 'UPGRADE') {
+      setHandOpen(false);
+      setSelectedCardId(null);
+    }
+  }
+
+  const you = playerState?.players.find((player) => player.username === username);
+  const youSubmitted = you?.programSubmitted ?? false;
+  const energy = you?.energy ?? 0;
+  const handCards = handCardsFromMat(playerState?.playerMat?.hand);
+  const availableHand = handCards.filter(
+    (card) => !registers.some((register) => register.registerCard?.cardId === card.cardId),
+  );
+  const selectedCard = availableHand.find((card) => card.cardId === selectedCardId) ?? null;
+  const firstInstruction = registers[0]?.registerCard
+    ? instructionFromCard(registers[0].registerCard)
+    : null;
+  const repeatInRegisterOne = firstInstruction != null && repeatsPreviousRegister(firstInstruction);
+  const hasPlayedCards = (board?.registers?.length ?? 0) > 0;
+  const showingActivation = (animatingBoard?.steps?.length ?? 0) > 0 && stepIndex !== null;
+  const canProgram = isProgramming && !youSubmitted && !showingActivation && !hasPlayedCards;
+  const locked = isSubmitting || isWaiting || !playerState || finished || !canProgram;
+  const filledCount = registers.filter((register) => register.registerCard !== null).length;
+  const canRun = filledCount === REGISTER_COUNT && !locked && !repeatInRegisterOne;
+  const waiting = isWaiting || (youSubmitted && isProgramming && !finished);
+  const activeRegisterIndex = activePlayedRegister(board?.registers, stepIndex);
 
   if (!username) {
     return null;
   }
 
-  // counts the registers that have a card
-  const filledCount = registers.filter((register) => register.registerCard !== null).length;
-  const locked = isSubmitting || isWaiting || !playerState || finished;
-  const canRun = filledCount === REGISTER_COUNT && !locked;
-
   const swapRegisters = (indexA: number, indexB: number) => {
     if (locked) return;
 
-    setRegisters((current) => {
-      const next = [...current]; // copies the current object to a new one
+    if (indexA === 0 || indexB === 0) {
+      const incoming =
+        indexA === 0 ? registers[indexB].registerCard : registers[indexA].registerCard;
+      const instruction = incoming ? instructionFromCard(incoming) : null;
+      if (instruction && repeatsPreviousRegister(instruction)) {
+        setError('AGAIN cannot be placed in register 1');
+        return;
+      }
+    }
 
-      // The register number stays the same since they don't move, so the actuall card and the revealed boolean moves together
+    setRegisters((current) => {
+      const next = [...current];
       next[indexA] = {
         ...current[indexA],
         registerRevealed: current[indexB].registerRevealed,
         registerCard: current[indexB].registerCard,
       };
-
       next[indexB] = {
         ...current[indexB],
         registerRevealed: current[indexA].registerRevealed,
         registerCard: current[indexA].registerCard,
       };
-
       return next;
     });
   };
 
   const placeCard = (index: number) => {
     if (locked) return;
-    if (selectedCardId === null) return; // NO card choosen
+    if (selectedCard == null) return;
 
-    // Copying the hand-index card over to the register-index (also deleting itself hand-index)
-    const card = MockCards[selectedCardId];
+    const instruction = instructionFromCard(selectedCard);
+    if (index === 0 && instruction && repeatsPreviousRegister(instruction)) {
+      setError('AGAIN cannot be placed in register 1');
+      return;
+    }
+
     const next = registers.map((register, i) =>
-      i === index ? { ...register, registerCard: card } : register,
+      i === index ? { ...register, registerCard: selectedCard } : register,
     );
     setRegisters(next);
     setSelectedCardId(null);
     setError(null);
 
-    // Closing the hand, when all 5 registers has a card
     if (next.every((register) => register.registerCard !== null)) {
       setHandOpen(false);
     }
@@ -166,14 +249,16 @@ function GameView() {
     setIsSubmitting(true);
     setError(null);
     try {
-      // Backend expects text instructions, so each card object is converted
       const instructions = registers
-        .map((register) => cardToInstruction(register.registerCard!))
+        .map((register) => instructionFromCard(register.registerCard!))
         .filter((instruction): instruction is string => instruction !== null);
 
-      // Stops if a card isn't supported by the backend yet
       if (instructions.length !== REGISTER_COUNT) {
         setError('One or more cards are not supported by the backend yet.');
+        return;
+      }
+      if (repeatsPreviousRegister(instructions[0])) {
+        setError('AGAIN cannot be placed in register 1');
         return;
       }
 
@@ -186,7 +271,7 @@ function GameView() {
         setIsWaiting(true);
         return;
       }
-      setRegisters(mockRegister);
+      setRegisters(emptyRegisters());
       setSelectedCardId(null);
       setIsWaiting(false);
     } catch (runError) {
@@ -196,16 +281,40 @@ function GameView() {
     }
   }
 
-  // Find the robot corresponding to the current user on the board
+  async function handleBuy(upgrade: UpgradeType) {
+    if (!lobbyId || !username) {
+      return;
+    }
+    setIsUpgrading(true);
+    setError(null);
+    try {
+      await buyUpgrade(lobbyId, { username, upgrade });
+    } catch (buyError) {
+      setError(getErrorMessage(buyError, 'Could not buy that upgrade.'));
+    } finally {
+      setIsUpgrading(false);
+    }
+  }
+
+  async function handleSkip() {
+    if (!lobbyId || !username) {
+      return;
+    }
+    setIsUpgrading(true);
+    setError(null);
+    try {
+      await skipUpgrade(lobbyId, { username });
+    } catch (skipError) {
+      setError(getErrorMessage(skipError, 'Could not skip the upgrade.'));
+    } finally {
+      setIsUpgrading(false);
+    }
+  }
+
   const userBoardRobot = board?.robots?.find((r) => r.username === username);
+  const robotModel = robotModelFromColor(userBoardRobot?.color);
+  const shownRegisters = hasPlayedCards ? registersFromPlayed(board, username) : registers;
 
-  // Generate the RobotModel from the users robot color
-  const robotModel: RobotModel = userBoardRobot
-    ? (`${userBoardRobot.color.toLowerCase()}Robot` as RobotModel)
-    : 'orangeRobot'; // Fallback if not found yet
-
-  // Construct the player object
-  const backendPlayer = playerState?.players.find((player) => player.username === username);
   const player: Player = {
     username,
     robot: {
@@ -217,38 +326,63 @@ function GameView() {
           (userBoardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
           'north',
       },
-      checkpointsCollected: backendPlayer?.checkpointsReached ?? 0,
-      energycubesCollected: 0,
+      checkpointsCollected: you?.checkpointsReached ?? 0,
+      energycubesCollected: energy,
       outOfGame: false,
       damageCount: 0,
     },
-    register: registers,
+    register: shownRegisters,
     priorityOrder: false,
+    programSubmitted: youSubmitted,
   };
 
-  // TODO: Replace with actual game state from backend.
-  const gameState: GameState = {
-    round: 1,
-    timerOut: false,
-    status: { state: 'inprogress' },
-    players: [
-      player,
-      {
-        username: 'BotPlayer',
+  const otherPlayers: Player[] = (playerState?.players ?? [])
+    .filter((gamePlayer) => gamePlayer.username !== username)
+    .map((gamePlayer) => {
+      const boardRobot = board?.robots?.find((robot) => robot.username === gamePlayer.username);
+      return {
+        username: gamePlayer.username,
         robot: {
-          robotModel: 'blueRobot',
-          position: { row: 1, column: 1, direction: 'north' },
-          checkpointsCollected: 0,
-          energycubesCollected: 0,
+          robotModel: robotModelFromColor(boardRobot?.color),
+          position: {
+            row: boardRobot?.y ?? 0,
+            column: boardRobot?.x ?? 0,
+            direction:
+              (boardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
+              'north',
+          },
+          checkpointsCollected: gamePlayer.checkpointsReached,
+          energycubesCollected: gamePlayer.energy,
           outOfGame: false,
           damageCount: 0,
         },
-        register: [],
+        register: registersFromPlayed(board, gamePlayer.username),
         priorityOrder: false,
-      },
-    ],
-    phase: 'programming_phase',
-  };
+        programSubmitted: gamePlayer.programSubmitted,
+      };
+    });
+
+  const status: GameState['status'] = finished
+    ? { state: 'over', winner: player }
+    : { state: 'inprogress' };
+  const hudPlayers = [player, ...otherPlayers];
+  const displayState: GameState =
+    showingActivation || phase === 'ACTIVATION'
+      ? {
+          round: 0,
+          timerOut: false,
+          status,
+          players: hudPlayers,
+          phase: 'activation_phase',
+          activeRegister: ((activeRegisterIndex ?? 0) + 1) as 1 | 2 | 3 | 4 | 5,
+        }
+      : {
+          round: 0,
+          timerOut: false,
+          status,
+          players: hudPlayers,
+          phase: phase === 'UPGRADE' ? 'upgrade_phase' : 'programming_phase',
+        };
 
   return (
     <main className="mx-auto flex h-screen w-full max-w-6xl flex-col items-center p-6 text-center">
@@ -266,8 +400,23 @@ function GameView() {
 
       <HUD
         canRun={canRun}
+        discardCount={playerState?.playerMat?.discardPile.length ?? 0}
+        drawPileSize={playerState?.playerMat?.drawPileSize ?? 0}
         error={error}
-        gameState={gameState}
+        extraPanel={
+          isUpgrade && !showingActivation ? (
+            <UpgradeShop
+              currentBuyer={playerState?.currentBuyer ?? null}
+              disabled={isUpgrading || finished}
+              energy={energy}
+              onBuy={(upgrade) => void handleBuy(upgrade)}
+              onSkip={() => void handleSkip()}
+              shop={playerState?.upgradeShop ?? []}
+              username={username}
+            />
+          ) : null
+        }
+        gameState={displayState}
         locked={locked}
         onHandOpen={() => setHandOpen(true)}
         onPlaceCard={placeCard}
@@ -275,43 +424,42 @@ function GameView() {
         onSwapRegisters={swapRegisters}
         placingCard={handOpen}
         player={player}
-        waiting={isWaiting}
+        activeRegisterIndex={activeRegisterIndex}
+        waiting={waiting}
       >
-        <Game board={board} onAnimationComplete={handleAnimationComplete} />
+        <Game
+          board={board}
+          onAnimationComplete={handleAnimationComplete}
+          onStepIndexChange={handleStepIndexChange}
+        />
       </HUD>
 
-      {/* When the hand is shown */}
       {handOpen && (
         <>
-          {/* Invisible overlay, so you can't click on other stuff, other than the hand and register */}
           <div className="fixed inset-0 z-40" />
 
           <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-steel-dark bg-black/85 p-6 shadow-2xl">
+            <div className="mb-3 text-xs font-semibold text-bone/70">
+              Draw {playerState?.playerMat?.drawPileSize ?? 0} · Discard{' '}
+              {playerState?.playerMat?.discardPile.length ?? 0}
+            </div>
             <div className="flex flex-wrap justify-center gap-3">
-              {Object.values(MockCards)
-                // Deletes the cards which is already in the register, so they can't be used twice
-                .filter(
-                  (card) =>
-                    !registers.some((register) => register.registerCard?.cardId === card.cardId),
-                )
-
-                // Creating one button for each card there is left
-                .map((card) => (
-                  <button
-                    key={card.cardId}
-                    type="button"
-                    onClick={() =>
-                      setSelectedCardId(selectedCardId === card.cardId ? null : card.cardId)
-                    }
-                    className={`flex h-24 w-16 items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition ${
-                      selectedCardId === card.cardId
-                        ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
-                        : 'border-steel-dark bg-charcoal hover:border-cobber-light'
-                    }`}
-                  >
-                    <CardInfo card={card} />
-                  </button>
-                ))}
+              {availableHand.map((card) => (
+                <button
+                  key={card.cardId}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCardId(selectedCardId === card.cardId ? null : card.cardId)
+                  }
+                  className={`flex h-24 w-16 items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition ${
+                    selectedCardId === card.cardId
+                      ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                      : 'border-steel-dark bg-charcoal hover:border-cobber-light'
+                  }`}
+                >
+                  <CardInfo card={card} />
+                </button>
+              ))}
             </div>
           </div>
         </>
