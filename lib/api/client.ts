@@ -169,7 +169,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new ApiError(friendlyMessage(raw, response.status, method, path), response.status, path);
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 export function apiGet<T>(path: string) {

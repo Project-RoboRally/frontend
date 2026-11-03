@@ -1,5 +1,6 @@
 import { apiGet, apiPatch, apiPost } from './client';
 import type {
+  BuyUpgradeRequest,
   CreateLobbyRequest,
   JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
@@ -9,6 +10,7 @@ import type {
   RenameLobbyRequest,
   SetColorRequest,
   SetReadyRequest,
+  SkipUpgradeRequest,
 } from '@/types/lobby';
 
 export function getLobbies() {
@@ -53,4 +55,12 @@ export function startGame(id: string, body: JoinLeaveLobbyRequest) {
 
 export function submitProgram(id: string, body: ProgramRequest) {
   return apiPost<ProgramResponse>(`/api/lobbies/${id}/program`, body);
+}
+
+export function buyUpgrade(id: string, body: BuyUpgradeRequest) {
+  return apiPost<void>(`/api/lobbies/${id}/upgrade/buy`, body);
+}
+
+export function skipUpgrade(id: string, body: SkipUpgradeRequest) {
+  return apiPost<void>(`/api/lobbies/${id}/upgrade/skip`, body);
 }
