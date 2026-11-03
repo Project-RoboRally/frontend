@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { CardInfo } from '@/components/CardInfo';
 import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
-import { labelForInstruction, REGISTER_COUNT } from '@/lib/programCards';
+import { REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 
@@ -28,6 +28,10 @@ export default function HUD({
   onHandOpen,
   placingCard,
   onPlaceCard,
+  drawPileSize,
+  discardCount,
+  activeRegisterIndex,
+  extraPanel,
 }: {
   gameState: GameState;
   player: Player;
@@ -41,6 +45,10 @@ export default function HUD({
   onHandOpen: () => void;
   placingCard: boolean; //true when the hand is opened
   onPlaceCard: (index: number) => void;
+  drawPileSize: number;
+  discardCount: number;
+  activeRegisterIndex: number | null;
+  extraPanel?: ReactNode;
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
@@ -79,40 +87,40 @@ export default function HUD({
               {gameState.players
                 .filter((p) => p.username !== player.username)
                 .map((p) => {
-                  const robotModel = p.robot?.robotModel || 'orangeRobot';
-                  const playerColorHex = ROBOT_COLORS[robotModel] || '#334155';
+                  const otherRobotModel = p.robot?.robotModel || 'orangeRobot';
+                  const otherColorHex = ROBOT_COLORS[otherRobotModel] || '#334155';
 
                   return (
                     <div
                       key={p.username}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-lg border-2 shadow"
                       style={{
-                        borderColor: playerColorHex,
-                        backgroundColor: ROBOT_BG_COLORS[robotModel],
+                        borderColor: otherColorHex,
+                        backgroundColor: ROBOT_BG_COLORS[otherRobotModel],
                       }}
                     >
                       {/* Player Name */}
                       <span className="text-xs font-bold text-bone">{p.username}</span>
 
+                      {p.programSubmitted ? (
+                        <span className="text-[10px] font-bold uppercase text-verdigris">
+                          Ready
+                        </span>
+                      ) : null}
+
                       {/* 5 Card Boxes */}
                       <div className="flex gap-1">
                         {Array.from({ length: REGISTER_COUNT }).map((_, index) => {
-                          const registerCard = p.register?.[index];
-
-                          // Extract the instruction string whether Register is an object or string
-                          const instruction =
-                            typeof registerCard === 'string'
-                              ? registerCard
-                              : ((registerCard as any)?.instruction ??
-                                (registerCard as any)?.card ??
-                                null);
+                          const registerCard = p.register?.[index]?.registerCard ?? null;
 
                           return (
                             <div
                               key={index}
-                              className="w-6 h-8 bg-iron border border-steel-dark rounded flex items-center justify-center text-[10px] text-bone font-bold"
+                              className={`w-6 h-8 bg-iron border border-steel-dark rounded flex items-center justify-center text-[8px] leading-tight text-bone font-bold ${
+                                activeRegisterIndex === index ? 'ring-2 ring-verdigris' : ''
+                              }`}
                             >
-                              {instruction ? labelForInstruction(instruction) : ''}
+                              {registerCard ? <CardInfo card={registerCard} /> : ''}
                             </div>
                           );
                         })}
@@ -142,6 +150,10 @@ export default function HUD({
                 <div className="text-[10px] font-bold uppercase text-cobber-light">Programming</div>
 
                 <div className="mt-1 font-bold uppercase tracking-wider text-bone">Deck</div>
+
+                <div className="mt-1 text-[10px] font-semibold text-bone/70">
+                  Draw {drawPileSize} · Discard {discardCount}
+                </div>
               </button>
 
               {/* Deck and register space */}
@@ -156,7 +168,7 @@ export default function HUD({
                     onClick={() => registerClick(index)}
                     key={register.registerNumber}
                     className={`flex h-16 w-12 cursor-pointer items-center justify-center rounded-md border-2 bg-charcoal text-sm font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                      selectedIndex === index
+                      selectedIndex === index || activeRegisterIndex === index
                         ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
                         : 'border-steel-dark bg-charcoal hover:border-cobber-light'
                     }`}
@@ -193,6 +205,7 @@ export default function HUD({
           {/* Game and player information */}
           <GameInfo gameState={gameState} />
           <PlayerInfo player={player} />
+          {extraPanel}
 
           {/* Run */}
           <button
