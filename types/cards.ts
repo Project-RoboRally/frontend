@@ -4,7 +4,16 @@
  * @author Kerem
  */
 
-export type ProgrammingCard = MoveCard | RotateCard | UTurnCard | BackCard | PowerCard | AgainCard;
+export type ProgrammingCard =
+  | MoveCard
+  | RotateCard
+  | UTurnCard
+  | BackCard
+  | PowerCard
+  | AgainCard
+  | EnergyRoutineCard
+  | SpeedRoutineCard
+  | RepeatRoutineCard;
 
 export type MoveCard = CardId & {
   cardType: 'move';
@@ -32,6 +41,19 @@ export type AgainCard = CardId & {
   cardType: 'again';
 };
 
+export type EnergyRoutineCard = CardId & {
+  cardType: 'energyRoutine';
+};
+
+export type SpeedRoutineCard = CardId & {
+  cardType: 'speedRoutine';
+};
+
+export type RepeatRoutineCard = CardId & {
+  cardType: 'repeatRoutine';
+};
+
 export type CardId = {
   cardId: string;
+  instruction?: string;
 };
