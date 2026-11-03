@@ -33,19 +33,22 @@ import type { PlayerColor } from '@/types/lobby';
 /**
  * Page for the froentend of the gameboard
  *
- * @author Caroline, Katarina, Kerem
+ * @author Caroline, Katarina, Kerem, Elias
  */
 
 function robotModelFromColor(color: PlayerColor | undefined): RobotModel {
   return color ? (`${color.toLowerCase()}Robot` as RobotModel) : 'orangeRobot';
 }
 
+/* This function is used to get the registers from the board for the current player. 
+* It is used to display the registers on the gameboard. */
 function registersFromPlayed(board: Board | null, username: string): Register[] {
   return Array.from({ length: REGISTER_COUNT }, (_, index) => {
     const played = board?.registers
       ?.find((register) => register.register === index)
       ?.cards.find((card) => card.username === username);
 
+    /* Return the register number, if the register is revealed and the card in the register */
     return {
       registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
       registerRevealed: true,
@@ -59,6 +62,7 @@ function registersFromPlayed(board: Board | null, username: string): Register[] 
 export default function GamePage() {
   return (
     <Suspense fallback={null}>
+      {/* Main gameboard component */}
       <GameView />
     </Suspense>
   );
@@ -71,20 +75,25 @@ function GameView() {
     typeof window === 'undefined' ? null : getUsername(),
   );
 
+  // Board animation display state
   const [completedBoard, setCompletedBoard] = useState<Board | null>(null);
   const [animatingBoard, setAnimatingBoard] = useState<Board | null>(null);
   const [heldLiveBoard, setHeldLiveBoard] = useState<Board | null>(null);
   const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const boardAtWait = useRef<Board | null>(null);
+
+  // Turn action status flags
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [seenPhase, setSeenPhase] = useState<string | undefined>(undefined);
+
+  // Hand and register selection
   const [registers, setRegisters] = useState<Register[]>(emptyRegisters);
   const [handOpen, setHandOpen] = useState<boolean>(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [appliedHandKey, setAppliedHandKey] = useState<string | null>(null);
-  const [seenPhase, setSeenPhase] = useState<string | undefined>(undefined);
-  const boardAtWait = useRef<Board | null>(null);
 
   const handleStepIndexChange = useCallback((index: number | null) => {
     setStepIndex(index);
@@ -103,12 +112,17 @@ function GameView() {
   const liveBoard = playerState?.board ?? null;
   const board = animatingBoard ?? liveBoard;
 
+  // If the username is not set, redirect to the login page as the user is not logged in.
   useEffect(() => {
     if (!username) {
       router.replace('/login');
     }
   }, [router, username]);
 
+  // If the user is waiting, set the registers to empty, 
+  // the card to null, 
+  // the hand to closed, 
+  // the waiting flag to false and the error to null.
   useEffect(() => {
     if (!isWaiting) {
       return;
@@ -127,16 +141,26 @@ function GameView() {
     setError(null);
   }, [board, isWaiting]);
 
+  // Get player state 
   const finished = playerState?.status === 'FINISHED';
   const phase = playerState?.round.phase;
   const isProgramming = phase === 'PROGRAMMING';
   const isUpgrade = phase === 'UPGRADE';
+
+  // Get the programming hand key
   const programmingHandKey =
     playerState?.type === 'PROGRAMMING_STARTED'
       ? JSON.stringify(playerState.playerMat?.hand ?? [])
       : null;
+
+  // Did the game finish?
   const showWinner = finished && completedBoard === board;
 
+  // If the live board is not the same as the held live board, 
+  // set the held live board to the live board and if the live board has steps, 
+  // set the animating board to the live board.
+  //
+  // In other words, if the board changed, update it by animations.
   if (liveBoard !== heldLiveBoard) {
     setHeldLiveBoard(liveBoard);
     if ((liveBoard?.steps?.length ?? 0) > 0) {
@@ -144,6 +168,7 @@ function GameView() {
     }
   }
 
+  // No programming hand key, reset it
   if (programmingHandKey != null && programmingHandKey !== appliedHandKey) {
     setAppliedHandKey(programmingHandKey);
     setRegisters(emptyRegisters());
@@ -161,9 +186,13 @@ function GameView() {
     }
   }
 
+  // Get the you player (yourself)
+  // Local player snapshot
   const you = playerState?.players.find((player) => player.username === username);
   const youSubmitted = you?.programSubmitted ?? false;
   const energy = you?.energy ?? 0;
+
+  // Hand and register cards
   const handCards = handCardsFromMat(playerState?.playerMat?.hand);
   const availableHand = handCards.filter(
     (card) => !registers.some((register) => register.registerCard?.cardId === card.cardId),
@@ -173,19 +202,24 @@ function GameView() {
     ? instructionFromCard(registers[0].registerCard)
     : null;
   const repeatInRegisterOne = firstInstruction != null && repeatsPreviousRegister(firstInstruction);
+  const filledCount = registers.filter((register) => register.registerCard !== null).length;
+
+  // Programming phase gates
   const hasPlayedCards = (board?.registers?.length ?? 0) > 0;
   const showingActivation = (animatingBoard?.steps?.length ?? 0) > 0 && stepIndex !== null;
   const canProgram = isProgramming && !youSubmitted && !showingActivation && !hasPlayedCards;
   const locked = isSubmitting || isWaiting || !playerState || finished || !canProgram;
-  const filledCount = registers.filter((register) => register.registerCard !== null).length;
   const canRun = filledCount === REGISTER_COUNT && !locked && !repeatInRegisterOne;
   const waiting = isWaiting || (youSubmitted && isProgramming && !finished);
   const activeRegisterIndex = activePlayedRegister(board?.registers, stepIndex);
 
+  // If the username is not set, return null as the user is not logged in. 
+  // The user will be redirected to the login page from the logic above.
   if (!username) {
     return null;
   }
 
+  // Swap registers
   const swapRegisters = (indexA: number, indexB: number) => {
     if (locked) return;
 
@@ -215,6 +249,7 @@ function GameView() {
     });
   };
 
+  // Place a card in a register
   const placeCard = (index: number) => {
     if (locked) return;
     if (selectedCard == null) return;
@@ -237,6 +272,7 @@ function GameView() {
     }
   };
 
+  // Run the program
   async function handleRun() {
     if (!canRun || !username) {
       return;
@@ -281,6 +317,7 @@ function GameView() {
     }
   }
 
+  // Buy an upgrade
   async function handleBuy(upgrade: UpgradeType) {
     if (!lobbyId || !username) {
       return;
@@ -296,6 +333,7 @@ function GameView() {
     }
   }
 
+  // Skip an upgrade
   async function handleSkip() {
     if (!lobbyId || !username) {
       return;
@@ -311,10 +349,16 @@ function GameView() {
     }
   }
 
+  // Get the user's board robot
   const userBoardRobot = board?.robots?.find((r) => r.username === username);
+
+  // Get the robot model from the color
   const robotModel = robotModelFromColor(userBoardRobot?.color);
+
+  // Get the shown registers
   const shownRegisters = hasPlayedCards ? registersFromPlayed(board, username) : registers;
 
+  // Get the player
   const player: Player = {
     username,
     robot: {
@@ -336,6 +380,7 @@ function GameView() {
     programSubmitted: youSubmitted,
   };
 
+  // Get the other players
   const otherPlayers: Player[] = (playerState?.players ?? [])
     .filter((gamePlayer) => gamePlayer.username !== username)
     .map((gamePlayer) => {
