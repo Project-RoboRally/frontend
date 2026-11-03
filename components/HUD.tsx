@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CardInfo } from '@/components/CardInfo';
 import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { labelForInstruction, REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
+import { register } from 'module';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
@@ -44,6 +45,8 @@ export default function HUD({
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
+  useEffect(() => {if(locked) setSelectedIndex(null);}, [locked]); // [locked] so it only runs when that variable changes
+
   const registerClick = (index: number) => {
     // Hand
     if (placingCard) {
@@ -67,6 +70,9 @@ export default function HUD({
   const robotModel = player.robot?.robotModel;
   const playerColorHex = robotModel ? ROBOT_COLORS[robotModel] : undefined;
   const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
+  const hasCardsInRegister = player.register.some((register) => register.registerCard !== null);
+  const hasSelectedRegister = selectedIndex !== null;
+  const deckLocked = locked || hasCardsInRegister || hasSelectedRegister
   return (
     <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
       <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
@@ -135,7 +141,7 @@ export default function HUD({
               {/* Programming deck */}
               <button
                 type="button"
-                disabled={locked}
+                disabled={deckLocked}
                 onClick={onHandOpen}
                 className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
