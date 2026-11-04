@@ -15,6 +15,7 @@ export function passwordError(password: string) {
   if (new TextEncoder().encode(password).length > 72) {
     return 'Password is too long';
   }
+  return null;
 }
 
 export function getUsername() {
