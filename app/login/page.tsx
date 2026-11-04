@@ -33,7 +33,7 @@ export default function LoginPage() {
     try {
       const result = await login({ username, password });
       saveUsername(result.username);
-      saveUsername(result.token);
+      saveToken(result.token);
       router.push('/main-menu');
     } catch (loginError) {
       setError(getErrorMessage(loginError, 'Login failed'));
