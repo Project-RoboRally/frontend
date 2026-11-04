@@ -18,7 +18,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const restoreStarted = useRef(false);
 
   async function signIn() {
     setError(null);
