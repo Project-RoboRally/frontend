@@ -16,13 +16,3 @@ export async function hasActiveUser(username: string) {
     throw error;
   }
 }
-
-/** Re-register this username with the in-memory backend. An existing user is still active. */
-export async function pingLogin(username: string) {
-  try {
-    await login({ username });
-    return true;
-  } catch {
-    return false;
-  }
-}

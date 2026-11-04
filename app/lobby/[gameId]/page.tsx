@@ -13,7 +13,6 @@ import {
   setReady,
   startGame,
 } from '@/lib/api/lobby';
-import { pingLogin } from '@/lib/api/login';
 import { colorLabel, PLAYER_COLORS, robotSprite } from '@/lib/playerColors';
 import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
@@ -95,16 +94,10 @@ export default function LobbyPage() {
     }
 
     async function start() {
-      const loggedIn = await pingLogin(currentUsername);
+      await loadLobby();
       if (cancelled) {
         return;
       }
-      if (!loggedIn) {
-        router.replace('/main-menu');
-        return;
-      }
-
-      await loadLobby();
       interval = window.setInterval(() => {
         if (!isRenamingRef.current) {
           void loadLobby();
