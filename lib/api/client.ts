@@ -1,3 +1,5 @@
+import { getToken } from '@/lib/username';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
@@ -152,6 +154,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   headers.set('Accept', 'application/json');
   if (options?.body != null) {
     headers.set('Content-Type', 'application/json');
+  }
+  const token = typeof window === 'undefined' ? null : getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const method = (options?.method ?? 'GET').toUpperCase();
