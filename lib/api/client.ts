@@ -77,7 +77,7 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
   }
 
   if (lower.includes('request body is required')) {
-    return 'Login needs a username in JSON, for example {"username":"alice"}.';
+    return 'Login needs a username and password';
   }
 
   if (text && text !== 'Internal Server Error' && !/^Request failed: \d+$/.test(text)) {
@@ -86,6 +86,10 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
 
   if (status === 400) {
     return 'The server rejected this request. Check the name and try again.';
+  }
+
+  if (status === 401) {
+    return 'Wrong username or password';
   }
 
   if (status === 403) {

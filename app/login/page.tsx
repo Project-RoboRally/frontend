@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
 
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
-import { getUsername, saveUsername, usernameError } from '@/lib/username';
+import { passwordError, saveUsername, usernameError } from '@/lib/username';
 
 /**
  * @author Anton, Kerem
@@ -15,15 +15,16 @@ import { getUsername, saveUsername, usernameError } from '@/lib/username';
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const restoreStarted = useRef(false);
 
-  async function signIn(nextUsername: string) {
+  async function signIn() {
     setError(null);
     setIsSubmitting(true);
 
-    const validationError = usernameError(nextUsername);
+    const validationError = usernameError(username) ?? passwordError(password);
     if (validationError) {
       setError(validationError);
       setIsSubmitting(false);
@@ -31,7 +32,7 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await login({ username: nextUsername });
+      const result = await login({ username, password });
       saveUsername(result.username);
       router.push('/main-menu');
     } catch (loginError) {
@@ -39,19 +40,6 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   }
-
-  useEffect(() => {
-    const savedUsername = getUsername();
-    if (!savedUsername || restoreStarted.current) {
-      return;
-    }
-
-    restoreStarted.current = true;
-    setUsername(savedUsername);
-    void signIn(savedUsername);
-    // Restore once from the saved username when this screen opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center p-6">
@@ -62,7 +50,7 @@ export default function LoginPage() {
           className="w-full space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
-            void signIn(username);
+            void signIn();
           }}
         >
           <div>
@@ -79,6 +67,22 @@ export default function LoginPage() {
               required
               type="text"
               value={username}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block" htmlFor="password">
+              Password
+            </label>
+
+            <input
+              className={inputClassName}
+              id="password"
+              minLength={8}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              type="password"
+              value={password}
             />
           </div>
 
