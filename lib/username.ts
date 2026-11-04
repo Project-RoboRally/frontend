@@ -1,4 +1,5 @@
 const USERNAME_KEY = 'username';
+const TOKEN_KEY = 'token';
 
 export function usernameError(username: string) {
   if (username.length < 3 || username.length > 16 || /\s/.test(username)) {
@@ -26,6 +27,15 @@ export function saveUsername(username: string) {
   window.localStorage.setItem(USERNAME_KEY, username);
 }
 
-export function removeUsername() {
+export function getToken() {
+  return window.localStorage.getItem(TOKEN_KEY);
+}
+
+export function saveToken(token: string) {
+  window.localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearSession() {
   window.localStorage.removeItem(USERNAME_KEY);
+  window.localStorage.removeItem(TOKEN_KEY);
 }

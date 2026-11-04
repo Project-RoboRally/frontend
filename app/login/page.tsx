@@ -6,7 +6,7 @@ import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
 
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
-import { passwordError, saveUsername, usernameError } from '@/lib/username';
+import { passwordError, saveToken, saveUsername, usernameError } from '@/lib/username';
 
 /**
  * @author Anton, Kerem
@@ -33,6 +33,7 @@ export default function LoginPage() {
     try {
       const result = await login({ username, password });
       saveUsername(result.username);
+      saveUsername(result.token);
       router.push('/main-menu');
     } catch (loginError) {
       setError(getErrorMessage(loginError, 'Login failed'));

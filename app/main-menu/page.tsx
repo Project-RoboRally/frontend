@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
 import { buttonClassName, inputClassName } from '@/lib/styles';
-import { getUsername, removeUsername } from '@/lib/username';
+import { clearSession, getUsername } from '@/lib/username';
 import type { Lobby } from '@/types/lobby';
+import { logout } from '@/lib/api/login';
 
 /**
  * @author Anton, Kerem
@@ -77,8 +78,13 @@ export default function MainMenuPage() {
     };
   }, [router, username]);
 
-  function handleSignOut() {
-    removeUsername();
+  async function handleSignOut() {
+    try {
+      await logout();
+    } catch {
+      // log out in the browser, even if not in the backend
+    }
+    clearSession();
     router.push('/login');
   }
 
@@ -166,7 +172,7 @@ export default function MainMenuPage() {
             {isCreating ? 'Creating...' : 'Create Lobby'}
           </button>
 
-          <button className={buttonClassName} onClick={handleSignOut} type="button">
+          <button className={buttonClassName} onClick={() => void handleSignOut()} type="button">
             Sign Out
           </button>
         </section>

@@ -5,14 +5,18 @@ export function login(body: LoginRequest) {
   return apiPost<LoginResponse>('/api/login', body);
 }
 
-export async function hasActiveUser(username: string) {
+export async function hasActiveSession() {
   try {
-    await apiGet<LoginResponse>(`/api/session?username=${encodeURIComponent(username)}`);
+    await apiGet<LoginResponse>(`/api/session`);
     return true;
   } catch (error) {
-    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+    if (error instanceof ApiError && error.status === 401) {
       return false;
     }
     throw error;
   }
+}
+
+export function logout() {
+  return apiPost<void>('/api/logout', {});
 }
