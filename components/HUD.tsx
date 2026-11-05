@@ -138,27 +138,26 @@ export default function HUD({
 
           {/* Bottom */}
           <div
-            className="flex flex-col gap-2 rounded-md border-2 bg-charcoal/40 p-3"
+            className="flex w-fit max-w-full self-center flex-col gap-2 rounded-md border-2 bg-charcoal/40 p-3"
             style={{ borderColor: playerColorHex, backgroundColor: backgroundColorHex }}
           >
-            <div className="flex items-center gap-8">
+            <div className="flex flex-wrap items-stretch justify-start gap-4">
               {/* Programming deck */}
               <button
                 type="button"
                 disabled={deckLocked}
                 onClick={onHandOpen}
-                className="group shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark disabled:cursor-not-allowed disabled:opacity-50"
+                className="group flex w-28 shrink-0 flex-col items-center justify-center rounded-md border-2 border-cobber-dark bg-charcoal p-3 text-center shadow-lg shadow-black/30 transition hover:border-cobber-light hover:bg-cobber-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div className="text-[10px] font-bold uppercase text-cobber-light">Programming</div>
-
                 <div className="mt-1 font-bold uppercase tracking-wider text-bone">Deck</div>
               </button>
 
-              {/* Deck and register space */}
-              <div className="h-12 w-px shrink-0 bg-steel-dark" />
-
-              {/* Register */}
-              <div className="relative z-50 flex items-center gap-1.5" aria-label="Registers">
+              {/* Registers */}
+              <div
+                className="relative z-50 flex items-center gap-1.5 rounded-md border-2 border-cobber-dark bg-charcoal p-3"
+                aria-label="Registers"
+              >
                 {player.register.map((register, index) => (
                   <button
                     type="button"
@@ -177,10 +176,10 @@ export default function HUD({
                   </button>
                 ))}
               </div>
-            </div>
 
-            {/* Discard pile*/}
-            <DiscardPile cards={discardPile}/>
+              {/* Discard pile */}
+              <DiscardPile cards={discardPile} />
+            </div>
 
             {error ? (
               <p className="text-left text-xs font-semibold text-amber" role="alert">

@@ -264,7 +264,13 @@ function GameView() {
         error={error}
         gameState={gameState}
         locked={locked}
-        onHandOpen={() => setHandOpen(true)}
+        onHandOpen={() => {
+          if(hand.length === 0) {
+            setError('The programming phase hasn\'t started yet');
+            return;
+          }
+          setHandOpen(true)}
+        }
         onPlaceCard={placeCard}
         onRun={() => void handleRun()}
         onSwapRegisters={swapRegisters}

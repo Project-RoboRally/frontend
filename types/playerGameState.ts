@@ -13,7 +13,7 @@ export type PlayerGameStateType = 'GAME_STARTED' | 'CURRENT_STATE';
 
 export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
 
-export type Phase = 'PROGRAMMING' | 'ACTIVATION' | 'ENDED';
+export type Phase = 'UPGRADE' | 'PROGRAMMING' | 'ACTIVATION' | 'ENDED';
 
 export type Round = {
   phase: Phase;
