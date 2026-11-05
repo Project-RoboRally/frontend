@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import { getErrorMessage } from '@/lib/api/client';
 import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
-import { pingLogin } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
-import { getUsername, removeUsername } from '@/lib/username';
 import type { Lobby } from '@/types/lobby';
 
 /**
@@ -15,28 +15,15 @@ import type { Lobby } from '@/types/lobby';
 
 export default function MainMenuPage() {
   const router = useRouter();
+  const { username } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [lobbyName, setLobbyName] = useState('My Lobby');
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [username] = useState<string | null>(() =>
-    typeof window === 'undefined' ? null : getUsername(),
-  );
 
   useEffect(() => {
-    if (!username) {
-      router.replace('/login');
-    }
-  }, [router, username]);
-
-  useEffect(() => {
-    if (!username) {
-      return;
-    }
-
-    const currentUsername = username;
     let cancelled = false;
 
     async function loadLobbies() {
@@ -46,9 +33,9 @@ export default function MainMenuPage() {
           return;
         }
 
-        const currentLobby = nextLobbies.find((lobby) =>
-          (lobby.users ?? []).includes(currentUsername),
-        );
+        const currentLobby = username
+          ? nextLobbies.find((lobby) => (lobby.users ?? []).includes(username))
+          : undefined;
         if (currentLobby?.started) {
           router.replace(`/game?lobby=${currentLobby.id}`);
           return;
@@ -78,11 +65,6 @@ export default function MainMenuPage() {
     };
   }, [router, username]);
 
-  function handleSignOut() {
-    removeUsername();
-    router.push('/login');
-  }
-
   async function handleCreateLobby() {
     if (!username) {
       return;
@@ -105,9 +87,8 @@ export default function MainMenuPage() {
   }
 
   async function handleOpenLobby(id: string) {
-    const storedUsername = getUsername();
-    if (!storedUsername) {
-      router.replace('/login');
+    if (!username) {
+      setError('Log in to join a lobby.');
       return;
     }
 
@@ -115,15 +96,9 @@ export default function MainMenuPage() {
     setJoiningId(id);
 
     try {
-      const loggedIn = await pingLogin(storedUsername);
-      if (!loggedIn) {
-        router.replace('/main-menu');
-        return;
-      }
-
       const lobby = await getLobby(id);
-      if (!(lobby.users ?? []).includes(storedUsername)) {
-        await joinLobby(id, { username: storedUsername });
+      if (!(lobby.users ?? []).includes(username)) {
+        await joinLobby(id, { username });
       }
       router.push(`/lobby/${id}`);
     } catch (joinError) {
@@ -137,17 +112,23 @@ export default function MainMenuPage() {
     lobby.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  if (!username) {
-    return null;
-  }
-
   return (
     <main className="relative mx-auto min-h-screen w-full max-w-4xl p-6 pt-20">
       <header className="mb-10 text-center">
         <h1 className="text-3xl font-bold">Main Menu</h1>
+        {!username ? (
+          <p className="mt-2">
+            <Link className="underline" href="/login">
+              Log in
+            </Link>{' '}
+            or{' '}
+            <Link className="underline" href="/register">
+              create an account
+            </Link>{' '}
+            to play.
+          </p>
+        ) : null}
       </header>
-      <p className="absolute right-6 top-6">Logged in as: {username}</p>
-
       {error ? (
         <p className="mb-4 text-center" role="alert">
           {error}
@@ -166,15 +147,11 @@ export default function MainMenuPage() {
           />
           <button
             className={buttonClassName}
-            disabled={isCreating}
+            disabled={!username || isCreating}
             onClick={handleCreateLobby}
             type="button"
           >
             {isCreating ? 'Creating...' : 'Create Lobby'}
-          </button>
-
-          <button className={buttonClassName} onClick={handleSignOut} type="button">
-            Sign Out
           </button>
         </section>
 
@@ -192,7 +169,7 @@ export default function MainMenuPage() {
               <li key={lobby.id}>
                 <button
                   className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                  disabled={joiningId === lobby.id}
+                  disabled={!username || joiningId === lobby.id}
                   onClick={() => handleOpenLobby(lobby.id)}
                   type="button"
                 >

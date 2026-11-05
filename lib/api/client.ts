@@ -12,6 +12,9 @@ export class ApiError extends Error {
   }
 }
 
+let csrfToken: string | null = null;
+let csrfTokenRequest: Promise<string> | null = null;
+
 export function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -23,6 +26,22 @@ export function getErrorMessage(error: unknown, fallback: string) {
 function friendlyMessage(raw: string, status: number, method: string, path: string) {
   const text = raw.trim();
   const lower = text.toLowerCase();
+
+  if (status === 409) {
+    return 'That username is already in use. Pick another.';
+  }
+
+  if (status === 401 && (path === '/api/login' || path === '/api/register')) {
+    return 'Invalid username or password.';
+  }
+
+  if (status === 401) {
+    return 'Your session has expired. Log in again to continue.';
+  }
+
+  if (status === 403) {
+    return 'This action was rejected because of a permission or CSRF issue. Refresh the page and try again. You are still signed in.';
+  }
 
   if (
     lower.includes('failed to fetch') ||
@@ -72,24 +91,12 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
     return 'Username must be 3-16 characters.';
   }
 
-  if (text === 'Player already exists' || lower.includes('username already taken')) {
-    return 'That username is already in use. Pick another.';
-  }
-
-  if (lower.includes('request body is required')) {
-    return 'Login needs a username in JSON, for example {"username":"alice"}.';
-  }
-
   if (text && text !== 'Internal Server Error' && !/^Request failed: \d+$/.test(text)) {
     return text;
   }
 
   if (status === 400) {
     return 'The server rejected this request. Check the name and try again.';
-  }
-
-  if (status === 403) {
-    return 'You are not allowed to do that.';
   }
 
   if (status === 404) {
@@ -118,6 +125,11 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
   return `Request failed (${status}).`;
 }
 
+export function clearCsrfToken() {
+  csrfToken = null;
+  csrfTokenRequest = null;
+}
+
 async function readErrorBody(response: Response) {
   try {
     const body: unknown = await response.json();
@@ -143,6 +155,59 @@ async function readErrorBody(response: Response) {
   return '';
 }
 
+async function getCsrfToken() {
+  if (csrfToken) {
+    return csrfToken;
+  }
+  if (csrfTokenRequest) {
+    return csrfTokenRequest;
+  }
+
+  csrfTokenRequest = (async () => {
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}/api/csrf`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+    } catch (cause) {
+      const raw = cause instanceof Error ? cause.message : 'Failed to fetch';
+      throw new ApiError(friendlyMessage(raw, 0, 'GET', '/api/csrf'), 0, '/api/csrf');
+    }
+
+    if (!response.ok) {
+      const raw = await readErrorBody(response);
+      throw new ApiError(
+        friendlyMessage(raw, response.status, 'GET', '/api/csrf'),
+        response.status,
+        '/api/csrf',
+      );
+    }
+
+    const body: unknown = await response.json();
+    if (
+      typeof body !== 'object' ||
+      body === null ||
+      !('token' in body) ||
+      typeof body.token !== 'string' ||
+      body.token.length === 0
+    ) {
+      throw new ApiError('The backend did not return a valid CSRF token.', 0, '/api/csrf');
+    }
+
+    csrfToken = body.token;
+    return csrfToken;
+  })();
+
+  try {
+    return await csrfTokenRequest;
+  } finally {
+    csrfTokenRequest = null;
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers = new Headers(options?.headers);
   headers.set('Accept', 'application/json');
@@ -151,12 +216,17 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   const method = (options?.method ?? 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+    headers.set('X-XSRF-TOKEN', await getCsrfToken());
+  }
+
   let response: Response;
 
   try {
     response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers,
+      credentials: 'include',
       cache: 'no-store',
     });
   } catch (cause) {
@@ -165,6 +235,18 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      clearCsrfToken();
+    }
+    if (
+      response.status === 401 &&
+      method !== 'GET' &&
+      path !== '/api/login' &&
+      path !== '/api/register' &&
+      typeof window !== 'undefined'
+    ) {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
     const raw = await readErrorBody(response);
     throw new ApiError(friendlyMessage(raw, response.status, method, path), response.status, path);
   }
@@ -182,9 +264,15 @@ export function apiGet<T>(path: string) {
 }
 
 export function apiPost<T>(path: string, body: unknown) {
+  const isAuthenticationRequest =
+    path === '/api/login' || path === '/api/register' || path === '/api/logout';
   return request<T>(path, {
     method: 'POST',
     body: JSON.stringify(body ?? {}),
+  }).finally(() => {
+    if (isAuthenticationRequest) {
+      clearCsrfToken();
+    }
   });
 }
 

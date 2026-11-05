@@ -1,28 +1,29 @@
 import { apiGet, apiPost, ApiError } from './client';
-import type { LoginRequest, LoginResponse } from '@/types/auth';
+import type { AuthSession, Credentials } from '@/types/auth';
 
-export function login(body: LoginRequest) {
-  return apiPost<LoginResponse>('/api/login', body);
+export function getSession() {
+  return apiGet<AuthSession>('/api/session');
 }
 
-export async function hasActiveUser(username: string) {
+export async function restoreSession() {
   try {
-    await apiGet<LoginResponse>(`/api/session?username=${encodeURIComponent(username)}`);
-    return true;
+    return await getSession();
   } catch (error) {
-    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
-      return false;
+    if (error instanceof ApiError && error.status === 401) {
+      return null;
     }
     throw error;
   }
 }
 
-/** Re-register this username with the in-memory backend. An existing user is still active. */
-export async function pingLogin(username: string) {
-  try {
-    await login({ username });
-    return true;
-  } catch {
-    return false;
-  }
+export function login(credentials: Credentials) {
+  return apiPost<AuthSession>('/api/login', credentials);
+}
+
+export function register(credentials: Credentials) {
+  return apiPost<AuthSession>('/api/register', credentials);
+}
+
+export function logout() {
+  return apiPost<void>('/api/logout', {});
 }

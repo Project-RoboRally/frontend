@@ -1,66 +1,57 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { hasActiveUser } from '@/lib/api/login';
-import { getUsername } from '@/lib/username';
+import { AccountBar } from '@/components/AccountBar';
+import { useAuth } from '@/components/AuthProvider';
+import { getSessionGuardView } from '@/lib/auth/sessionGuard';
+import { buttonClassName } from '@/lib/styles';
 
-/**
- * Keeps a backend User alive for every page except login.
- * Missing users are sent to login, which signs them in with the saved username.
- */
 export default function SessionGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isLogin = pathname === '/login';
-  const [allowed, setAllowed] = useState(isLogin);
+  const { status, error, refreshSession } = useAuth();
+  const view = getSessionGuardView(pathname, status);
 
   useEffect(() => {
-    if (isLogin) {
-      setAllowed(true);
-      return;
-    }
-
-    const username = getUsername();
-    if (!username) {
-      setAllowed(false);
+    if (view === 'redirect-to-menu') {
+      router.replace('/main-menu');
+    } else if (view === 'redirect-to-login') {
       router.replace('/login');
-      return;
     }
+  }, [router, view]);
 
-    const activeUsername: string = username;
-    let cancelled = false;
+  if (view === 'checking') {
+    return (
+      <main className="flex min-h-screen items-center justify-center" role="status">
+        Checking your session...
+      </main>
+    );
+  }
 
-    async function confirmUser() {
-      try {
-        const active = await hasActiveUser(activeUsername);
-        if (cancelled) {
-          return;
-        }
-        if (!active) {
-          setAllowed(false);
-          router.replace('/login');
-          return;
-        }
-        setAllowed(true);
-      } catch {
-        if (!cancelled) {
-          setAllowed(false);
-          router.replace('/login');
-        }
-      }
-    }
+  if (view === 'session-error') {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
+        <p role="alert">{error}</p>
+        <button className={buttonClassName} onClick={() => void refreshSession()} type="button">
+          Retry
+        </button>
+      </main>
+    );
+  }
 
-    void confirmUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isLogin, pathname, router]);
-
-  if (!allowed) {
+  if (view === 'redirect-to-menu' || view === 'redirect-to-login') {
     return null;
   }
 
-  return children;
+  if (view === 'public') {
+    return children;
+  }
+
+  return (
+    <>
+      <AccountBar />
+      {children}
+    </>
+  );
 }

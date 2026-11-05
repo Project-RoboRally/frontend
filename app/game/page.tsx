@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { useAuth } from '@/components/AuthProvider';
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
@@ -20,7 +21,6 @@ import {
 } from '@/lib/programCards';
 import { usePlayerState } from '@/lib/socket/usePlayerState';
 import { buttonClassName } from '@/lib/styles';
-import { getUsername } from '@/lib/username';
 
 import type { Board } from '@/types/board';
 import type { GameState } from '@/types/gameState';
@@ -70,10 +70,7 @@ export default function GamePage() {
 
 function GameView() {
   const router = useRouter();
-
-  const [username] = useState<string | null>(() =>
-    typeof window === 'undefined' ? null : getUsername(),
-  );
+  const { username } = useAuth();
 
   // Board animation display state
   const [completedBoard, setCompletedBoard] = useState<Board | null>(null);
@@ -111,13 +108,6 @@ function GameView() {
 
   const liveBoard = playerState?.board ?? null;
   const board = animatingBoard ?? liveBoard;
-
-  // If the username is not set, redirect to the login page as the user is not logged in.
-  useEffect(() => {
-    if (!username) {
-      router.replace('/login');
-    }
-  }, [router, username]);
 
   // If the user is waiting, set the registers to empty,
   // the card to null,

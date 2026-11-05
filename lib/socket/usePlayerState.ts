@@ -6,9 +6,7 @@ import { connectStomp } from './stomp';
 import type { PlayerGameState } from '@/types/playerGameState';
 
 /**
- * Loads this player's game state over the websocket. The /app subscription
- * replies with the current state right away, so a reloaded page gets it too;
- * the /game topic delivers it when the game is started.
+ * Subscribes to this player's private game-state topic using the session username.
  *
  * @author Nicoleta
  */
@@ -22,7 +20,6 @@ export function usePlayerState(lobbyId: string | null, username: string | null) 
 
     const connection = connectStomp((stomp) => {
       const receive = (body: unknown) => setState(body as PlayerGameState);
-      stomp.subscribe(`/app/lobby/${lobbyId}/player/${username}`, receive);
       stomp.subscribe(`/game/lobby/${lobbyId}/player/${username}`, receive);
     });
 

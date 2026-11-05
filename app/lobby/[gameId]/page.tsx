@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import { ApiError, getErrorMessage } from '@/lib/api/client';
 import {
   getLobby,
@@ -13,18 +14,14 @@ import {
   setReady,
   startGame,
 } from '@/lib/api/lobby';
-import { pingLogin } from '@/lib/api/login';
 import { colorLabel, PLAYER_COLORS, robotSprite } from '@/lib/playerColors';
 import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib/styles';
-import { getUsername } from '@/lib/username';
 import type { Lobby, PlayerColor } from '@/types/lobby';
 
 export default function LobbyPage() {
   const router = useRouter();
+  const { username } = useAuth();
   const { gameId } = useParams<{ gameId: string }>();
-  const [username] = useState<string | null>(() =>
-    typeof window === 'undefined' ? null : getUsername(),
-  );
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
@@ -95,16 +92,10 @@ export default function LobbyPage() {
     }
 
     async function start() {
-      const loggedIn = await pingLogin(currentUsername);
+      await loadLobby();
       if (cancelled) {
         return;
       }
-      if (!loggedIn) {
-        router.replace('/main-menu');
-        return;
-      }
-
-      await loadLobby();
       interval = window.setInterval(() => {
         if (!isRenamingRef.current) {
           void loadLobby();
@@ -265,7 +256,6 @@ export default function LobbyPage() {
           Exit
         </button>
         <h1 className="text-3xl font-bold">Lobby</h1>
-        <p className="absolute right-6 top-6">Logged in as: {username}</p>
       </header>
 
       {error ? (
