@@ -16,8 +16,11 @@ export const PROGRAM_CARDS: readonly ProgramCard[] = [
   { instruction: 'LEFT_TURN', label: 'Turn left' },
   { instruction: 'RIGHT_TURN', label: 'Turn right' },
   { instruction: 'U_TURN', label: 'Turn back' },
-  { instruction: 'POWER', label: 'Recieve Powercube' },
-  { instruction: 'AGAIN', label: 'Redo' },
+  { instruction: 'POWER_UP', label: 'Power up' },
+  { instruction: 'AGAIN', label: 'Again' },
+  { instruction: 'ENERGY_ROUTINE', label: 'Energy routine' },
+  { instruction: 'SPEED_ROUTINE', label: 'Speed routine' },
+  { instruction: 'REPEAT_ROUTINE', label: 'Repeat routine' },
 ];
 
 export const REGISTER_COUNT = 5;

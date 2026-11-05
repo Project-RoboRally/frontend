@@ -8,9 +8,8 @@ import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
 import { getErrorMessage } from '@/lib/api/client';
 import { submitProgram } from '@/lib/api/lobby';
-import { MockCards } from '@/lib/mock-cards';
-import { mockRegister } from '@/lib/mock-register';
-import { PROGRAM_CARDS, REGISTER_COUNT } from '@/lib/programCards';
+import { toProgrammingCard, toInstruction } from '@/lib/cardTranslater';
+import { REGISTER_COUNT } from '@/lib/programCards';
 import { usePlayerState } from '@/lib/socket/usePlayerState';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
@@ -28,18 +27,12 @@ import type { RobotModel } from '@/types/robot';
  * @author Caroline, Katarina, Kerem
  */
 
-// turns a card object into the text instruction the backend expects. Returns null if the backend doesn't know the card (Only knows PROGRAM_CARDS)
-function cardToInstruction(card: ProgrammingCard): string | null {
-  let instruction: string | null = null;
-
-  if (card.cardType === 'move') {
-    instruction = `MOVE_${card.cardStrength}`;
-  } else if (card.cardType === 'rotate') {
-    instruction = card.cardDirection === 'left' ? 'LEFT_TURN' : 'RIGHT_TURN';
-  }
-
-  return PROGRAM_CARDS.some((c) => c.instruction === instruction) ? instruction : null;
-}
+const emptyRegisters = (): Register[] =>
+([1, 2, 3, 4, 5] as const).map((n) => ({
+  registerNumber: n,
+  registerRevealed: true,
+  registerCard: null,
+}))
 
 export default function GamePage() {
   return (
@@ -66,6 +59,10 @@ function GameView() {
   const lobbyId = useSearchParams().get('lobby');
   const playerState = usePlayerState(lobbyId, username);
   const board = playerState?.board ?? null;
+  const hand: ProgrammingCard[] = (playerState?.playerMat.hand ?? []).flatMap((card, i) => {
+      const converted = toProgrammingCard(card, i);
+      return converted ? [converted] : [];
+  });
   const finished = playerState?.status === 'FINISHED';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
@@ -75,7 +72,7 @@ function GameView() {
   const showWinner = finished && completedBoard === board;
 
   // Registrene ligger i state, så de kan ændres (bytte rundt) senere
-  const [registers, setRegisters] = useState<Register[]>(mockRegister);
+  const [registers, setRegisters] = useState<Register[]>(emptyRegisters());
   const [handOpen, setHandOpen] = useState<boolean>(false); // Open or close the hand
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -96,9 +93,9 @@ function GameView() {
       boardAtWait.current = board;
       return;
     }
-    setRegisters(mockRegister);
+    setRegisters(emptyRegisters());
     setSelectedCardId(null);
-    setHandOpen(false); // NEW CODE
+    setHandOpen(false);
     setIsWaiting(false);
     setError(null);
   }, [board, isWaiting]);
@@ -136,11 +133,18 @@ function GameView() {
   };
 
   const placeCard = (index: number) => {
-    if (locked) return;
-    if (selectedCardId === null) return; // NO card choosen
+    if(locked) return;
+    if(selectedCardId === null) return; // NO card choosen
 
     // Copying the hand-index card over to the register-index (also deleting itself hand-index)
-    const card = MockCards[selectedCardId];
+    const card = hand.find((c) => c.cardId === selectedCardId)
+    if(!card) return;
+
+    if(index === 0 && (card.cardType === 'again' || card.cardType === 'repeatRoutine')) { // Since it's not possible to go to register 0 since [1,2,3,4,5]
+      setError('Again can\'t be placed in register 1 dumbass');
+      return;
+    }
+
     const next = registers.map((register, i) =>
       i === index ? { ...register, registerCard: card } : register,
     );
@@ -166,16 +170,7 @@ function GameView() {
     setIsSubmitting(true);
     setError(null);
     try {
-      // Backend expects text instructions, so each card object is converted
-      const instructions = registers
-        .map((register) => cardToInstruction(register.registerCard!))
-        .filter((instruction): instruction is string => instruction !== null);
-
-      // Stops if a card isn't supported by the backend yet
-      if (instructions.length !== REGISTER_COUNT) {
-        setError('One or more cards are not supported by the backend yet.');
-        return;
-      }
+      const instructions = registers.map((register) => toInstruction(register.registerCard!));
 
       const response = await submitProgram(lobbyId, {
         username,
@@ -186,7 +181,7 @@ function GameView() {
         setIsWaiting(true);
         return;
       }
-      setRegisters(mockRegister);
+      setRegisters(emptyRegisters());
       setSelectedCardId(null);
       setIsWaiting(false);
     } catch (runError) {
@@ -289,7 +284,7 @@ function GameView() {
 
           <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-steel-dark bg-black/85 p-6 shadow-2xl">
             <div className="flex flex-wrap justify-center gap-3">
-              {Object.values(MockCards)
+              {hand
                 // Deletes the cards which is already in the register, so they can't be used twice
                 .filter(
                   (card) =>

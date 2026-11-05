@@ -20,5 +20,11 @@ export function CardInfo({ card }: { card: ProgrammingCard }) {
       return 'power';
     case 'again':
       return 'again';
+    case 'energyRoutine':
+      return 'energy routine';
+    case 'speedRoutine':
+      return 'speed routine';
+    case 'repeatRoutine':
+      return 'repeat routine'
   }
 }
