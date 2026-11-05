@@ -1,3 +1,5 @@
+import { getToken } from '@/lib/username';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
@@ -77,7 +79,7 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
   }
 
   if (lower.includes('request body is required')) {
-    return 'Login needs a username in JSON, for example {"username":"alice"}.';
+    return 'Login needs a username and password';
   }
 
   if (text && text !== 'Internal Server Error' && !/^Request failed: \d+$/.test(text)) {
@@ -86,6 +88,10 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
 
   if (status === 400) {
     return 'The server rejected this request. Check the name and try again.';
+  }
+
+  if (status === 401) {
+    return 'Wrong username or password';
   }
 
   if (status === 403) {
@@ -148,6 +154,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   headers.set('Accept', 'application/json');
   if (options?.body != null) {
     headers.set('Content-Type', 'application/json');
+  }
+  const token = typeof window === 'undefined' ? null : getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const method = (options?.method ?? 'GET').toUpperCase();
