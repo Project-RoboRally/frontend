@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
+import type { Card } from '@/types/playerGameState';
 import { useState, useEffect } from 'react';
 import { CardInfo } from '@/components/CardInfo';
+import { DiscardPile } from '@/components/DiscardPile';
 import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { labelForInstruction, REGISTER_COUNT } from '@/lib/programCards';
@@ -29,6 +31,7 @@ export default function HUD({
   onHandOpen,
   placingCard,
   onPlaceCard,
+  discardPile
 }: {
   gameState: GameState;
   player: Player;
@@ -42,6 +45,7 @@ export default function HUD({
   onHandOpen: () => void;
   placingCard: boolean; //true when the hand is opened
   onPlaceCard: (index: number) => void;
+  discardPile: Card[];
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
@@ -174,6 +178,9 @@ export default function HUD({
                 ))}
               </div>
             </div>
+
+            {/* Discard pile*/}
+            <DiscardPile cards={discardPile}/>
 
             {error ? (
               <p className="text-left text-xs font-semibold text-amber" role="alert">

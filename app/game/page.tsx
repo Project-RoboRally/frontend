@@ -276,6 +276,7 @@ function GameView() {
         placingCard={handOpen}
         player={player}
         waiting={isWaiting}
+        discardPile={playerState?.playerMat.discardPile ?? []} // When the program is just started, the playerState isn't loaded yet, so we use this to avoid it crashing
       >
         <Game board={board} onAnimationComplete={handleAnimationComplete} />
       </HUD>
