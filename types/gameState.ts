@@ -11,6 +11,7 @@ export type GameState = {
   timerOut: boolean;
   status: GameStatus;
   players: Player[];
+  programmingEndsAt: number | null;
 } & (UpgradePhase | ProgrammingPhase | ActivationPhase);
 
 export type UpgradePhase = {
