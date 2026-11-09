@@ -256,7 +256,7 @@ export default function LobbyPage() {
     if (!lobby || !username) {
       return;
     }
-    
+
     try {
       const updated = await unkickPlayer(lobby.id, {
         kickedBy: username,
@@ -267,7 +267,6 @@ export default function LobbyPage() {
       setError(getErrorMessage(unkickError, 'Failed to allow player back'));
     }
   }
-
 
   if (!username) {
     return null;
@@ -398,7 +397,7 @@ export default function LobbyPage() {
               </ul>
             </>
           ) : null}
-          
+
           {myColor ? (
             <>
               <h3 className="mb-2 text-lg font-semibold">Your robot</h3>
