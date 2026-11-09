@@ -12,6 +12,21 @@ const missingImages: Partial<Record<BoardElement['type'], string>> = {
   REBOOT_POINT: '#3b82f6',
 };
 
+function checkpointImage(number: number) {
+  const clamped = Math.min(6, Math.max(1, number));
+  return `/checkpoint_${clamped}.png`;
+}
+
+function laserShooterImage(damage: number) {
+  if (damage >= 3) {
+    return '/three_laser_shooter.png';
+  }
+  if (damage === 2) {
+    return '/two_laser_shooter.png';
+  }
+  return '/one_laser_shooter.png';
+}
+
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
   if (!elements || elements.length === 0) return null;
 
@@ -28,18 +43,19 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
   ];
 
   for (const type of priorityTypes) {
-    if (elements.some((el) => el.type === type)) {
-      // TODO: Add image for this element type.
-      if (type in missingImages) return null;
+    const match = elements.find((el) => el.type === type);
+    if (!match) continue;
 
-      if (type === 'LASER_EMITTER') {
-        return '/one_laser_shooter.png';
-      } else if (type === 'CHECKPOINT') {
-        return '/checkpoint_1.png';
-      } else {
-        return `/${type.toLowerCase()}.png`;
-      }
+    // TODO: Add image for this element type.
+    if (type in missingImages) return null;
+
+    if (match.type === 'LASER_EMITTER') {
+      return laserShooterImage(match.damage);
     }
+    if (match.type === 'CHECKPOINT') {
+      return checkpointImage(match.number);
+    }
+    return `/${type.toLowerCase()}.png`;
   }
 
   // Handle gears based on their rotation direction
@@ -50,17 +66,9 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
       : '/gear_counterclockwise.png';
   }
 
-  // Handle push panels specifically based on their active registers
-  const pushPanel = elements.find((element) => element.type === 'PUSH_PANEL');
-  if (pushPanel) {
-    // Note: The backend should ideally always send the registers, but we handle both possible property names for safety.
-    const regs = (pushPanel as any).registers || (pushPanel as any).registerNumbers;
-    if (Array.isArray(regs) && regs.length > 0) {
-      // Sort them to ensure consistency, [1, 3, 5] becomes "135"
-      const regString = [...regs].sort().join('');
-      return `/push_panel_${regString}.png`;
-    }
-    return '/push_panel_1_3_5.png'; // Fallback if no specific registers are found, but this should ideally not happen if the backend always sends them.
+  // Push panels do not include register numbers in the backend DTO.
+  if (elements.some((element) => element.type === 'PUSH_PANEL')) {
+    return '/push_panel_1_3_5.png';
   }
 
   // Handle conveyors based on their beltType
@@ -106,7 +114,8 @@ export function getElementRotation(elements: BoardElement[] | undefined): string
   const directionalElement = elements.find((e) => 'direction' in e || 'pushDirection' in e);
 
   const direction =
-    (directionalElement as any)?.direction || (directionalElement as any)?.pushDirection;
+    (directionalElement as { direction?: string; pushDirection?: string } | undefined)?.direction ||
+    (directionalElement as { pushDirection?: string } | undefined)?.pushDirection;
 
   switch (direction) {
     case 'EAST':

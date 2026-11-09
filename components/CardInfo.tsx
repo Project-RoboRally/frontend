@@ -1,3 +1,4 @@
+import { instructionFromCard, labelForInstruction } from '@/lib/programCards';
 import type { ProgrammingCard } from '@/types/cards';
 
 /**
@@ -6,19 +7,7 @@ import type { ProgrammingCard } from '@/types/cards';
  * @author Kerem, Matthias
  */
 
-export function CardInfo({ card }: { card: ProgrammingCard }) {
-  switch (card.cardType) {
-    case 'move':
-      return 'move ' + card.cardStrength;
-    case 'rotate':
-      return 'rotate ' + card.cardDirection;
-    case 'uTurn':
-      return 'uTurn';
-    case 'back':
-      return 'back';
-    case 'power':
-      return 'power';
-    case 'again':
-      return 'again';
-  }
+export function CardInfo({ card }: { card: ProgrammingCard | string }) {
+  const instruction = typeof card === 'string' ? card : instructionFromCard(card);
+  return labelForInstruction(instruction ?? '');
 }

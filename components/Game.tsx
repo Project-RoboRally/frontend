@@ -56,52 +56,68 @@ function RobotSprite({ robot }: { robot: BoardRobot }) {
   );
 }
 
-function useAnimatedRobots(board: Board | null) {
+function useAnimatedRobots(
+  board: Board | null,
+  onAnimationComplete?: (board: Board) => void,
+  onStepIndexChange?: (index: number | null) => void,
+) {
   const [robots, setRobots] = useState<BoardRobot[]>(board?.robots ?? []);
 
   useEffect(() => {
     if (!board) {
+      onStepIndexChange?.(null);
       return;
     }
 
     const frames = board.steps ?? [];
     if (frames.length === 0) {
       setRobots(board.robots ?? []);
+      onStepIndexChange?.(null);
+      onAnimationComplete?.(board);
       return;
     }
 
-    let index = 0;
+    setRobots(frames[0]);
+    onStepIndexChange?.(0);
+
+    let index = 1;
     const timer = window.setInterval(() => {
       if (index >= frames.length) {
         setRobots(board.robots ?? []);
+        onStepIndexChange?.(null);
         window.clearInterval(timer);
+        onAnimationComplete?.(board);
         return;
       }
       setRobots(frames[index]);
+      onStepIndexChange?.(index);
       index += 1;
     }, STEP_MS);
 
     return () => window.clearInterval(timer);
-  }, [board]);
+  }, [board, onAnimationComplete, onStepIndexChange]);
 
   return robots;
 }
 
 interface GameProps {
   board: Board | null;
+  onAnimationComplete?: (board: Board) => void;
+  onStepIndexChange?: (index: number | null) => void;
 }
 
-export default function Game({ board }: GameProps) {
+export default function Game({ board, onAnimationComplete, onStepIndexChange }: GameProps) {
   // Backend coordinates: x = column, y = row counted from the top.
   const width = board?.width ?? FALLBACK_SIZE;
   const height = board?.height ?? FALLBACK_SIZE;
   const elementsAt = new Map<string, BoardElement[]>(
     (board?.spaces ?? []).map((space) => [`${space.x},${space.y}`, space.elements]),
   );
-  const robots = useAnimatedRobots(board);
+
+  const robots = useAnimatedRobots(board, onAnimationComplete, onStepIndexChange);
 
   return (
-    <section className="aspect-square w-[600px] rounded-lg border-2 border-slate-900 bg-slate-900 p-2 shadow-xl">
+    <section className="aspect-square h-full max-h-full rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
       <div
         className="relative grid h-full w-full bg-slate-900 p-1"
         style={{

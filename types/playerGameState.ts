@@ -9,11 +9,19 @@ import type { Board, Direction } from '@/types/board';
 
 // GAME_STARTED is sent once when the game starts; CURRENT_STATE replies to a
 // new subscription, such as for after a page reload.
-export type PlayerGameStateType = 'GAME_STARTED' | 'CURRENT_STATE';
+export type PlayerGameStateType =
+  'GAME_STARTED' | 'CURRENT_STATE' | 'UPGRADE_TURN' | 'PROGRAMMING_STARTED' | 'ROUND_STARTED';
 
 export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
 
-export type Phase = 'PROGRAMMING' | 'ACTIVATION' | 'ENDED';
+export type Phase = 'UPGRADE' | 'PROGRAMMING' | 'ACTIVATION' | 'ENDED';
+
+export type UpgradeType = 'ENERGY_ROUTINE' | 'SPEED_ROUTINE' | 'REPEAT_ROUTINE';
+
+export type Upgrade = {
+  type: UpgradeType;
+  cost: number;
+};
 
 export type Round = {
   phase: Phase;
@@ -40,6 +48,7 @@ export type GamePlayer = {
   username: string;
   robot: PlayerRobot;
   checkpointsReached: number;
+  energy: number;
   programSubmitted: boolean;
 };
 
@@ -65,4 +74,7 @@ export type PlayerGameState = {
   players: GamePlayer[];
   you: string;
   playerMat: PlayerMat;
+  upgradeShop: Upgrade[];
+  currentBuyer: string | null;
+  winnerUsername: string | null;
 };
