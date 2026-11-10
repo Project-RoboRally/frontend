@@ -2,7 +2,7 @@
  * Type definitions for the game state the backend sends to one player over the
  * websocket.
  *
- * @author Nicoleta
+ * @author Nicoleta, Elias
  */
 
 import type { Board, Direction } from '@/types/board';
@@ -24,6 +24,8 @@ export type Upgrade = {
 };
 
 export type Round = {
+  // 1 for the first round of the game.
+  number: number;
   phase: Phase;
   // Null outside the activation phase.
   currentRegisterIndex: number | null;
