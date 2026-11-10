@@ -10,7 +10,12 @@ import type { Board, Direction } from '@/types/board';
 // GAME_STARTED is sent once when the game starts; CURRENT_STATE replies to a
 // new subscription, such as for after a page reload.
 export type PlayerGameStateType =
-  'GAME_STARTED' | 'CURRENT_STATE' | 'UPGRADE_TURN' | 'PROGRAMMING_STARTED' | 'ROUND_STARTED';
+  | 'GAME_STARTED'
+  | 'CURRENT_STATE'
+  | 'UPGRADE_TURN'
+  | 'PROGRAMMING_STARTED'
+  | 'TIMER_STARTED'
+  | 'ROUND_STARTED';
 
 export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
 
@@ -30,6 +35,9 @@ export type Round = {
   // Null outside the activation phase.
   currentRegisterIndex: number | null;
   programmingTimeLimitSeconds: number;
+  // When programming time runs out, in milliseconds since 1970. Null until the
+  // first player submits their program.
+  programmingEndsAt: number | null;
 };
 
 // instruction is a CommandInstruction or DamageInstruction name.

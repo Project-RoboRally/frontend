@@ -50,7 +50,6 @@ export default function HUD({
   discardCount: number;
   activeRegisterIndex: number | null;
   extraPanel?: ReactNode;
-  programmingEndsAt: number | null;
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
