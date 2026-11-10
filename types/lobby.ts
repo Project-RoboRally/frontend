@@ -60,7 +60,7 @@ export type ProgramResponse = {
 export type BuyUpgradeRequest = {
   username: string;
   upgrade: UpgradeType;
-  replace: UpgradeType;
+  replace?: UpgradeType | null; // Question mark since we don't need to always replace an upgrade card
 };
 
 export type SkipUpgradeRequest = {
