@@ -13,6 +13,7 @@ export type Lobby = {
   users: string[];
   createdBy: string | null;
   members?: LobbyMember[];
+  kickedUsers?: string[];
   gameId?: string | null;
   started: boolean;
 };
