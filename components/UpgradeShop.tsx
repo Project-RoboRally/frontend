@@ -1,5 +1,6 @@
 import { secondaryButtonClassName } from '@/lib/styles';
 import { labelForInstruction } from '@/lib/programCards';
+import { UPGRADE_INFO } from '@/lib/upgrades';
 import type { Upgrade, UpgradeType } from '@/types/playerGameState';
 
 /**
@@ -47,18 +48,29 @@ export function UpgradeShop({
           shop.map((upgrade, index) => {
             const canAfford = energy >= upgrade.cost;
             return (
-              <button
+              <div
                 key={`${upgrade.type}-${index}`}
-                type="button"
-                disabled={disabled || !isBuyer || !canAfford}
-                onClick={() => onBuy(upgrade.type)}
-                className="flex min-w-20 flex-col items-center rounded-md border-2 border-steel-dark bg-iron px-2 py-2 text-xs font-bold text-bone transition hover:border-cobber-light disabled:cursor-not-allowed disabled:opacity-50"
+                className="group relative"
               >
-                <span>{labelForInstruction(upgrade.type)}</span>
-                <span className="mt-1 text-[10px] uppercase text-cobber-light">
-                  {upgrade.cost} energy
-                </span>
-              </button>
+                <button
+                  type="button"
+                  disabled={disabled || !isBuyer || !canAfford}
+                  onClick={() => onBuy(upgrade.type)}
+                  className="flex min-w-20 flex-col items-center rounded-md border-2 border-steel-dark bg-iron px-2 py-2 text-xs font-bold text-bone transition hover:border-cobber-light disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{UPGRADE_INFO[upgrade.type].label}</span>
+                  <span className="mt-1 text-[10px] uppercase text-cobber-light">
+                    {upgrade.cost} energy
+                  </span>
+                </button>
+
+                {/* Description appears when hovering over the card */}
+                {!disabled && isBuyer && canAfford && (
+                  <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-md border border-cobber-light bg-charcoal p-3 text-xs font-normal text-bone shadow-xl group-hover:block group-focus-within:block">
+                  <p>{UPGRADE_INFO[upgrade.type].description}</p>
+                </div>
+                )}
+              </div>
             );
           })
         )}
