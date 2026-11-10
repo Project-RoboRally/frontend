@@ -12,6 +12,7 @@ import {
   setColor,
   setReady,
   startGame,
+  unkickPlayer,
 } from '@/lib/api/lobby';
 import { pingLogin } from '@/lib/api/login';
 import { colorLabel, PLAYER_COLORS, robotSprite } from '@/lib/playerColors';
@@ -122,6 +123,7 @@ export default function LobbyPage() {
 
   const players = lobby?.users ?? [];
   const isOwner = lobby?.createdBy === username;
+  const kickedPlayers = lobby?.kickedUsers ?? [];
   // Without member data (older backend) readiness is unknown, so don't gate Start on it.
   const readyKnown = lobby?.members !== undefined;
 
@@ -250,6 +252,22 @@ export default function LobbyPage() {
     }
   }
 
+  async function handleUnkick(player: string) {
+    if (!lobby || !username) {
+      return;
+    }
+
+    try {
+      const updated = await unkickPlayer(lobby.id, {
+        kickedBy: username,
+        userKicked: player,
+      });
+      setLobby(updated);
+    } catch (unkickError) {
+      setError(getErrorMessage(unkickError, 'Failed to allow player back'));
+    }
+  }
+
   if (!username) {
     return null;
   }
@@ -357,6 +375,29 @@ export default function LobbyPage() {
               );
             })}
           </ul>
+          {isOwner && kickedPlayers.length > 0 ? (
+            <>
+              <h3 className="mb-2 text-lg font-semibold">Kicked players</h3>
+              <ul className="mb-8 flex w-full max-w-xl flex-col gap-2 text-left">
+                {kickedPlayers.map((player) => (
+                  <li
+                    className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
+                    key={player}
+                  >
+                    <span className="truncate">{player}</span>
+                    <button
+                      className={`${secondaryButtonClassName} ml-2 shrink-0`}
+                      onClick={() => void handleUnkick(player)}
+                      type="button"
+                    >
+                      Allow back
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
           {myColor ? (
             <>
               <h3 className="mb-2 text-lg font-semibold">Your robot</h3>

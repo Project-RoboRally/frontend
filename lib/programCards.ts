@@ -24,6 +24,14 @@ export const PROGRAM_CARDS: readonly ProgramCard[] = [
   { instruction: 'ENERGY_ROUTINE', label: 'Energy' },
   { instruction: 'SPEED_ROUTINE', label: 'Speed' },
   { instruction: 'REPEAT_ROUTINE', label: 'Repeat' },
+  { instruction: 'SANDBOX_ROUTINE', label: 'Sandbox' },
+  { instruction: 'WEASEL_ROUTINE', label: 'Weasel' },
+  { instruction: 'SPAM_FOLDER', label: 'Spam folder' },
+  // Damage cards
+  { instruction: 'SPAM', label: 'SPAM' },
+  { instruction: 'TROJAN_HORSE', label: 'Trojan horse' },
+  { instruction: 'VIRUS', label: 'Virus' },
+  { instruction: 'WORM', label: 'Worm' },
 ];
 
 export const REGISTER_COUNT = 5;

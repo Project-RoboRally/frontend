@@ -1,3 +1,5 @@
+import type { UpgradeType } from '@/types/playerGameState';
+
 export type PlayerColor = 'RED' | 'BLUE' | 'PINK' | 'GREEN' | 'PURPLE' | 'ORANGE';
 
 export type LobbyMember = {
@@ -13,6 +15,7 @@ export type Lobby = {
   users: string[];
   createdBy: string | null;
   members?: LobbyMember[];
+  kickedUsers?: string[];
   gameId?: string | null;
   started: boolean;
 };
@@ -56,9 +59,16 @@ export type ProgramResponse = {
 
 export type BuyUpgradeRequest = {
   username: string;
-  upgrade: 'ENERGY_ROUTINE' | 'SPEED_ROUTINE' | 'REPEAT_ROUTINE';
+  upgrade: UpgradeType;
+  replace?: UpgradeType | null; // Question mark since we don't need to always replace an upgrade card
 };
 
 export type SkipUpgradeRequest = {
   username: string;
+};
+
+// choice must be one of the options in the pending choice.
+export type MakeChoiceRequest = {
+  username: string;
+  choice: string;
 };

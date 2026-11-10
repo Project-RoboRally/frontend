@@ -6,9 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
+import { ChoicePanel } from '@/components/ChoicePanel';
 import { UpgradeShop } from '@/components/UpgradeShop';
 import { getErrorMessage } from '@/lib/api/client';
-import { buyUpgrade, skipUpgrade, submitProgram } from '@/lib/api/lobby';
+import { buyUpgrade, makeChoice, skipUpgrade, submitProgram } from '@/lib/api/lobby';
 import { activePlayedRegister } from '@/lib/playedRegisters';
 import {
   cardFromInstruction,
@@ -84,6 +85,7 @@ function GameView() {
 
   // Turn action status flags
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isChoosing, setIsChoosing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +148,8 @@ function GameView() {
   const phase = playerState?.round.phase;
   const isProgramming = phase === 'PROGRAMMING';
   const isUpgrade = phase === 'UPGRADE';
+  // What activation is waiting for someone to decide, if anything
+  const choice = playerState?.choice ?? null;
 
   // Get the programming hand key
   const programmingHandKey =
@@ -349,6 +353,23 @@ function GameView() {
     }
   }
 
+  // Answer the choice activation is waiting on. The buttons stay disabled until
+  // the request is done, so a double click can not send two answers.
+  async function handleChoose(option: string) {
+    if (!lobbyId || !username) {
+      return;
+    }
+    setIsChoosing(true);
+    setError(null);
+    try {
+      await makeChoice(lobbyId, { username, choice: option });
+    } catch (chooseError) {
+      setError(getErrorMessage(chooseError, 'Could not make that choice.'));
+    } finally {
+      setIsChoosing(false);
+    }
+  }
+
   // Get the user's board robot
   const userBoardRobot = board?.robots?.find((r) => r.username === username);
 
@@ -411,18 +432,22 @@ function GameView() {
     ? { state: 'over', winner: player }
     : { state: 'inprogress' };
   const hudPlayers = [player, ...otherPlayers];
+  const roundNumber = playerState?.round.number ?? 0;
   const displayState: GameState =
     showingActivation || phase === 'ACTIVATION'
       ? {
-          round: 0,
+          round: roundNumber,
           timerOut: false,
           status,
           players: hudPlayers,
           phase: 'activation_phase',
-          activeRegister: ((activeRegisterIndex ?? 0) + 1) as 1 | 2 | 3 | 4 | 5,
+          // While a choice waits there are no played cards to go by, so the
+          // round says which register it stopped in
+          activeRegister: ((activeRegisterIndex ?? playerState?.round.currentRegisterIndex ?? 0) +
+            1) as 1 | 2 | 3 | 4 | 5,
         }
       : {
-          round: 0,
+          round: roundNumber,
           timerOut: false,
           status,
           players: hudPlayers,
@@ -457,6 +482,15 @@ function GameView() {
               onBuy={(upgrade) => void handleBuy(upgrade)}
               onSkip={() => void handleSkip()}
               shop={playerState?.upgradeShop ?? []}
+              username={username}
+            />
+          ) : choice && !showingActivation ? (
+            // Waits for the moves so far to finish animating, so the player
+            // sees where their robot is before deciding
+            <ChoicePanel
+              choice={choice}
+              disabled={isChoosing || finished}
+              onChoose={(option) => void handleChoose(option)}
               username={username}
             />
           ) : null
