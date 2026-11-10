@@ -48,10 +48,7 @@ export function UpgradeShop({
           shop.map((upgrade, index) => {
             const canAfford = energy >= upgrade.cost;
             return (
-              <div
-                key={`${upgrade.type}-${index}`}
-                className="group relative"
-              >
+              <div key={`${upgrade.type}-${index}`} className="group relative">
                 <button
                   type="button"
                   disabled={disabled || !isBuyer || !canAfford}
@@ -67,8 +64,8 @@ export function UpgradeShop({
                 {/* Description appears when hovering over the card */}
                 {!disabled && isBuyer && canAfford && (
                   <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-md border border-cobber-light bg-charcoal p-3 text-xs font-normal text-bone shadow-xl group-hover:block group-focus-within:block">
-                  <p>{UPGRADE_INFO[upgrade.type].description}</p>
-                </div>
+                    <p>{UPGRADE_INFO[upgrade.type].description}</p>
+                  </div>
                 )}
               </div>
             );
