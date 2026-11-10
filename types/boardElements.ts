@@ -37,7 +37,6 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     'PRIORITY_ANTENNA',
     'REBOOT_POINT',
     'LASER_EMITTER',
-    'ENERGY_SPACE',
     'EMPTY_TILE',
   ];
 
