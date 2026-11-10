@@ -6,12 +6,6 @@ import type { BoardElement } from '@/types/board';
  * @author Caroline, Katarina, Matthias
  */
 
-// TODO: Add images for these board elements.
-const missingImages: Partial<Record<BoardElement['type'], string>> = {
-  PRIORITY_ANTENNA: '#a855f7',
-  REBOOT_POINT: '#3b82f6',
-};
-
 function checkpointImage(number: number) {
   const clamped = Math.min(6, Math.max(1, number));
   return `/checkpoint_${clamped}.png`;
@@ -38,16 +32,12 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     'PRIORITY_ANTENNA',
     'REBOOT_POINT',
     'LASER_EMITTER',
-    'ENERGY_SPACE',
     'EMPTY_TILE',
   ];
 
   for (const type of priorityTypes) {
     const match = elements.find((el) => el.type === type);
     if (!match) continue;
-
-    // TODO: Add image for this element type.
-    if (type in missingImages) return null;
 
     if (match.type === 'LASER_EMITTER') {
       return laserShooterImage(match.damage);
@@ -71,35 +61,22 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     return '/push_panel_1_3_5.png';
   }
 
+  // Handle the priority antenna tile
+  if (elements.some((element) => element.type === 'PRIORITY_ANTENNA')) {
+    return '/priority_antenna.png';
+  }
+
+  // Handle the energy space tile
+  if (elements.some((element) => element.type === 'ENERGY_SPACE')) {
+    return '/double_energy_space.png';
+  }
+
   // Handle conveyors based on their beltType
   const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
   if (belt) {
     return belt.beltType === 'BLUE'
       ? '/conveyor_blue_straight.png'
       : '/conveyor_green_straight.png';
-  }
-
-  return null;
-}
-
-/**
- * Placeholder colors for board elements.
- * TODO: Replace these with images when artwork is available.
- */
-const PLACEHOLDER_COLORS: Partial<Record<BoardElement['type'], string>> = {
-  PRIORITY_ANTENNA: '#a16207', // Brown
-  REBOOT_POINT: '#16a34a', // Green
-};
-
-export function getElementColor(elements: BoardElement[] | undefined): string | null {
-  if (!elements) return null;
-
-  const priorityTypes: BoardElement['type'][] = ['PRIORITY_ANTENNA', 'REBOOT_POINT'];
-
-  for (const type of priorityTypes) {
-    if (elements.some((element) => element.type === type)) {
-      return PLACEHOLDER_COLORS[type] ?? null;
-    }
   }
 
   return null;
