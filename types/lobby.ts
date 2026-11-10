@@ -66,3 +66,9 @@ export type BuyUpgradeRequest = {
 export type SkipUpgradeRequest = {
   username: string;
 };
+
+// choice must be one of the options in the pending choice.
+export type MakeChoiceRequest = {
+  username: string;
+  choice: string;
+};

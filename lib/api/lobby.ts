@@ -5,6 +5,7 @@ import type {
   JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
+  MakeChoiceRequest,
   ProgramRequest,
   ProgramResponse,
   RenameLobbyRequest,
@@ -67,4 +68,8 @@ export function buyUpgrade(id: string, body: BuyUpgradeRequest) {
 
 export function skipUpgrade(id: string, body: SkipUpgradeRequest) {
   return apiPost<void>(`/api/lobbies/${id}/upgrade/skip`, body);
+}
+
+export function makeChoice(id: string, body: MakeChoiceRequest) {
+  return apiPost<void>(`/api/lobbies/${id}/choice`, body);
 }

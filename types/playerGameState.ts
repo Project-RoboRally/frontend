@@ -71,6 +71,30 @@ export type Upgrade = {
   kind: 'PERMANENT' | 'TEMPORARY';
 };
 
+// Something activation can stop and ask a player to decide.
+export type ChoiceType =
+  | 'SANDBOX_ACTION'
+  | 'WEASEL_ACTION'
+  | 'REBOOT_FACING'
+  | 'REGISTER_UPGRADE'
+  | 'TURN_UPGRADE'
+  | 'ZOOP_FACING'
+  | 'BOINK_DIRECTION'
+  | 'REFRESH_CARD'
+  | 'MOVE_ONE'
+  | 'TELEPORT'
+  | 'WEAPON_UPGRADE'
+  | 'SIDE_ARMS'
+  | 'MODULAR_CHASSIS';
+
+// The decision activation is waiting on. options are the only answers the
+// backend accepts, so the frontend just shows them.
+export type PendingChoice = {
+  username: string;
+  type: ChoiceType;
+  options: string[];
+};
+
 export type Round = {
   // 1 for the first round of the game.
   number: number;
@@ -127,5 +151,8 @@ export type PlayerGameState = {
   playerMat: PlayerMat;
   upgradeShop: Upgrade[];
   currentBuyer: string | null;
+  // Sent with every message, not only CHOICE_REQUIRED, so a reload still shows
+  // it. Null while activation is not waiting on anyone.
+  choice: PendingChoice | null;
   winnerUsername: string | null;
 };
