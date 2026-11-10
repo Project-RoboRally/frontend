@@ -75,6 +75,11 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     return '/priority_antenna.png';
   }
 
+  // Handle the energy space tile
+  if (elements.some((element) => element.type === 'ENERGY_SPACE')) {
+    return '/double_energy_space.png';
+  }
+
   // Handle conveyors based on their beltType
   const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
   if (belt) {
