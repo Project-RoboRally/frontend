@@ -41,6 +41,10 @@ export function kickPlayer(id: string, body: KickFromLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/kick`, body);
 }
 
+export function unkickPlayer(id: string, body: KickFromLobbyRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/unkick`, body);
+}
+
 export function setReady(id: string, body: SetReadyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/ready`, body);
 }

@@ -411,10 +411,11 @@ function GameView() {
     ? { state: 'over', winner: player }
     : { state: 'inprogress' };
   const hudPlayers = [player, ...otherPlayers];
+  const roundNumber = playerState?.round.number ?? 0;
   const displayState: GameState =
     showingActivation || phase === 'ACTIVATION'
       ? {
-          round: 0,
+          round: roundNumber,
           timerOut: false,
           status,
           players: hudPlayers,
@@ -422,7 +423,7 @@ function GameView() {
           activeRegister: ((activeRegisterIndex ?? 0) + 1) as 1 | 2 | 3 | 4 | 5,
         }
       : {
-          round: 0,
+          round: roundNumber,
           timerOut: false,
           status,
           players: hudPlayers,
