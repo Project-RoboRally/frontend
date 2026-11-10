@@ -1,5 +1,5 @@
 import type { BoardElement, Direction } from '@/types/board';
-import { getElementColor, getElementImage, getElementRotation } from '@/types/boardElements';
+import { getElementImage, getElementRotation } from '@/types/boardElements';
 
 /**
  * Renders a game board cell at coordinates (x, y). The background color shows
@@ -41,9 +41,6 @@ export default function Tile({ x, y, elements }: TileProps) {
   const rotationClass = getElementRotation(elements);
   const energySpace = elements?.find((element) => element.type === 'ENERGY_SPACE');
 
-  // Placeholder color for elements without images.
-  const placeholderColor = getElementColor(elements);
-
   return (
     <div
       aria-label={`Tile ${x}, ${y}: ${label}`}
@@ -51,7 +48,9 @@ export default function Tile({ x, y, elements }: TileProps) {
       style={{
         backgroundColor: imageSrc
           ? EMPTY_SPACE_COLOR
-          : (placeholderColor ?? (elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR)),
+          : elements
+            ? EMPTY_SPACE_COLOR
+            : MISSING_SPACE_COLOR,
         ...wallBorders,
       }}
       className="relative flex h-full w-full items-center justify-center border border-stone-600 overflow-hidden"
