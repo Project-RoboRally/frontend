@@ -8,7 +8,6 @@ import type { BoardElement } from '@/types/board';
 
 // TODO: Add images for these board elements.
 const missingImages: Partial<Record<BoardElement['type'], string>> = {
-  PRIORITY_ANTENNA: '#a855f7',
   REBOOT_POINT: '#3b82f6',
 };
 
@@ -71,6 +70,11 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     return '/push_panel_1_3_5.png';
   }
 
+  // Handle the priority antenna tile
+  if (elements.some((element) => element.type === 'PRIORITY_ANTENNA')) {
+    return '/priority_antenna.png';
+  }
+
   // Handle conveyors based on their beltType
   const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
   if (belt) {
@@ -87,14 +91,13 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
  * TODO: Replace these with images when artwork is available.
  */
 const PLACEHOLDER_COLORS: Partial<Record<BoardElement['type'], string>> = {
-  PRIORITY_ANTENNA: '#a16207', // Brown
   REBOOT_POINT: '#16a34a', // Green
 };
 
 export function getElementColor(elements: BoardElement[] | undefined): string | null {
   if (!elements) return null;
 
-  const priorityTypes: BoardElement['type'][] = ['PRIORITY_ANTENNA', 'REBOOT_POINT'];
+  const priorityTypes: BoardElement['type'][] = ['REBOOT_POINT'];
 
   for (const type of priorityTypes) {
     if (elements.some((element) => element.type === type)) {
