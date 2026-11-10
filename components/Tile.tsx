@@ -48,7 +48,9 @@ export default function Tile({ x, y, elements }: TileProps) {
       style={{
         backgroundColor: imageSrc
           ? EMPTY_SPACE_COLOR
-          : ((elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR)),
+          : elements
+            ? EMPTY_SPACE_COLOR
+            : MISSING_SPACE_COLOR,
         ...wallBorders,
       }}
       className="relative flex h-full w-full items-center justify-center border border-stone-600 overflow-hidden"

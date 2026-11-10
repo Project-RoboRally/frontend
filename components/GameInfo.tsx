@@ -29,7 +29,6 @@ export function GameInfo({ gameState }: { gameState: GameState }) {
       </div>
 
       <div className="flex items-baseline justify-between pt-2">
-
         <span className="text-xs uppercase tracking-wider text-bone/60">Phase</span>
 
         <span className="mt-1 break-words font-bold uppercase text-verdigris">{phaseLabel}</span>
