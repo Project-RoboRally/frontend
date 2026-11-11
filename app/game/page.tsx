@@ -303,7 +303,6 @@ function GameView() {
       }
 
       const response = await submitProgram(lobbyId, {
-        username,
         registers: instructions,
       });
       if (!response.executed) {
@@ -329,7 +328,7 @@ function GameView() {
     setIsUpgrading(true);
     setError(null);
     try {
-      await buyUpgrade(lobbyId, { username, upgrade });
+      await buyUpgrade(lobbyId, { upgrade });
     } catch (buyError) {
       setError(getErrorMessage(buyError, 'Could not buy that upgrade.'));
     } finally {
@@ -345,7 +344,7 @@ function GameView() {
     setIsUpgrading(true);
     setError(null);
     try {
-      await skipUpgrade(lobbyId, { username });
+      await skipUpgrade(lobbyId);
     } catch (skipError) {
       setError(getErrorMessage(skipError, 'Could not skip the upgrade.'));
     } finally {
@@ -362,7 +361,7 @@ function GameView() {
     setIsChoosing(true);
     setError(null);
     try {
-      await makeChoice(lobbyId, { username, choice: option });
+      await makeChoice(lobbyId, { choice: option });
     } catch (chooseError) {
       setError(getErrorMessage(chooseError, 'Could not make that choice.'));
     } finally {

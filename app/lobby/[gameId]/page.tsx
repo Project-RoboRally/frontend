@@ -163,7 +163,7 @@ export default function LobbyPage() {
 
     try {
       if (lobby) {
-        await leaveLobby(lobby.id, { username });
+        await leaveLobby(lobby.id);
       }
     } catch {
       // Owner leave can delete the lobby; still return to the menu.
@@ -181,7 +181,7 @@ export default function LobbyPage() {
     setIsStarting(true);
 
     try {
-      const updated = await startGame(lobby.id, { username });
+      const updated = await startGame(lobby.id);
       setLobby(updated);
       if (updated.started) {
         router.push(`/game?lobby=${updated.id}`);
@@ -202,7 +202,7 @@ export default function LobbyPage() {
     setIsTogglingReady(true);
 
     try {
-      const updated = await setReady(lobby.id, { username, ready: !isPlayerReady(username) });
+      const updated = await setReady(lobby.id, { ready: !isPlayerReady(username) });
       setLobby(updated);
     } catch (readyError) {
       setError(getErrorMessage(readyError, 'Failed to change ready state'));
@@ -220,7 +220,7 @@ export default function LobbyPage() {
     setIsChangingColor(true);
 
     try {
-      const updated = await setColor(lobby.id, { username, color });
+      const updated = await setColor(lobby.id, { color });
       setLobby(updated);
     } catch (colorError) {
       setError(getErrorMessage(colorError, 'Failed to change color'));
@@ -236,7 +236,6 @@ export default function LobbyPage() {
 
     try {
       const updated = await kickPlayer(lobby.id, {
-        kickedBy: username,
         userKicked: playerKicked,
       });
       setLobby(updated);
@@ -252,7 +251,6 @@ export default function LobbyPage() {
 
     try {
       const updated = await unkickPlayer(lobby.id, {
-        kickedBy: username,
         userKicked: player,
       });
       setLobby(updated);

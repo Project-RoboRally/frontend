@@ -99,7 +99,6 @@ export default function MainMenuPage() {
     try {
       const lobby = await createLobby({
         name: lobbyName.trim() || 'My Lobby',
-        username,
       });
       router.push(`/lobby/${lobby.id}`);
     } catch (createError) {
@@ -122,7 +121,7 @@ export default function MainMenuPage() {
     try {
       const lobby = await getLobby(id);
       if (!(lobby.users ?? []).includes(storedUsername)) {
-        await joinLobby(id, { username: storedUsername });
+        await joinLobby(id);
       }
       router.push(`/lobby/${id}`);
     } catch (joinError) {
