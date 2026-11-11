@@ -1,4 +1,4 @@
-import { getToken } from '@/lib/username';
+import { clearSession, getToken } from '@/lib/username';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -94,6 +94,10 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
     return 'Wrong username or password';
   }
 
+  if (status === 429) {
+    return 'Too many failed attempts. Try again in a few minutes.';
+  }
+
   if (status === 403) {
     return 'You are not allowed to do that.';
   }
@@ -175,6 +179,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    // An expired or invalid token: forget it and log in again. Login and the
+    // session check handle their own 401s.
+    if (response.status === 401 && path !== '/api/login' && path !== '/api/session') {
+      clearSession();
+      // Not inside a React component, so useRouter() is not available here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign('/login');
+    }
+
     const raw = await readErrorBody(response);
     throw new ApiError(friendlyMessage(raw, response.status, method, path), response.status, path);
   }
