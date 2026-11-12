@@ -8,7 +8,7 @@ import type { BoardElement } from '@/types/board';
 
 function checkpointImage(number: number) {
   const clamped = Math.min(6, Math.max(1, number));
-  return '/checkpoint_${clamped}.png';
+  return `/checkpoint_${clamped}.png`;
 }
 
 function laserShooterImage(damage: number) {
