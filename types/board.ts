@@ -11,7 +11,7 @@ export type Direction = 'NORTH' | 'EAST' | 'SOUTH' | 'WEST';
 
 export type BoardElement =
   | { type: 'WALL'; side: Direction }
-  | { type: 'CONVEYOR_BELT'; direction: Direction; beltType: 'GREEN' | 'BLUE'; length: number }
+  | { type: 'CONVEYOR_BELT'; direction: Direction; beltType: 'GREEN_STRAIGHT' | 'GREEN_LEFT_CURVE' | 'GREEN_RIGHT_CURVE' | 'BLUE_STRAIGHT' | 'BLUE_LEFT_CURVE' | 'BLUE_RIGHT_CURVE'; length: number }
   | { type: 'GEAR'; rotationDirection: 'CLOCKWISE' | 'COUNTERCLOCKWISE' }
   | { type: 'LASER_EMITTER'; direction: Direction; damage: number }
   | { type: 'PUSH_PANEL'; pushDirection: Direction; registers: number[] }
