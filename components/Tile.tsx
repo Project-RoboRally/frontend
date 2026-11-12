@@ -29,30 +29,17 @@ const BORDER_SIDE: Record<Direction, 'borderTop' | 'borderRight' | 'borderBottom
   };
 
 export default function Tile({ x, y, elements }: TileProps) {
-  // TODO: Replace with images
-  const wallBorders = Object.fromEntries(
-    (elements ?? []).flatMap((element) =>
-      element.type === 'WALL' ? [[BORDER_SIDE[element.side], `4px solid ${WALL_COLOR}`]] : [],
-    ),
-  );
 
   const label = elements?.map((element) => element.type).join(', ') || 'EMPTY';
   const imageSrc = getElementImage(elements);
   const rotationClass = getElementRotation(elements);
   const energySpace = elements?.find((element) => element.type === 'ENERGY_SPACE');
+  const empty_tile = getElementImage([{ type: 'EMPTY_TILE' }]);
 
   return (
     <div
       aria-label={`Tile ${x}, ${y}: ${label}`}
       title={`(${x}, ${y}) ${label}`}
-      style={{
-        backgroundColor: imageSrc
-          ? EMPTY_SPACE_COLOR
-          : elements
-            ? EMPTY_SPACE_COLOR
-            : MISSING_SPACE_COLOR,
-        ...wallBorders,
-      }}
       className="relative flex h-full w-full items-center justify-center border border-stone-600 overflow-hidden"
     >
       {imageSrc && (

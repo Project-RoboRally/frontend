@@ -8,7 +8,7 @@ import type { BoardElement } from '@/types/board';
 
 function checkpointImage(number: number) {
   const clamped = Math.min(6, Math.max(1, number));
-  return `/checkpoint_${clamped}.png`;
+  return '/checkpoint_${clamped}.png';
 }
 
 function laserShooterImage(damage: number) {
@@ -93,7 +93,12 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
       return '/conveyor_blue_right.png';
   }
 
-  return null;
+  const wall = elements.find((element) => element.type === 'WALL');
+  if (wall) {
+    return '/single_wall.png';
+  } // TODO: Add parameter for wall corner or single wall
+
+  return '/empty_tile.png';
 }
 
 /**
@@ -102,11 +107,12 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
 export function getElementRotation(elements: BoardElement[] | undefined): string {
   if (!elements) return '';
 
-  const directionalElement = elements.find((e) => 'direction' in e || 'pushDirection' in e);
+  const directionalElement = elements.find((e) => 'direction' in e || 'pushDirection' in e || 'side' in e);
 
   const direction =
     (directionalElement as { direction?: string; pushDirection?: string } | undefined)?.direction ||
-    (directionalElement as { pushDirection?: string } | undefined)?.pushDirection;
+    (directionalElement as { pushDirection?: string } | undefined)?.pushDirection ||
+    (directionalElement as { side?: string } | undefined)?.side;
 
   switch (direction) {
     case 'EAST':
