@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
-import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
+import { createLobby, getLobbies, getLobby, joinLobby, leaveLobby } from '@/lib/api/lobby';
 import { logout } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
 import { clearSession, getUsername } from '@/lib/username';
@@ -11,8 +11,8 @@ import type { Lobby } from '@/types/lobby';
 
 /**
  * Shows the player's ongoing games, waiting lobby, and available lobbies.
- * Players can return to an existing match after leaving the game screen
- * or losing their connection.
+ * Players can return to an existing match or leave a waiting lobby after
+ * confirming their choice.
  *
  * @author Anton, Kerem, Matthias
  */
@@ -23,6 +23,8 @@ export default function MainMenuPage() {
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [confirmLeaveId, setConfirmLeaveId] = useState<string | null>(null);
+  const [leavingId, setLeavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [username] = useState<string | null>(() =>
@@ -36,7 +38,7 @@ export default function MainMenuPage() {
   }, [router, username]);
 
   useEffect(() => {
-    if (!username) {
+    if (!username || leavingId !== null) {
       return;
     }
 
@@ -65,7 +67,7 @@ export default function MainMenuPage() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [username]);
+  }, [username, leavingId]);
 
   async function handleSignOut() {
     try {
@@ -133,6 +135,42 @@ export default function MainMenuPage() {
     }
   }
 
+  async function handleLeaveLobby(id: string) {
+    if (confirmLeaveId !== id || leavingId !== null) {
+      return;
+    }
+
+    setError(null);
+    setLeavingId(id);
+
+    try {
+      const lobby = await getLobby(id);
+
+      if (lobby.started) {
+        setLobbies((current) => current.map((item) => (item.id === id ? lobby : item)));
+        setError('This game has already started. You can return to it from My Games.');
+        return;
+      }
+
+      const updatedLobby = await leaveLobby(id);
+
+      setLobbies((current) =>
+        current.flatMap((item) => {
+          if (item.id !== id) {
+            return [item];
+          }
+
+          return lobby.createdBy === username ? [] : [updatedLobby];
+        }),
+      );
+    } catch (leaveError) {
+      setError(getErrorMessage(leaveError, 'Failed to leave lobby'));
+    } finally {
+      setConfirmLeaveId(null);
+      setLeavingId(null);
+    }
+  }
+
   if (!username) {
     return null;
   }
@@ -146,7 +184,7 @@ export default function MainMenuPage() {
       lobby.name.toLowerCase().includes(search),
   );
   const visibleError = error ?? loadError;
-  const busy = isCreating || joiningId !== null;
+  const busy = isCreating || joiningId !== null || leavingId !== null;
 
   return (
     <main className="relative mx-auto min-h-screen w-full max-w-4xl p-6 pt-20">
@@ -167,17 +205,59 @@ export default function MainMenuPage() {
         {myLobbies.length === 0 ? (
           <p>No games or lobbies to return to.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {myLobbies.map((lobby) => (
               <li key={lobby.id}>
-                <button
-                  className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                  disabled={busy}
-                  onClick={() => void handleOpenLobby(lobby.id)}
-                  type="button"
-                >
-                  {lobby.started ? 'Return to game' : 'Return to lobby'} — {lobby.name}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    className={`${buttonClassName} grow px-4 py-3 text-left`}
+                    disabled={busy}
+                    onClick={() => void handleOpenLobby(lobby.id)}
+                    type="button"
+                  >
+                    {lobby.name} ({lobby.started ? 'Return to game' : 'Return to lobby'})
+                  </button>
+
+                  {!lobby.started && confirmLeaveId !== lobby.id && (
+                    <button
+                      className={buttonClassName}
+                      disabled={busy}
+                      onClick={() => setConfirmLeaveId(lobby.id)}
+                      type="button"
+                    >
+                      Leave lobby
+                    </button>
+                  )}
+                </div>
+
+                {!lobby.started && confirmLeaveId === lobby.id && (
+                  <div className="mt-2 border border-steel-dark p-3">
+                    <p>
+                      {lobby.createdBy === username
+                        ? 'Are you sure? Leaving will close this lobby for everyone.'
+                        : 'Are you sure you want to leave this lobby?'}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        className={buttonClassName}
+                        disabled={busy}
+                        onClick={() => void handleLeaveLobby(lobby.id)}
+                        type="button"
+                      >
+                        {leavingId === lobby.id ? 'Leaving…' : 'Leave lobby'}
+                      </button>
+                      <button
+                        className={buttonClassName}
+                        disabled={busy}
+                        onClick={() => setConfirmLeaveId(null)}
+                        type="button"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -203,7 +283,12 @@ export default function MainMenuPage() {
             {isCreating ? 'Creating...' : 'Create Lobby'}
           </button>
 
-          <button className={buttonClassName} onClick={() => void handleSignOut()} type="button">
+          <button
+            className={buttonClassName}
+            disabled={busy}
+            onClick={() => void handleSignOut()}
+            type="button"
+          >
             Sign Out
           </button>
         </section>
