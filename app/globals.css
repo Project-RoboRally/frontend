@@ -56,6 +56,23 @@ body {
   font-family: var(--font-dyslexic);
 }
 
+html.dyslexic-mode {
+  font-size: 95%;
+}
+
+/* Colorblind-friendly high-contrast adjustments */
+.colorblind-mode {
+  --color-verdigris: #1d4ed8;
+  --color-verdigris-dark: #18379c;
+  --color-amber: #b45309;
+}
+
+/* Add clear underline or border patterns for active states */
+.colorblind-mode .ring-verdigris {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 2px;
+}
+
 @font-face {
   font-family: 'Open Dyslexic';
   src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
