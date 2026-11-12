@@ -22,7 +22,7 @@ function laserShooterImage(damage: number) {
 }
 
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
-  if (!elements || elements.length === 0) return null;
+  if (!elements || elements.length === 0) return '/empty_tiles.png';
 
   // Priority order for elements
   const priorityTypes: BoardElement['type'][] = [
