@@ -56,19 +56,20 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
       : '/gear_counterclockwise.png';
   }
 
-  // Push panels do not include register numbers in the backend DTO.
-  if (elements.some((element) => element.type === 'PUSH_PANEL')) {
-    return '/push_panel_1_3_5.png';
+  // Handle push panels based on the current register
+  const push_panel = elements.find((element) => element.type === 'PUSH_PANEL');
+  if (push_panel) {
+    return push_panel.registers.toString() === [1, 3, 5].toString()
+      ? '/push_panel_1_3_5.png'
+      : '/push_panel_2_4.png';
   }
 
-  // Handle the priority antenna tile
-  if (elements.some((element) => element.type === 'PRIORITY_ANTENNA')) {
-    return '/priority_antenna.png';
-  }
-
-  // Handle the energy space tile
-  if (elements.some((element) => element.type === 'ENERGY_SPACE')) {
-    return '/double_energy_space.png';
+  // Handle energy spaces based on their cube amount
+  const energy_space = elements.find((element) => element.type === 'ENERGY_SPACE');
+  if (energy_space) {
+    return energy_space.cubeAmount === 2
+      ? '/double_energy_space.png'
+      : '/single_energy_space.png';
   }
 
   // Handle conveyors based on their beltType
