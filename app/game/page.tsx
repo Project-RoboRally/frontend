@@ -437,6 +437,7 @@ function GameView() {
       ? {
           round: roundNumber,
           timerOut: false,
+          programmingEndsAt: playerState?.round.programmingEndsAt ?? null,
           status,
           players: hudPlayers,
           phase: 'activation_phase',
@@ -448,6 +449,7 @@ function GameView() {
       : {
           round: roundNumber,
           timerOut: false,
+          programmingEndsAt: playerState?.round.programmingEndsAt ?? null,
           status,
           players: hudPlayers,
           phase: phase === 'UPGRADE' ? 'upgrade_phase' : 'programming_phase',

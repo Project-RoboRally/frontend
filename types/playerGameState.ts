@@ -101,6 +101,7 @@ export type Round = {
   phase: Phase;
   // Null outside the activation phase.
   currentRegisterIndex: number | null;
+  programmingEndsAt: number | null;
   programmingTimeLimitSeconds: number;
 };
 

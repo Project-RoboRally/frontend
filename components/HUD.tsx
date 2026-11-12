@@ -8,6 +8,7 @@ import { PlayerInfo } from '@/components/PlayerInfo';
 import { REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
+import { ProgrammingTimer } from '@/components/ProgrammingTimer';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
@@ -181,15 +182,22 @@ export default function HUD({
               </div>
             </div>
 
-            {error ? (
-              <p className="text-left text-xs font-semibold text-amber" role="alert">
-                {error}
-              </p>
-            ) : waiting ? (
-              <p className="text-left text-xs font-bold text-bone" role="status">
-                Waiting for other players.
-              </p>
-            ) : null}
+            {/* Status / Error messages & Countdown Timer */}
+            <div className="flex items-center justify-between mt-1 w-full">
+              <div>
+                {error ? (
+                  <p className="text-left text-xs font-semibold text-amber" role="alert">
+                    {error}
+                  </p>
+                ) : waiting ? (
+                  <p className="text-left text-xs font-bold text-bone" role="status">
+                    Waiting for other players.
+                  </p>
+                ) : null}
+              </div>
+
+              <ProgrammingTimer programmingEndsAt={gameState.programmingEndsAt} />
+            </div>
           </div>
         </div>
 
