@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
+import { DyslexicFontToggle } from '@/components/Dyslexic';
 
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
 import { passwordError, saveToken, saveUsername, usernameError } from '@/lib/username';
 
 /**
- * @author Anton, Kerem
+ * @author Anton, Kerem, Katarina, Caroline
  */
 
 export default function LoginPage() {
@@ -96,6 +97,9 @@ export default function LoginPage() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
+      </div>
+      <div className="mb-6 top-0 flex w-full justify-center p-6">
+        <DyslexicFontToggle />
       </div>
     </main>
   );
