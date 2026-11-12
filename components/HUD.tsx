@@ -50,7 +50,6 @@ export default function HUD({
   discardCount: number;
   activeRegisterIndex: number | null;
   extraPanel?: ReactNode;
-  programmingEndsAt: number | null;
 }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
@@ -184,18 +183,19 @@ export default function HUD({
             </div>
 
             {/* Status / Error messages & Countdown Timer */}
-            <div className="flex items-center justify-between mt-1">
-              {error ? (
-                <p className="text-left text-xs font-semibold text-amber" role="alert">
-                  {error}
-                </p>
-              ) : waiting ? (
-                <p className="text-left text-xs font-bold text-bone" role="status">
-                  Waiting for other players.
-                </p>
-              ) : null}
+            <div className="flex items-center justify-between mt-1 w-full">
+              <div>
+                {error ? (
+                  <p className="text-left text-xs font-semibold text-amber" role="alert">
+                    {error}
+                  </p>
+                ) : waiting ? (
+                  <p className="text-left text-xs font-bold text-bone" role="status">
+                    Waiting for other players.
+                  </p>
+                ) : null}
+              </div>
 
-              {/* Render countdown timer when active */}
               <ProgrammingTimer programmingEndsAt={gameState.programmingEndsAt} />
             </div>
           </div>

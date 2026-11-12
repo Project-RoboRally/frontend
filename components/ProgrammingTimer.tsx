@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
+/**
+ * A countdown timer that displays the remaining time for the programming phase
+ *
+ * @author Caroline
+ */
+
 export function ProgrammingTimer({ programmingEndsAt }: { programmingEndsAt: number | null }) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -33,8 +39,8 @@ export function ProgrammingTimer({ programmingEndsAt }: { programmingEndsAt: num
 
   return (
     <div className="flex items-center gap-1.5 text-xs font-bold text-bone">
-      <span className="uppercase tracking-wider text-cobber-light">Time left:</span>
-      <span className="rounded bg-charcoal px-2 py-0.5 text-amber">{timeLeft}s</span>
+      <span className="uppercase tracking-wider text-bone">Time left:</span>
+      <span className="rounded bg-charcoal px-2 py-0.5 text-bone">{timeLeft}s</span>
     </div>
   );
 }
