@@ -78,7 +78,7 @@ export default function HUD({
   const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
   return (
     <section className="min-h-0 flex-1 w-full rounded-xl border-2 border-cobber-dark bg-iron p-4 shadow-2xl shadow-black/50">
-      <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_220px] gap-4">
+      <div className="h-full min-h-0 grid grid-cols-[minmax(0,1fr)_270px] gap-4">
         {/* --- Left side (top/bottom) --- */}
         <div className="flex min-w-0 min-h-0 flex-col gap-4">
           {/* Top */}
@@ -202,7 +202,7 @@ export default function HUD({
         </div>
 
         {/* --- Right side ---*/}
-        <aside className="flex flex-col gap-3">
+        <aside className="flex w-full flex-col gap-3">
           {/* Player */}
           <div className="rounded-md border-2 border-cobber-dark bg-charcoal p-3">
             <div className="mb-1 text-[10px] font-bold uppercase text-cobber-light">Player</div>
