@@ -2,7 +2,6 @@ import { apiGet, apiPatch, apiPost } from './client';
 import type {
   BuyUpgradeRequest,
   CreateLobbyRequest,
-  JoinLeaveLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
   MakeChoiceRequest,
@@ -11,7 +10,6 @@ import type {
   RenameLobbyRequest,
   SetColorRequest,
   SetReadyRequest,
-  SkipUpgradeRequest,
 } from '@/types/lobby';
 
 export function getLobbies() {
@@ -30,12 +28,12 @@ export function renameLobby(id: string, body: RenameLobbyRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/rename`, body);
 }
 
-export function joinLobby(id: string, body: JoinLeaveLobbyRequest) {
-  return apiPost<Lobby>(`/api/lobbies/${id}/join`, body);
+export function joinLobby(id: string) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/join`, {});
 }
 
-export function leaveLobby(id: string, body: JoinLeaveLobbyRequest) {
-  return apiPost<Lobby>(`/api/lobbies/${id}/leave`, body);
+export function leaveLobby(id: string) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/leave`, {});
 }
 
 export function kickPlayer(id: string, body: KickFromLobbyRequest) {
@@ -54,8 +52,8 @@ export function setColor(id: string, body: SetColorRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/color`, body);
 }
 
-export function startGame(id: string, body: JoinLeaveLobbyRequest) {
-  return apiPost<Lobby>(`/api/lobbies/${id}/start`, body);
+export function startGame(id: string) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/start`, {});
 }
 
 export function submitProgram(id: string, body: ProgramRequest) {
@@ -66,8 +64,8 @@ export function buyUpgrade(id: string, body: BuyUpgradeRequest) {
   return apiPost<void>(`/api/lobbies/${id}/upgrade/buy`, body);
 }
 
-export function skipUpgrade(id: string, body: SkipUpgradeRequest) {
-  return apiPost<void>(`/api/lobbies/${id}/upgrade/skip`, body);
+export function skipUpgrade(id: string) {
+  return apiPost<void>(`/api/lobbies/${id}/upgrade/skip`, {});
 }
 
 export function makeChoice(id: string, body: MakeChoiceRequest) {

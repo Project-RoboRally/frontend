@@ -21,26 +21,18 @@ export type Lobby = {
 };
 
 export type SetReadyRequest = {
-  username: string;
   ready: boolean;
 };
 
 export type SetColorRequest = {
-  username: string;
   color: PlayerColor;
 };
 
 export type CreateLobbyRequest = {
   name: string;
-  username: string;
-};
-
-export type JoinLeaveLobbyRequest = {
-  username: string;
 };
 
 export type KickFromLobbyRequest = {
-  kickedBy: string;
   userKicked: string;
 };
 
@@ -49,7 +41,6 @@ export type RenameLobbyRequest = {
 };
 
 export type ProgramRequest = {
-  username: string;
   registers: string[];
 };
 
@@ -58,17 +49,11 @@ export type ProgramResponse = {
 };
 
 export type BuyUpgradeRequest = {
-  username: string;
   upgrade: UpgradeType;
   replace?: UpgradeType | null; // Question mark since we don't need to always replace an upgrade card
 };
 
-export type SkipUpgradeRequest = {
-  username: string;
-};
-
 // choice must be one of the options in the pending choice.
 export type MakeChoiceRequest = {
-  username: string;
   choice: string;
 };

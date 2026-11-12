@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { hasActiveUser } from '@/lib/api/login';
-import { getUsername } from '@/lib/username';
+import { hasActiveSession } from '@/lib/api/login';
+import { clearSession, getToken } from '@/lib/username';
 
 /**
  * Keeps a backend User alive for every page except login.
@@ -21,23 +21,22 @@ export default function SessionGuard({ children }: { children: ReactNode }) {
       return;
     }
 
-    const username = getUsername();
-    if (!username) {
+    if (!getToken()) {
       setAllowed(false);
       router.replace('/login');
       return;
     }
 
-    const activeUsername: string = username;
     let cancelled = false;
 
     async function confirmUser() {
       try {
-        const active = await hasActiveUser(activeUsername);
+        const active = await hasActiveSession();
         if (cancelled) {
           return;
         }
         if (!active) {
+          clearSession();
           setAllowed(false);
           router.replace('/login');
           return;

@@ -1,3 +1,5 @@
+import { clearSession, getToken } from '@/lib/username';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
@@ -77,7 +79,7 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
   }
 
   if (lower.includes('request body is required')) {
-    return 'Login needs a username in JSON, for example {"username":"alice"}.';
+    return 'Login needs a username and password';
   }
 
   if (text && text !== 'Internal Server Error' && !/^Request failed: \d+$/.test(text)) {
@@ -86,6 +88,14 @@ function friendlyMessage(raw: string, status: number, method: string, path: stri
 
   if (status === 400) {
     return 'The server rejected this request. Check the name and try again.';
+  }
+
+  if (status === 401) {
+    return 'Wrong username or password';
+  }
+
+  if (status === 429) {
+    return 'Too many failed attempts. Try again in a few minutes.';
   }
 
   if (status === 403) {
@@ -149,6 +159,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (options?.body != null) {
     headers.set('Content-Type', 'application/json');
   }
+  const token = typeof window === 'undefined' ? null : getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
 
   const method = (options?.method ?? 'GET').toUpperCase();
   let response: Response;
@@ -165,6 +179,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    // An expired or invalid token: forget it and log in again. Login and the
+    // session check handle their own 401s.
+    if (response.status === 401 && path !== '/api/login' && path !== '/api/session') {
+      clearSession();
+      // Not inside a React component, so useRouter() is not available here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign('/login');
+    }
+
     const raw = await readErrorBody(response);
     throw new ApiError(friendlyMessage(raw, response.status, method, path), response.status, path);
   }

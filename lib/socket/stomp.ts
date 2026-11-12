@@ -6,6 +6,7 @@
  *
  * @author Elias, Nicoleta
  */
+import { getToken } from '@/lib/username';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 // Spring's SockJS endpoint also accepts raw websockets on /ws/websocket.
@@ -58,7 +59,10 @@ export function connectStomp(onConnect: (connection: StompConnection) => void): 
     socket = new WebSocket(SOCKET_URL);
 
     socket.onopen = () => {
-      socket.send('CONNECT\naccept-version:1.2\nheart-beat:0,0\n\n\0');
+      // The backend only accepts the connection with a valid session token.
+      const token = getToken();
+      const auth = token ? `Authorization:Bearer ${token}\n` : '';
+      socket.send(`CONNECT\naccept-version:1.2\nheart-beat:0,0\n${auth}\n\0`);
     };
 
     socket.onmessage = (event: MessageEvent<string>) => {
