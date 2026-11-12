@@ -34,7 +34,6 @@ export default function Tile({ x, y, elements }: TileProps) {
   const imageSrc = getElementImage(elements);
   const rotationClass = getElementRotation(elements);
   const energySpace = elements?.find((element) => element.type === 'ENERGY_SPACE');
-  const empty_tile = getElementImage([{ type: 'EMPTY_TILE' }]);
 
   return (
     <div
