@@ -455,19 +455,35 @@ function GameView() {
           phase: phase === 'UPGRADE' ? 'upgrade_phase' : 'programming_phase',
         };
 
+  if (showWinner) {
+    const winner = playerState?.winnerUsername;
+
+    return (
+      <main className="mx-auto flex min-h-screen max-w-2xl items-center justify-center p-6 text-center">
+        <section className="w-full rounded-xl border-2 border-steel-dark bg-charcoal p-10">
+          <h1 className="text-4xl font-bold">Game Over</h1>
+
+          <p className="mt-4 text-xl" role="status">
+            {winner === username ? 'You win!' : winner ? `${winner} wins!` : 'The match has ended.'}
+          </p>
+
+          <button
+            className={`${buttonClassName} mt-8`}
+            onClick={() => router.replace('/main-menu')}
+            type="button"
+          >
+            Back to Main Menu
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex h-screen w-full max-w-7xl flex-col items-center p-6 text-center">
       <header className="mb-6">
         <h1 className="text-3xl font-bold">Game Board</h1>
       </header>
-
-      {showWinner && (
-        <p role="status" className="mb-4 text-xl font-bold">
-          {playerState?.winnerUsername
-            ? `${playerState.winnerUsername} wins!`
-            : 'The game has finished.'}
-        </p>
-      )}
 
       <HUD
         canRun={canRun}
