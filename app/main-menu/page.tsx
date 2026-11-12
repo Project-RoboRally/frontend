@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { createLobby, getLobbies, getLobby, joinLobby } from '@/lib/api/lobby';
+import { logout } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
 import { clearSession, getUsername } from '@/lib/username';
 import type { Lobby } from '@/types/lobby';
-import { logout } from '@/lib/api/login';
 
 /**
- * @author Anton, Kerem
+ * Shows the player's ongoing games, waiting lobby, and available lobbies.
+ * Players can return to an existing match after leaving the game screen
+ * or losing their connection.
+ *
+ * @author Anton, Kerem, Matthias
  */
-
 export default function MainMenuPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,6 +24,7 @@ export default function MainMenuPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [username] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : getUsername(),
   );
@@ -36,33 +40,18 @@ export default function MainMenuPage() {
       return;
     }
 
-    const currentUsername = username;
     let cancelled = false;
 
     async function loadLobbies() {
       try {
         const nextLobbies = await getLobbies();
-        if (cancelled) {
-          return;
+        if (!cancelled) {
+          setLobbies(nextLobbies);
+          setLoadError(null);
         }
-
-        const currentLobby = nextLobbies.find((lobby) =>
-          (lobby.users ?? []).includes(currentUsername),
-        );
-        if (currentLobby?.started) {
-          router.replace(`/game?lobby=${currentLobby.id}`);
-          return;
-        }
-        if (currentLobby) {
-          router.replace(`/lobby/${currentLobby.id}`);
-          return;
-        }
-
-        setLobbies(nextLobbies);
-        setError(null);
       } catch (fetchError) {
         if (!cancelled) {
-          setError(getErrorMessage(fetchError, 'Failed to load lobbies'));
+          setLoadError(getErrorMessage(fetchError, 'Failed to load lobbies'));
         }
       }
     }
@@ -76,13 +65,13 @@ export default function MainMenuPage() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [router, username]);
+  }, [username]);
 
   async function handleSignOut() {
     try {
       await logout();
     } catch {
-      // log out in the browser, even if not in the backend
+      // Clear the local session even if the backend is unreachable.
     }
     clearSession();
     router.push('/login');
@@ -120,24 +109,44 @@ export default function MainMenuPage() {
 
     try {
       const lobby = await getLobby(id);
-      if (!(lobby.users ?? []).includes(storedUsername)) {
+      const isMember = (lobby.users ?? []).includes(storedUsername);
+
+      if (lobby.started) {
+        if (!isMember) {
+          setError('This game has already started.');
+          return;
+        }
+
+        router.push(`/game?lobby=${lobby.id}`);
+        return;
+      }
+
+      if (!isMember) {
         await joinLobby(id);
       }
-      router.push(`/lobby/${id}`);
-    } catch (joinError) {
-      setError(getErrorMessage(joinError, 'Failed to join lobby'));
+
+      router.push(`/lobby/${lobby.id}`);
+    } catch (openError) {
+      setError(getErrorMessage(openError, 'Failed to open lobby'));
     } finally {
       setJoiningId(null);
     }
   }
 
-  const filteredLobbies = lobbies.filter((lobby) =>
-    lobby.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
   if (!username) {
     return null;
   }
+
+  const myLobbies = lobbies.filter((lobby) => (lobby.users ?? []).includes(username));
+  const search = searchTerm.trim().toLowerCase();
+  const availableLobbies = lobbies.filter(
+    (lobby) =>
+      !lobby.started &&
+      !(lobby.users ?? []).includes(username) &&
+      lobby.name.toLowerCase().includes(search),
+  );
+  const visibleError = error ?? loadError;
+  const busy = isCreating || joiningId !== null;
 
   return (
     <main className="relative mx-auto min-h-screen w-full max-w-4xl p-6 pt-20">
@@ -146,11 +155,34 @@ export default function MainMenuPage() {
       </header>
       <p className="absolute right-6 top-6">Logged in as: {username}</p>
 
-      {error ? (
+      {visibleError && (
         <p className="mb-4 text-center" role="alert">
-          {error}
+          {visibleError}
         </p>
-      ) : null}
+      )}
+
+      <section className="mb-8 border-2 border-white p-4">
+        <h2 className="mb-3 text-xl font-bold">My Games</h2>
+
+        {myLobbies.length === 0 ? (
+          <p>No games or lobbies to return to.</p>
+        ) : (
+          <ul className="space-y-2">
+            {myLobbies.map((lobby) => (
+              <li key={lobby.id}>
+                <button
+                  className={`${buttonClassName} w-full px-4 py-3 text-left`}
+                  disabled={busy}
+                  onClick={() => void handleOpenLobby(lobby.id)}
+                  type="button"
+                >
+                  {lobby.started ? 'Return to game' : 'Return to lobby'} — {lobby.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <div className="grid gap-8 md:grid-cols-2">
         <section className="flex flex-col items-center gap-4">
@@ -164,8 +196,8 @@ export default function MainMenuPage() {
           />
           <button
             className={buttonClassName}
-            disabled={isCreating}
-            onClick={handleCreateLobby}
+            disabled={busy}
+            onClick={() => void handleCreateLobby()}
             type="button"
           >
             {isCreating ? 'Creating...' : 'Create Lobby'}
@@ -185,20 +217,25 @@ export default function MainMenuPage() {
             type="search"
             value={searchTerm}
           />
-          <ul className="mt-3 h-48 space-y-2 overflow-y-auto pr-2">
-            {filteredLobbies.map((lobby) => (
-              <li key={lobby.id}>
-                <button
-                  className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                  disabled={joiningId === lobby.id}
-                  onClick={() => handleOpenLobby(lobby.id)}
-                  type="button"
-                >
-                  {lobby.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+
+          {availableLobbies.length === 0 ? (
+            <p className="mt-3">No matching lobbies.</p>
+          ) : (
+            <ul className="mt-3 h-48 space-y-2 overflow-y-auto pr-2">
+              {availableLobbies.map((lobby) => (
+                <li key={lobby.id}>
+                  <button
+                    className={`${buttonClassName} w-full px-4 py-3 text-left`}
+                    disabled={busy}
+                    onClick={() => void handleOpenLobby(lobby.id)}
+                    type="button"
+                  >
+                    {lobby.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </main>
