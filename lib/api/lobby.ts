@@ -1,12 +1,8 @@
 import { apiGet, apiPatch, apiPost } from './client';
 import type {
-  BuyUpgradeRequest,
   CreateLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
-  MakeChoiceRequest,
-  ProgramRequest,
-  ProgramResponse,
   RenameLobbyRequest,
   SetColorRequest,
   SetReadyRequest,
@@ -54,20 +50,4 @@ export function setColor(id: string, body: SetColorRequest) {
 
 export function startGame(id: string) {
   return apiPost<Lobby>(`/api/lobbies/${id}/start`, {});
-}
-
-export function submitProgram(id: string, body: ProgramRequest) {
-  return apiPost<ProgramResponse>(`/api/lobbies/${id}/program`, body);
-}
-
-export function buyUpgrade(id: string, body: BuyUpgradeRequest) {
-  return apiPost<void>(`/api/lobbies/${id}/upgrade/buy`, body);
-}
-
-export function skipUpgrade(id: string) {
-  return apiPost<void>(`/api/lobbies/${id}/upgrade/skip`, {});
-}
-
-export function makeChoice(id: string, body: MakeChoiceRequest) {
-  return apiPost<void>(`/api/lobbies/${id}/choice`, body);
 }
