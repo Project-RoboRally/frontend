@@ -9,7 +9,7 @@ import { CardInfo } from '@/components/CardInfo';
 import { ChoicePanel } from '@/components/ChoicePanel';
 import { UpgradeShop } from '@/components/UpgradeShop';
 import { getErrorMessage } from '@/lib/api/client';
-import { buyUpgrade, makeChoice, skipUpgrade, submitProgram } from '@/lib/api/lobby';
+import { buyUpgrade, makeChoice, skipUpgrade, submitProgram } from '@/lib/api/game';
 import { activePlayedRegister } from '@/lib/playedRegisters';
 import {
   cardFromInstruction,
@@ -108,8 +108,8 @@ function GameView() {
   }, []);
 
   // page renders before the browser URL is updated.
-  const lobbyId = useSearchParams().get('lobby');
-  const playerState = usePlayerState(lobbyId, username);
+  const gameId = useSearchParams().get('game');
+  const playerState = usePlayerState(gameId, username);
 
   const liveBoard = playerState?.board ?? null;
   const board = animatingBoard ?? liveBoard;
@@ -281,8 +281,8 @@ function GameView() {
     if (!canRun || !username) {
       return;
     }
-    if (!lobbyId) {
-      setError('This game is not in a lobby.');
+    if (!gameId) {
+      setError('No game was found.');
       return;
     }
 
@@ -302,7 +302,7 @@ function GameView() {
         return;
       }
 
-      const response = await submitProgram(lobbyId, {
+      const response = await submitProgram(gameId, {
         registers: instructions,
       });
       if (!response.executed) {
@@ -322,13 +322,13 @@ function GameView() {
 
   // Buy an upgrade
   async function handleBuy(upgrade: UpgradeType) {
-    if (!lobbyId || !username) {
+    if (!gameId || !username) {
       return;
     }
     setIsUpgrading(true);
     setError(null);
     try {
-      await buyUpgrade(lobbyId, { upgrade });
+      await buyUpgrade(gameId, { upgrade });
     } catch (buyError) {
       setError(getErrorMessage(buyError, 'Could not buy that upgrade.'));
     } finally {
@@ -338,13 +338,13 @@ function GameView() {
 
   // Skip an upgrade
   async function handleSkip() {
-    if (!lobbyId || !username) {
+    if (!gameId || !username) {
       return;
     }
     setIsUpgrading(true);
     setError(null);
     try {
-      await skipUpgrade(lobbyId);
+      await skipUpgrade(gameId);
     } catch (skipError) {
       setError(getErrorMessage(skipError, 'Could not skip the upgrade.'));
     } finally {
@@ -355,13 +355,13 @@ function GameView() {
   // Answer the choice activation is waiting on. The buttons stay disabled until
   // the request is done, so a double click can not send two answers.
   async function handleChoose(option: string) {
-    if (!lobbyId || !username) {
+    if (!gameId || !username) {
       return;
     }
     setIsChoosing(true);
     setError(null);
     try {
-      await makeChoice(lobbyId, { choice: option });
+      await makeChoice(gameId, { choice: option });
     } catch (chooseError) {
       setError(getErrorMessage(chooseError, 'Could not make that choice.'));
     } finally {
