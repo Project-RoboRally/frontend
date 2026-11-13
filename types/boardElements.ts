@@ -12,7 +12,7 @@ function checkpointImage(number: number) {
   return `/boardElements/checkpoint_${clamped}.png`;
 }
 
-// Handle laser shooters based on the amount of laser beams
+// Handle laser shooters based on the amount og laser beams
 function laserShooterImage(damage: number) {
   if (damage >= 3) {
     return '/boardElements/three_laser_shooter.png';
@@ -50,28 +50,6 @@ function pushPanelImage(registers: number[]) {
   return '/boardElements/push_panel_2_4.png';
 }
 
-// Handle conveyors based on their beltType
-// function conveyorBeltImage(beltType: String) {
-//   if (beltType === 'GREEN_STRAIGHT'){
-//     return '/boardElements/conveyor_green_straight.png';
-//   }
-//   if (beltType === 'GREEN_LEFT_CURVE') {
-//     return '/boardElements/conveyor_green_left.png';
-//   }
-//   if (beltType === 'GREEN_RIGHT_CURVE') {
-//     return '/boardElements/conveyor_green_right.png';
-//   }
-//   if (beltType === 'BLUE_STRAIGHT') {
-//     return '/boardElements/conveyor_blue_straight.png';
-//   }
-//   if (beltType === 'BLUE_LEFT_CURVE') {
-//     return '/boardElements/conveyor_blue_left.png';
-//   }
-//   if (beltType === 'BLUE_RIGHT_CURVE') {
-//     return '/boardElements/conveyor_blue_right.png';
-//   }
-// }
-
 // Handle walls based on if it is a single wall or a corner
 function wallImage() {
   return '/boardElements/single_wall.png';
@@ -79,7 +57,6 @@ function wallImage() {
 }
 
 // Inputs the correct image for the elements on the board
-
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
   if (!elements || elements.length === 0) return '/boardElements/empty_tile.png';
 
@@ -90,7 +67,6 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     'PIT',
     'PRIORITY_ANTENNA',
     'REBOOT_POINT',
-    // 'CONVEYOR_BELT',
     'LASER_EMITTER',
     'ENERGY_SPACE',
     'GEAR',
@@ -102,10 +78,6 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
   for (const type of priorityTypes) {
     const match = elements.find((el) => el.type === type);
     if (!match) continue;
-
-    // if (match.type === 'CONVEYOR_BELT') {
-    //   return conveyorBeltImage(match.beltType);
-    // }
 
     if (match.type === 'LASER_EMITTER') {
       return laserShooterImage(match.damage);
@@ -131,7 +103,7 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
       return wallImage();
     }
 
-    return `/boardElements/${type.toLowerCase()}.png`;
+    return `/${type.toLowerCase()}.png`;
   }
 
   // Handle conveyors based on their beltType
@@ -164,7 +136,9 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
 export function getElementRotation(elements: BoardElement[] | undefined): string {
   if (!elements) return '';
 
-  const directionalElement = elements.find((e) => 'direction' in e || 'pushDirection' in e || 'side' in e);
+  const directionalElement = elements.find(
+    (e) => 'direction' in e || 'pushDirection' in e || 'side' in e,
+  );
 
   const direction =
     (directionalElement as { direction?: string; pushDirection?: string } | undefined)?.direction ||
