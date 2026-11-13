@@ -3,7 +3,7 @@
 /**
  * CSS Tailwind code
  * 
- * @author Kerem, Anton
+ * @author Kerem, Anton, Katarina, Caroline
  */
 
 :root {
@@ -19,6 +19,7 @@
 }
 
 @theme {
+  --font-dyslexic: 'Open Dyslexic', Arial, Helvetica, sans-serif;
   --color-cobber: #b5651d;
   --color-cobber-light: #d17f3a;
   --color-cobber-dark: #8f4f16;
@@ -46,5 +47,36 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Dyslexic font for accessibility */
+.dyslexic-mode,
+.dyslexic-mode * {
+  font-family: var(--font-dyslexic);
+}
+
+html.dyslexic-mode {
+  font-size: 95%;
+}
+
+/* Colorblind-friendly high-contrast adjustments */
+.colorblind-mode {
+  --color-verdigris: #1d4ed8;
+  --color-verdigris-dark: #18379c;
+  --color-amber: #b45309;
+}
+
+/* Add clear underline or border patterns for active states */
+.colorblind-mode .ring-verdigris {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 2px;
+}
+
+@font-face {
+  font-family: 'Open Dyslexic';
+  src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }

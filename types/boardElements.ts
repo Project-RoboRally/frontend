@@ -8,17 +8,17 @@ import type { BoardElement } from '@/types/board';
 
 function checkpointImage(number: number) {
   const clamped = Math.min(6, Math.max(1, number));
-  return `/checkpoint_${clamped}.png`;
+  return `/boardElements/checkpoint_${clamped}.png`;
 }
 
 function laserShooterImage(damage: number) {
   if (damage >= 3) {
-    return '/three_laser_shooter.png';
+    return '/boardElements/three_laser_shooter.png';
   }
   if (damage === 2) {
-    return '/two_laser_shooter.png';
+    return '/boardElements/two_laser_shooter.png';
   }
-  return '/one_laser_shooter.png';
+  return '/boardElements/one_laser_shooter.png';
 }
 
 export function getElementImage(elements: BoardElement[] | undefined): string | null {
@@ -45,38 +45,38 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
     if (match.type === 'CHECKPOINT') {
       return checkpointImage(match.number);
     }
-    return `/${type.toLowerCase()}.png`;
+    return `/boardElements/${type.toLowerCase()}.png`;
   }
 
   // Handle gears based on their rotation direction
   const gear = elements.find((element) => element.type === 'GEAR');
   if (gear) {
     return gear.rotationDirection === 'CLOCKWISE'
-      ? '/gear_clockwise.png'
-      : '/gear_counterclockwise.png';
+      ? '/boardElements/gear_clockwise.png'
+      : '/boardElements/gear_counterclockwise.png';
   }
 
   // Push panels do not include register numbers in the backend DTO.
   if (elements.some((element) => element.type === 'PUSH_PANEL')) {
-    return '/push_panel_1_3_5.png';
+    return '/boardElements/push_panel_1_3_5.png';
   }
 
   // Handle the priority antenna tile
   if (elements.some((element) => element.type === 'PRIORITY_ANTENNA')) {
-    return '/priority_antenna.png';
+    return '/boardElements/priority_antenna.png';
   }
 
   // Handle the energy space tile
   if (elements.some((element) => element.type === 'ENERGY_SPACE')) {
-    return '/double_energy_space.png';
+    return '/boardElements/double_energy_space.png';
   }
 
   // Handle conveyors based on their beltType
   const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
   if (belt) {
     return belt.beltType === 'BLUE'
-      ? '/conveyor_blue_straight.png'
-      : '/conveyor_green_straight.png';
+      ? '/boardElements/conveyor_blue_straight.png'
+      : '/boardElements/conveyor_green_straight.png';
   }
 
   return null;
