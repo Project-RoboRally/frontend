@@ -6,28 +6,28 @@ import { connectStomp } from './stomp';
 import type { Board } from '@/types/board';
 
 /**
- * Loads the board for a lobby over the websocket. The /app subscription
- * replies with the current board right away; the /game topic delivers it again
- * when the game is started.
+ * Loads the board for a game over the websocket. The /app subscription
+ * replies with the current board right away; the /game topic delivers every
+ * later update.
  *
  * @author Elias
  */
-export function useLobbyBoard(lobbyId: string | null) {
+export function useLobbyBoard(gameId: string | null) {
   const [board, setBoard] = useState<Board | null>(null);
 
   useEffect(() => {
-    if (!lobbyId) {
+    if (!gameId) {
       return;
     }
 
     const connection = connectStomp((stomp) => {
       const receive = (body: unknown) => setBoard(body as Board);
-      stomp.subscribe(`/app/lobby/${lobbyId}/board`, receive);
-      stomp.subscribe(`/game/lobby/${lobbyId}/board`, receive);
+      stomp.subscribe(`/app/game/${gameId}/board`, receive);
+      stomp.subscribe(`/game/${gameId}/board`, receive);
     });
 
     return () => connection.close();
-  }, [lobbyId]);
+  }, [gameId]);
 
   return board;
 }

@@ -8,26 +8,26 @@ import type { PlayerGameState } from '@/types/playerGameState';
 /**
  * Loads this player's game state over the websocket. The /app subscription
  * replies with the current state right away, so a reloaded page gets it too;
- * the /game topic delivers it when the game is started.
+ * the /game topic delivers every later update.
  *
- * @author Nicoleta
+ * @author Nicoleta, Elias
  */
-export function usePlayerState(lobbyId: string | null, username: string | null) {
+export function usePlayerState(gameId: string | null, username: string | null) {
   const [state, setState] = useState<PlayerGameState | null>(null);
 
   useEffect(() => {
-    if (!lobbyId || !username) {
+    if (!gameId || !username) {
       return;
     }
 
     const connection = connectStomp((stomp) => {
       const receive = (body: unknown) => setState(body as PlayerGameState);
-      stomp.subscribe(`/app/lobby/${lobbyId}/player/${username}`, receive);
-      stomp.subscribe(`/game/lobby/${lobbyId}/player/${username}`, receive);
+      stomp.subscribe(`/app/game/${gameId}/player/${username}`, receive);
+      stomp.subscribe(`/game/${gameId}/player/${username}`, receive);
     });
 
     return () => connection.close();
-  }, [lobbyId, username]);
+  }, [gameId, username]);
 
   return state;
 }
