@@ -16,6 +16,20 @@ import { ProgrammingTimer } from '@/components/ProgrammingTimer';
  * @author Kerem, Matthias, Caroline, Katarina, Elias
  */
 
+function OnlineDot({ online }: { online?: boolean }) {
+  const isOnline = online ?? true;
+  return (
+    <span
+      aria-label={isOnline ? 'Online' : 'Offline'}
+      title={isOnline ? 'Online' : 'Offline'}
+      className={`inline-block h-2 w-2 shrink-0 rounded-full ${
+        isOnline ? 'bg-green-500' : 'bg-red-500'
+      }`}
+      role="img"
+    />
+  );
+}
+
 export default function HUD({
   gameState,
   player,
@@ -33,6 +47,7 @@ export default function HUD({
   discardCount,
   activeRegisterIndex,
   extraPanel,
+  offlineNotice,
 }: {
   gameState: GameState;
   player: Player;
@@ -50,6 +65,7 @@ export default function HUD({
   discardCount: number;
   activeRegisterIndex: number | null;
   extraPanel?: ReactNode;
+  offlineNotice?: string | null;
 }) {
   // Keep deck + registers above the hand backdrop so cards can be placed.
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -87,6 +103,15 @@ export default function HUD({
         {/* --- Left side (board + registers) --- */}
         <div className="flex min-h-0 min-w-0 flex-col gap-2">
           <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center gap-1">
+            {offlineNotice ? (
+              <p
+                className="w-full shrink-0 rounded-md border-2 border-red-500 bg-red-950/60 px-2 py-1 text-xs font-bold text-bone"
+                role="alert"
+              >
+                {offlineNotice}
+              </p>
+            ) : null}
+
             {/* Other players' registers */}
             <div className="flex w-full shrink-0 flex-wrap justify-center gap-2">
               {gameState.players
@@ -104,7 +129,8 @@ export default function HUD({
                         backgroundColor: ROBOT_BG_COLORS[otherRobotModel],
                       }}
                     >
-                      <span className="text-[10px] font-bold text-bone sm:text-xs">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-bone sm:text-xs">
+                        <OnlineDot online={p.online} />
                         {p.username}
                       </span>
 
@@ -222,7 +248,10 @@ export default function HUD({
         <aside className="flex min-h-0 w-full flex-col gap-2 overflow-y-auto pr-0.5">
           <div className="shrink-0 rounded-md border-2 border-cobber-dark bg-charcoal p-2">
             <div className="mb-0.5 text-[10px] font-bold uppercase text-cobber-light">Player</div>
-            <div className="truncate text-sm font-bold text-bone">{player.username}</div>
+            <div className="flex items-center gap-1.5 text-sm font-bold text-bone">
+              <OnlineDot online={player.online} />
+              <span className="truncate">{player.username}</span>
+            </div>
           </div>
 
           <div className="shrink-0">

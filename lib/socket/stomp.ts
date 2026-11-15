@@ -1,6 +1,6 @@
 /**
- * Minimal STOMP 1.2 client over a native WebSocket. Supports connecting and
- * subscribing, which is all the game needs from the server. Reconnects by
+ * Minimal STOMP 1.2 client over a native WebSocket. Supports connecting,
+ * subscribing and sending small JSON messages. Reconnects by
  * itself when the connection drops, so subscribe inside onConnect: it runs
  * again on every new connection.
  *
@@ -19,6 +19,7 @@ type Handler = (body: unknown) => void;
 
 export type StompConnection = {
   subscribe: (destination: string, handler: Handler) => void;
+  send: (destination: string, body?: unknown) => void;
   close: () => void;
 };
 
@@ -32,9 +33,9 @@ export function connectStomp(onConnect: (connection: StompConnection) => void): 
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let nextId = 0;
 
-  function send(command: string, headers: Record<string, string>) {
+  function send(command: string, headers: Record<string, string>, body = '') {
     const headerLines = Object.entries(headers).map(([key, value]) => `${key}:${value}`);
-    const frame = [command, ...headerLines, '', ''].join('\n') + '\0';
+    const frame = [command, ...headerLines, '', body].join('\n') + '\0';
     if (connected) {
       socket.send(frame);
     } else {
@@ -47,6 +48,9 @@ export function connectStomp(onConnect: (connection: StompConnection) => void): 
       const id = `sub-${nextId++}`;
       handlers.set(id, handler);
       send('SUBSCRIBE', { id, destination });
+    },
+    send(destination, body = {}) {
+      send('SEND', { destination, 'content-type': 'application/json' }, JSON.stringify(body));
     },
     close() {
       closedByUs = true;

@@ -21,6 +21,7 @@ import {
   repeatsPreviousRegister,
 } from '@/lib/programCards';
 import { usePlayerState } from '@/lib/socket/usePlayerState';
+import { usePresence } from '@/lib/socket/usePresence';
 import { buttonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
 
@@ -140,6 +141,7 @@ function GameView() {
   // page renders before the browser URL is updated.
   const gameId = useSearchParams().get('game');
   const playerState = usePlayerState(gameId, username);
+  const presence = usePresence(gameId, username);
 
   const liveBoard = playerState?.board ?? null;
   const board = animatingBoard ?? liveBoard;
@@ -446,6 +448,7 @@ function GameView() {
     priorityOrder: false,
     programSubmitted: youSubmitted,
     upgrades: you?.upgrades ?? [],
+    online: presence[username]?.online ?? true,
   };
 
   // Get the other players
@@ -479,8 +482,14 @@ function GameView() {
         priorityOrder: false,
         programSubmitted: gamePlayer.programSubmitted,
         upgrades: gamePlayer.upgrades,
+        online: presence[gamePlayer.username]?.online ?? true,
       };
     });
+
+  // Offline players the game can not go on without
+  const blockingPlayers = Object.values(presence)
+    .filter((entry) => entry.blocking && entry.username !== username)
+    .map((entry) => entry.username);
 
   const status: GameState['status'] = finished
     ? { state: 'over', winner: player }
@@ -590,6 +599,13 @@ function GameView() {
           placingCard={handOpen}
           player={player}
           activeRegisterIndex={activeRegisterIndex}
+          offlineNotice={
+            blockingPlayers.length > 0
+              ? `Waiting for ${blockingPlayers.join(', ')}, who ${
+                  blockingPlayers.length === 1 ? 'is' : 'are'
+                } offline.`
+              : null
+          }
           waiting={waiting}
         >
           <Game
