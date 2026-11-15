@@ -21,6 +21,7 @@ const ALL_CHOICE_TYPES: ChoiceType[] = [
   'WEAPON_UPGRADE',
   'MODULAR_CHASSIS',
   'REBOOT_FACING',
+  'DAMAGE_TYPE',
 ];
 
 describe('CHOICE_QUESTIONS', () => {
@@ -91,6 +92,12 @@ describe('optionLabel', () => {
     expect(optionLabel('MOVE_ONE', 'MOVE_0')).toBe('Brake (stay put)');
     expect(optionLabel('MOVE_ONE', 'LEFT')).toBe('Step left');
     expect(optionLabel('MOVE_ONE', 'RIGHT')).toBe('Step right');
+  });
+
+  it('names the other damage types when a pile is empty', () => {
+    expect(optionLabel('DAMAGE_TYPE', 'WORM')).toBe('Worm');
+    expect(optionLabel('DAMAGE_TYPE', 'TROJAN_HORSE')).toBe('Trojan horse');
+    expect(optionLabel('DAMAGE_TYPE', 'VIRUS')).toBe('Virus');
   });
 
   it('shows an unknown option as it is, so it can still be picked', () => {

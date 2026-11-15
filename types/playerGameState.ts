@@ -85,7 +85,8 @@ export type ChoiceType =
   | 'TELEPORT'
   | 'WEAPON_UPGRADE'
   | 'SIDE_ARMS'
-  | 'MODULAR_CHASSIS';
+  | 'MODULAR_CHASSIS'
+  | 'DAMAGE_TYPE';
 
 // The decision activation is waiting on. options are the only answers the
 // backend accepts, so the frontend just shows them.
