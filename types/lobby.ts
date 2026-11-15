@@ -1,3 +1,7 @@
+/**
+ * @author Elias
+ */
+
 import type { UpgradeType } from '@/types/playerGameState';
 
 export type PlayerColor = 'RED' | 'BLUE' | 'PINK' | 'GREEN' | 'PURPLE' | 'ORANGE';
@@ -56,4 +60,13 @@ export type BuyUpgradeRequest = {
 // choice must be one of the options in the pending choice.
 export type MakeChoiceRequest = {
   choice: string;
+};
+
+export type UseUpgradeRequest = {
+  upgrade: UpgradeType;
+  cards: string[];
+};
+
+export type PutBackCardsRequest = {
+  cards: string[];
 };

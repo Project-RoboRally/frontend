@@ -4,6 +4,8 @@ import type {
   MakeChoiceRequest,
   ProgramRequest,
   ProgramResponse,
+  PutBackCardsRequest,
+  UseUpgradeRequest,
 } from '@/types/lobby';
 
 /**
@@ -22,6 +24,14 @@ export function buyUpgrade(gameId: string, body: BuyUpgradeRequest) {
 
 export function skipUpgrade(gameId: string) {
   return apiPost<void>(`/api/games/${gameId}/upgrade/skip`, {});
+}
+
+export function useUpgrade(gameId: string, body: UseUpgradeRequest) {
+  return apiPost<void>(`/api/games/${gameId}/upgrade/use`, body);
+}
+
+export function putBackCards(gameId: string, body: PutBackCardsRequest) {
+  return apiPost<void>(`/api/games/${gameId}/hand/put-back`, body);
 }
 
 export function makeChoice(gameId: string, body: MakeChoiceRequest) {
