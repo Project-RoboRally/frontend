@@ -25,6 +25,7 @@ export const CHOICE_QUESTIONS: Record<ChoiceType, string> = {
   REBOOT_FACING: 'Your robot rebooted. Which way should it face?',
   WEAPON_UPGRADE: 'Use a weapon upgrade on this shot?',
   MODULAR_CHASSIS: 'Modular Chassis: which upgrade do you take?',
+  DAMAGE_TYPE: 'That damage pile is empty. Which type do you take instead?',
 };
 
 const DIRECTIONS: Record<string, string> = {
@@ -91,6 +92,8 @@ export function optionLabel(type: ChoiceType, option: string): string {
       return TELEPORT_ANSWERS[option] ?? option;
     case 'MOVE_ONE':
       return MOVE_ONE_WAYS[option] ?? option;
+    case 'DAMAGE_TYPE':
+      return labelForInstruction(option);
   }
   // A choice type the backend added after this was written
   return option;
