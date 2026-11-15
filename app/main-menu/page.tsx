@@ -14,7 +14,7 @@ import type { Lobby } from '@/types/lobby';
  * Players can return to an existing match or leave a waiting lobby after
  * confirming their choice.
  *
- * @author Anton, Kerem, Matthias
+ * @author Anton, Kerem, Matthias, Elias
  */
 export default function MainMenuPage() {
   const router = useRouter();
@@ -113,13 +113,13 @@ export default function MainMenuPage() {
       const lobby = await getLobby(id);
       const isMember = (lobby.users ?? []).includes(storedUsername);
 
-      if (lobby.started) {
+      if (lobby.started && lobby.gameId) {
         if (!isMember) {
           setError('This game has already started.');
           return;
         }
 
-        router.push(`/game?lobby=${lobby.id}`);
+        router.push(`/game?game=${lobby.gameId}`);
         return;
       }
 

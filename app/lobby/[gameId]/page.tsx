@@ -56,8 +56,8 @@ export default function LobbyPage() {
           router.replace('/main-menu');
           return;
         }
-        if (nextLobby.started) {
-          router.replace(`/game?lobby=${nextLobby.id}`);
+        if (nextLobby.started && nextLobby.gameId) {
+          router.replace(`/game?game=${nextLobby.gameId}`);
           return;
         }
         setLobby((current) => {
@@ -183,8 +183,8 @@ export default function LobbyPage() {
     try {
       const updated = await startGame(lobby.id);
       setLobby(updated);
-      if (updated.started) {
-        router.push(`/game?lobby=${updated.id}`);
+      if (updated.started && updated.gameId) {
+        router.push(`/game?game=${updated.gameId}`);
       }
     } catch (startError) {
       setError(getErrorMessage(startError, 'Failed to start game'));
