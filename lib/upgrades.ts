@@ -1,7 +1,7 @@
 /**
  * Displays info about each upgrade card
  *
- * @author Kerem
+ * @author Kerem, Elias
  */
 
 import type { UpgradeType } from '@/types/playerGameState';
@@ -20,7 +20,7 @@ export const UPGRADE_INFO: Record<UpgradeType, UpgradeInfo> = {
   CORRUPTION_WAVE: {
     label: 'Corruption Wave',
     description:
-      'You may put SPAM damage cards you deal on top of opponents’ decks. discard one SPAM damage card from your discard pile to the SPAM damage card draw pile.',
+      'You may put SPAM damage cards you deal on top of opponents decks.discard one SPAM damage card from your discard pile to the SPAM damage card draw pile.',
   },
   BLUE_SCREEN_OF_DEATH: {
     label: 'Blue Screen of Death',
@@ -34,7 +34,7 @@ export const UPGRADE_INFO: Record<UpgradeType, UpgradeInfo> = {
   },
   BRAKES: {
     label: 'Brakes',
-    description: 'You may treat your Move 1’s as Move 0’s.',
+    description: 'You may treat your Move 1s as Move 0s.',
   },
   DEFLECTOR_SHIELD: {
     label: 'Deflector Shield',
@@ -71,7 +71,7 @@ export const UPGRADE_INFO: Record<UpgradeType, UpgradeInfo> = {
   HOVER_UNIT: {
     label: 'Hover Unit',
     description:
-      'Your robot can pass over, but not land on, pits. If you end your move on a pit, you fall in. You can’t turn off Hover Unit, and you can’t hover above another robot.',
+      'Your robot can pass over, but not land on, pits. If you end your move on a pit, you fall in. You cant turn off Hover Unit, and you cant hover above another robot.',
   },
   RAIL_GUN: {
     label: 'Rail Gun',
@@ -188,7 +188,7 @@ export const UPGRADE_INFO: Record<UpgradeType, UpgradeInfo> = {
   REFRESH: {
     label: 'Refresh',
     description:
-      'Change the programming in your current register to any of the following: Move 1, 2, or 3; Turn Left; Turn Right; U-Turn; Back Up; Again. If you’re replacing a damage card, you may permanently discard the damage card.',
+      'Change the programming in your current register to any of the following: Move 1, 2, or 3; Turn Left; Turn Right; U-Turn; Back Up; Again. If youre replacing a damage card, you may permanently discard the damage card.',
   },
   SPEED_ROUTINE: {
     // Special programming card

@@ -117,9 +117,9 @@ export default function Game({ board, onAnimationComplete, onStepIndexChange }: 
   const robots = useAnimatedRobots(board, onAnimationComplete, onStepIndexChange);
 
   return (
-    <section className="aspect-square h-full max-h-full rounded-lg border-2 border-slate-700 bg-slate-900 p-2 shadow-xl">
+    <section className="aspect-square h-full max-h-full w-auto max-w-full rounded-lg border-2 border-slate-700 bg-slate-900 p-1 shadow-xl sm:p-2">
       <div
-        className="relative grid h-full w-full bg-slate-900 p-1"
+        className="relative grid h-full w-full bg-slate-900 p-0.5 sm:p-1"
         style={{
           gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,

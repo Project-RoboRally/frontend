@@ -3,7 +3,7 @@ import { GameState } from '@/types/gameState';
 /**
  * Displays several aspects the games status in the gameboard scene
  *
- * @author Kerem, Matthias, Katarina
+ * @author Kerem, Matthias, Katarina, Elias
  */
 
 const PHASE_LABEL: Record<GameState['phase'], string> = {
@@ -15,7 +15,7 @@ const PHASE_LABEL: Record<GameState['phase'], string> = {
 export function GameInfo({ gameState }: { gameState: GameState }) {
   const phaseLabel =
     gameState.phase === 'activation_phase'
-      ? `${PHASE_LABEL.activation_phase} · Register ${gameState.activeRegister}`
+      ? `${PHASE_LABEL.activation_phase}`
       : PHASE_LABEL[gameState.phase];
 
   return (
