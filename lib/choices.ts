@@ -3,7 +3,7 @@
  * question, and the label on each answer button. The options themselves come
  * from the backend, which only sends valid ones.
  *
- * @author August
+ * @author August, Elias
  */
 
 import { labelForInstruction } from './programCards';
@@ -69,11 +69,13 @@ export function optionLabel(type: ChoiceType, option: string): string {
     case 'REGISTER_UPGRADE':
     case 'TURN_UPGRADE':
     case 'WEAPON_UPGRADE':
-    case 'MODULAR_CHASSIS':
-      // The backend asks again after each upgrade used, until NONE
+      // Backend asks again after each upgrade used, until NONE
       if (option === 'NONE') {
         return 'No, continue';
       }
+      return isUpgrade(option) ? UPGRADE_INFO[option].label : option;
+    case 'MODULAR_CHASSIS':
+      // Must pick one of the target's upgrades; no NONE option
       return isUpgrade(option) ? UPGRADE_INFO[option].label : option;
     case 'REFRESH_CARD':
     case 'SANDBOX_ACTION':
@@ -83,10 +85,10 @@ export function optionLabel(type: ChoiceType, option: string): string {
     case 'BOINK_DIRECTION':
     case 'REBOOT_FACING':
       return DIRECTIONS[option] ?? option;
-    case 'TELEPORT':
-      return TELEPORT_ANSWERS[option] ?? option;
     case 'SIDE_ARMS':
       return SIDE_ARMS_PUSHES[option] ?? option;
+    case 'TELEPORT':
+      return TELEPORT_ANSWERS[option] ?? option;
     case 'MOVE_ONE':
       return MOVE_ONE_WAYS[option] ?? option;
   }

@@ -7,6 +7,7 @@ import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
 import { ChoicePanel } from '@/components/ChoicePanel';
+import { ProgrammingUpgradeBar } from '@/components/upgrades/ProgrammingUpgradeBar';
 import { UpgradeShop } from '@/components/UpgradeShop';
 import { getErrorMessage } from '@/lib/api/client';
 import { buyUpgrade, makeChoice, skipUpgrade, submitProgram } from '@/lib/api/game';
@@ -41,20 +42,49 @@ function robotModelFromColor(color: PlayerColor | undefined): RobotModel {
   return color ? (`${color.toLowerCase()}Robot` as RobotModel) : 'orangeRobot';
 }
 
-/* This function is used to get the registers from the board for the current player.
- * It is used to display the registers on the gameboard. */
+/* Registers revealed on the shared board during activation. */
 function registersFromPlayed(board: Board | null, username: string): Register[] {
   return Array.from({ length: REGISTER_COUNT }, (_, index) => {
     const played = board?.registers
       ?.find((register) => register.register === index)
       ?.cards.find((card) => card.username === username);
 
-    /* Return the register number, if the register is revealed and the card in the register */
     return {
       registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
       registerRevealed: true,
       registerCard: played
         ? cardFromInstruction(played.card.instruction, `${username}-${index}`)
+        : null,
+    };
+  });
+}
+
+/* Own mat registers - always available to you once programmed. */
+function registersFromMat(
+  matRegisters: { index: number; card: { instruction: string } | null }[] | undefined,
+): Register[] {
+  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
+    const mat = matRegisters?.find((register) => register.index === index);
+    return {
+      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
+      registerRevealed: true,
+      registerCard: mat?.card ? cardFromInstruction(mat.card.instruction, `mat-${index}`) : null,
+    };
+  });
+}
+
+/* Public program list sent on each player during activation (index = register). */
+function registersFromProgram(
+  program: ({ instruction: string } | null)[] | undefined,
+  username: string,
+): Register[] {
+  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
+    const card = program?.[index] ?? null;
+    return {
+      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
+      registerRevealed: true,
+      registerCard: card
+        ? cardFromInstruction(card.instruction, `${username}-program-${index}`)
         : null,
     };
   });
@@ -211,7 +241,9 @@ function GameView() {
   // Programming phase gates
   const hasPlayedCards = (board?.registers?.length ?? 0) > 0;
   const showingActivation = (animatingBoard?.steps?.length ?? 0) > 0 && stepIndex !== null;
-  const canProgram = isProgramming && !youSubmitted && !showingActivation && !hasPlayedCards;
+  const cardsToPutBack = playerState?.playerMat?.cardsToPutBack ?? 0;
+  const canProgram =
+    isProgramming && !youSubmitted && !showingActivation && !hasPlayedCards && cardsToPutBack === 0;
   const locked = isSubmitting || isWaiting || !playerState || finished || !canProgram;
   const canRun = filledCount === REGISTER_COUNT && !locked && !repeatInRegisterOne;
   const waiting = isWaiting || (youSubmitted && isProgramming && !finished);
@@ -253,19 +285,24 @@ function GameView() {
     });
   };
 
-  // Place a card in a register
-  const placeCard = (index: number) => {
+  // Place a card in a register (click-select or drag-drop via cardId)
+  const placeCard = (index: number, cardId?: string) => {
     if (locked) return;
-    if (selectedCard == null) return;
 
-    const instruction = instructionFromCard(selectedCard);
+    const card =
+      cardId != null
+        ? (availableHand.find((handCard) => handCard.cardId === cardId) ?? null)
+        : selectedCard;
+    if (card == null) return;
+
+    const instruction = instructionFromCard(card);
     if (index === 0 && instruction && repeatsPreviousRegister(instruction)) {
       setError('AGAIN cannot be placed in register 1');
       return;
     }
 
     const next = registers.map((register, i) =>
-      i === index ? { ...register, registerCard: selectedCard } : register,
+      i === index ? { ...register, registerCard: card } : register,
     );
     setRegisters(next);
     setSelectedCardId(null);
@@ -320,15 +357,15 @@ function GameView() {
     }
   }
 
-  // Buy an upgrade
-  async function handleBuy(upgrade: UpgradeType) {
+  // Buy an upgrade (optional replace when slots are full)
+  async function handleBuy(upgrade: UpgradeType, replace?: UpgradeType | null) {
     if (!gameId || !username) {
       return;
     }
     setIsUpgrading(true);
     setError(null);
     try {
-      await buyUpgrade(gameId, { upgrade });
+      await buyUpgrade(gameId, { upgrade, replace: replace ?? null });
     } catch (buyError) {
       setError(getErrorMessage(buyError, 'Could not buy that upgrade.'));
     } finally {
@@ -375,8 +412,18 @@ function GameView() {
   // Get the robot model from the color
   const robotModel = robotModelFromColor(userBoardRobot?.color);
 
-  // Get the shown registers
-  const shownRegisters = hasPlayedCards ? registersFromPlayed(board, username) : registers;
+  const isActivationView = showingActivation || phase === 'ACTIVATION';
+  const ownMatRegisters = registersFromMat(playerState?.playerMat?.registers);
+  const ownMatFilled = ownMatRegisters.some((register) => register.registerCard !== null);
+
+  // Activation: full program from mat (or board after mats clear). Else draft / reveals.
+  const shownRegisters = isActivationView
+    ? ownMatFilled
+      ? ownMatRegisters
+      : registersFromPlayed(board, username)
+    : hasPlayedCards
+      ? registersFromPlayed(board, username)
+      : registers;
 
   // Get the player
   const player: Player = {
@@ -398,6 +445,7 @@ function GameView() {
     register: shownRegisters,
     priorityOrder: false,
     programSubmitted: youSubmitted,
+    upgrades: you?.upgrades ?? [],
   };
 
   // Get the other players
@@ -405,6 +453,12 @@ function GameView() {
     .filter((gamePlayer) => gamePlayer.username !== username)
     .map((gamePlayer) => {
       const boardRobot = board?.robots?.find((robot) => robot.username === gamePlayer.username);
+      const fromProgram = registersFromProgram(gamePlayer.program, gamePlayer.username);
+      const programFilled = fromProgram.some((register) => register.registerCard !== null);
+      const otherRegisters =
+        isActivationView && programFilled
+          ? fromProgram
+          : registersFromPlayed(board, gamePlayer.username);
       return {
         username: gamePlayer.username,
         robot: {
@@ -421,9 +475,10 @@ function GameView() {
           outOfGame: false,
           damageCount: 0,
         },
-        register: registersFromPlayed(board, gamePlayer.username),
+        register: otherRegisters,
         priorityOrder: false,
         programSubmitted: gamePlayer.programSubmitted,
+        upgrades: gamePlayer.upgrades,
       };
     });
 
@@ -480,74 +535,118 @@ function GameView() {
   }
 
   return (
-    <main className="mx-auto flex h-screen w-full max-w-7xl flex-col items-center p-6 text-center">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold">Game Board</h1>
+    <main className="mx-auto flex h-dvh max-h-dvh w-full max-w-7xl flex-col overflow-hidden p-3 text-center">
+      <header className="mb-2 flex shrink-0 items-center justify-between gap-3">
+        <h1 className="text-xl font-bold sm:text-2xl">Game Board</h1>
+        <button
+          className={`${buttonClassName} shrink-0 px-3 py-1.5 text-sm`}
+          onClick={() => router.push('/main-menu')}
+          type="button"
+        >
+          Back to Main Menu
+        </button>
       </header>
 
-      <HUD
-        canRun={canRun}
-        discardCount={playerState?.playerMat?.discardPile.length ?? 0}
-        drawPileSize={playerState?.playerMat?.drawPileSize ?? 0}
-        error={error}
-        extraPanel={
-          isUpgrade && !showingActivation ? (
-            <UpgradeShop
-              currentBuyer={playerState?.currentBuyer ?? null}
-              disabled={isUpgrading || finished}
-              energy={energy}
-              onBuy={(upgrade) => void handleBuy(upgrade)}
-              onSkip={() => void handleSkip()}
-              shop={playerState?.upgradeShop ?? []}
-              username={username}
-            />
-          ) : choice && !showingActivation ? (
-            // Waits for the moves so far to finish animating, so the player
-            // sees where their robot is before deciding
-            <ChoicePanel
-              choice={choice}
-              disabled={isChoosing || finished}
-              onChoose={(option) => void handleChoose(option)}
-              username={username}
-            />
-          ) : null
-        }
-        gameState={displayState}
-        locked={locked}
-        onHandOpen={() => setHandOpen(true)}
-        onPlaceCard={placeCard}
-        onRun={() => void handleRun()}
-        onSwapRegisters={swapRegisters}
-        placingCard={handOpen}
-        player={player}
-        activeRegisterIndex={activeRegisterIndex}
-        waiting={waiting}
-      >
-        <Game
-          board={board}
-          onAnimationComplete={handleAnimationComplete}
-          onStepIndexChange={handleStepIndexChange}
-        />
-      </HUD>
+      <div className="min-h-0 flex-1">
+        <HUD
+          canRun={canRun}
+          discardCount={playerState?.playerMat?.discardPile.length ?? 0}
+          drawPileSize={playerState?.playerMat?.drawPileSize ?? 0}
+          error={error}
+          extraPanel={
+            isUpgrade && !showingActivation ? (
+              <UpgradeShop
+                currentBuyer={playerState?.currentBuyer ?? null}
+                disabled={isUpgrading || finished}
+                energy={energy}
+                onBuy={(upgrade, replace) => void handleBuy(upgrade, replace)}
+                onSkip={() => void handleSkip()}
+                owned={you?.upgrades ?? []}
+                shop={playerState?.upgradeShop ?? []}
+                username={username}
+              />
+            ) : isProgramming &&
+              !youSubmitted &&
+              !showingActivation &&
+              !hasPlayedCards &&
+              gameId ? (
+              <ProgrammingUpgradeBar
+                cardsToPutBack={cardsToPutBack}
+                disabled={finished || isSubmitting}
+                gameId={gameId}
+                hand={playerState?.playerMat?.hand ?? []}
+                onError={setError}
+                owned={you?.upgrades ?? []}
+                usedThisRound={playerState?.playerMat?.usedThisRound ?? []}
+              />
+            ) : null
+          }
+          gameState={displayState}
+          locked={locked}
+          onHandOpen={() => setHandOpen((open) => !open)}
+          onPlaceCard={placeCard}
+          onRun={() => void handleRun()}
+          onSwapRegisters={swapRegisters}
+          placingCard={handOpen}
+          player={player}
+          activeRegisterIndex={activeRegisterIndex}
+          waiting={waiting}
+        >
+          <Game
+            board={board}
+            onAnimationComplete={handleAnimationComplete}
+            onStepIndexChange={handleStepIndexChange}
+          />
+        </HUD>
+      </div>
 
       {handOpen && (
         <>
-          <div className="fixed inset-0 z-40" />
+          {/* Dims the board only - pointer-events none so registers stay clickable */}
+          <div className="pointer-events-none fixed inset-0 z-40 bg-black/40" />
 
-          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-steel-dark bg-black/85 p-6 shadow-2xl">
-            <div className="mb-3 text-xs font-semibold text-bone/70">
-              Draw {playerState?.playerMat?.drawPileSize ?? 0} · Discard{' '}
+          <div className="pointer-events-auto fixed left-1/2 top-[40%] z-50 max-h-[min(48dvh,26rem)] w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border-2 border-steel-dark bg-black/90 p-4 shadow-2xl sm:p-6">
+            <button
+              type="button"
+              aria-label="Close hand"
+              onClick={() => {
+                setHandOpen(false);
+                setSelectedCardId(null);
+              }}
+              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-md border border-steel-dark bg-charcoal text-lg font-bold leading-none text-bone transition hover:border-cobber-light hover:text-cobber-light"
+            >
+              ×
+            </button>
+
+            <div className="mb-2 pr-10 text-xs font-semibold text-bone/70">
+              Draw {playerState?.playerMat?.drawPileSize ?? 0} - Discard{' '}
               {playerState?.playerMat?.discardPile.length ?? 0}
+              {selectedCardId ? (
+                <span className="mt-1 block text-verdigris">
+                  Card selected - click or drop on a register below.
+                </span>
+              ) : (
+                <span className="mt-1 block">
+                  Drag a card onto a register, or click then click a slot.
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               {availableHand.map((card) => (
                 <button
                   key={card.cardId}
                   type="button"
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData('text/plain', card.cardId);
+                    event.dataTransfer.setData('text/card-id', card.cardId);
+                    event.dataTransfer.effectAllowed = 'move';
+                    setSelectedCardId(card.cardId);
+                  }}
                   onClick={() =>
                     setSelectedCardId(selectedCardId === card.cardId ? null : card.cardId)
                   }
-                  className={`flex h-24 w-16 items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition ${
+                  className={`flex h-24 w-16 cursor-grab items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition active:cursor-grabbing ${
                     selectedCardId === card.cardId
                       ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
                       : 'border-steel-dark bg-charcoal hover:border-cobber-light'
@@ -561,13 +660,15 @@ function GameView() {
         </>
       )}
 
-      <button
-        className={`${buttonClassName} mt-6`}
-        onClick={() => router.push('/main-menu')}
-        type="button"
-      >
-        Back to Main Menu
-      </button>
+      {/* Wait for activation animation before asking - same gate as before */}
+      {choice && !showingActivation ? (
+        <ChoicePanel
+          choice={choice}
+          disabled={isChoosing || finished}
+          onChoose={(option) => void handleChoose(option)}
+          username={username}
+        />
+      ) : null}
     </main>
   );
 }

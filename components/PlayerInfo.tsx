@@ -1,9 +1,10 @@
+import { OwnedUpgrades } from '@/components/upgrades/OwnedUpgrades';
 import type { Player } from '@/types/player';
 
 /**
  * Displays the players robot stats in the gameboard scene
  *
- * @author Kerem, Matthias
+ * @author Kerem, Matthias, Elias
  */
 
 export function PlayerInfo({ player }: { player: Player }) {
@@ -25,6 +26,9 @@ export function PlayerInfo({ player }: { player: Player }) {
 
           <span className="font-bold text-bone">{player.robot.energycubesCollected}</span>
         </div>
+
+        <div className="h-px bg-steel-dark" />
+        <OwnedUpgrades upgrades={player.upgrades ?? []} />
       </div>
     </div>
   );

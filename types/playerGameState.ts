@@ -126,6 +126,8 @@ export type GamePlayer = {
   energy: number;
   programSubmitted: boolean;
   upgrades: UpgradeType[];
+  /** Filled during activation - everyone's full register program. */
+  program?: (Card | null)[];
 };
 
 export type MatRegister = {
@@ -139,6 +141,10 @@ export type PlayerMat = {
   registers: MatRegister[];
   drawPileSize: number;
   discardPile: Card[];
+  /** Cards owed after Memory Swap; program is blocked while > 0. */
+  cardsToPutBack?: number;
+  /** Once-per-round upgrades already spent this round. */
+  usedThisRound?: UpgradeType[];
 };
 
 export type PlayerGameState = {
