@@ -74,10 +74,23 @@ export function getElementImage(elements: BoardElement[] | undefined): string | 
   // Handle conveyors based on their beltType
   const belt = elements.find((element) => element.type === 'CONVEYOR_BELT');
   if (belt) {
-    return belt.beltType === 'BLUE'
-      ? '/boardElements/conveyor_blue_straight.png'
-      : '/boardElements/conveyor_green_straight.png';
+  switch (belt.beltType) {
+    case 'BLUE_STRAIGHT':
+      return '/boardElements/conveyor_blue_straight.png';
+    case 'BLUE_LEFT_CURVE':
+      return '/boardElements/conveyor_blue_left.png';
+    case 'BLUE_RIGHT_CURVE':
+      return '/boardElements/conveyor_blue_right.png';
+    case 'GREEN_STRAIGHT':
+      return '/boardElements/conveyor_green_straight.png';
+    case 'GREEN_LEFT_CURVE':
+      return '/boardElements/conveyor_green_left.png';
+    case 'GREEN_RIGHT_CURVE':
+      return '/boardElements/conveyor_green_right.png';
+    default:
+      return null;
   }
+}
 
   return null;
 }
