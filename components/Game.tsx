@@ -117,38 +117,47 @@ export default function Game({ board, onAnimationComplete, onStepIndexChange }: 
   const robots = useAnimatedRobots(board, onAnimationComplete, onStepIndexChange);
 
   return (
-    <section className="aspect-square h-full max-h-full w-auto max-w-full rounded-lg border-2 border-slate-700 bg-slate-900 p-1 shadow-xl sm:p-2">
-      <div
-        className="relative grid h-full w-full bg-slate-900 p-0.5 sm:p-1"
+    <div className="flex h-full w-full items-center justify-center [container-type:size]">
+      <section
+        className="box-content shadow-[0_12px_30px_10px_rgba(0,0,0,0.9)]"
         style={{
-          gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,
+          // Reserve 20px for the frame (padding + border) on each axis.
+          width: `max(0px, min(100cqw - 20px, (100cqh - 20px) * ${width / height}))`,
+          aspectRatio: `${width} / ${height}`,
         }}
       >
-        {Array.from({ length: width * height }).map((_, index) => {
-          const x = index % width;
-          const y = Math.floor(index / width);
+        <div
+          className="relative grid h-full w-full bg-slate-900"
+          style={{
+            gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,
+          }}
+        >
+          {Array.from({ length: width * height }).map((_, index) => {
+            const x = index % width;
+            const y = Math.floor(index / width);
 
-          return <Tile key={index} x={x} y={y} elements={elementsAt.get(`${x},${y}`)} />;
-        })}
+            return <Tile key={index} x={x} y={y} elements={elementsAt.get(`${x},${y}`)} />;
+          })}
 
-        <div className="pointer-events-none absolute inset-1">
-          {robots.map((robot) => (
-            <div
-              key={robot.username}
-              className="absolute flex items-center justify-center transition-[left,top] duration-300 ease-linear"
-              style={{
-                left: `${(robot.x / width) * 100}%`,
-                top: `${(robot.y / height) * 100}%`,
-                width: `${100 / width}%`,
-                height: `${100 / height}%`,
-              }}
-            >
-              <RobotSprite robot={robot} />
-            </div>
-          ))}
+          <div className="pointer-events-none absolute inset-0">
+            {robots.map((robot) => (
+              <div
+                key={robot.username}
+                className="absolute flex items-center justify-center transition-[left,top] duration-300 ease-linear"
+                style={{
+                  left: `${(robot.x / width) * 100}%`,
+                  top: `${(robot.y / height) * 100}%`,
+                  width: `${100 / width}%`,
+                  height: `${100 / height}%`,
+                }}
+              >
+                <RobotSprite robot={robot} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
