@@ -15,4 +15,6 @@ export type Player = {
   priorityOrder: boolean;
   programSubmitted?: boolean;
   upgrades?: UpgradeType[];
+  /** False once the player's client stopped sending health pings. */
+  online?: boolean;
 };
