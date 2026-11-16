@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { connectStomp } from './stomp';
 import type { KickVote, PlayerPresence, Presence } from '@/types/presence';
 
-// Must match PresenceService.TICK_MILLIS on the backend.
+// Must match PresenceService.TICK_MS on the backend.
 const HEALTH_INTERVAL_MS = 10_000;
 
 /**
