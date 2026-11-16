@@ -37,3 +37,11 @@ export function putBackCards(gameId: string, body: PutBackCardsRequest) {
 export function makeChoice(gameId: string, body: MakeChoiceRequest) {
   return apiPost<void>(`/api/games/${gameId}/choice`, body);
 }
+
+export function startKickVote(gameId: string, username: string) {
+  return apiPost<void>(`/api/games/${gameId}/kick-vote`, { username });
+}
+
+export function voteOnKick(gameId: string, yes: boolean) {
+  return apiPost<void>(`/api/games/${gameId}/kick-vote/ballot`, { yes });
+}

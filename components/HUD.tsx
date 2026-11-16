@@ -48,6 +48,7 @@ export default function HUD({
   activeRegisterIndex,
   extraPanel,
   offlineNotice,
+  onKickVote,
 }: {
   gameState: GameState;
   player: Player;
@@ -66,6 +67,7 @@ export default function HUD({
   activeRegisterIndex: number | null;
   extraPanel?: ReactNode;
   offlineNotice?: string | null;
+  onKickVote?: (username: string) => void;
 }) {
   // Keep deck + registers above the hand backdrop so cards can be placed.
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -129,10 +131,22 @@ export default function HUD({
                         backgroundColor: ROBOT_BG_COLORS[otherRobotModel],
                       }}
                     >
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-bone sm:text-xs">
-                        <OnlineDot online={p.online} />
-                        {p.username}
-                      </span>
+                      {p.online === false && onKickVote ? (
+                        <button
+                          type="button"
+                          title={`Start a vote to kick ${p.username}`}
+                          onClick={() => onKickVote(p.username)}
+                          className="flex items-center gap-1 text-[10px] font-bold text-bone underline decoration-red-400 underline-offset-2 sm:text-xs"
+                        >
+                          <OnlineDot online={p.online} />
+                          {p.username}
+                        </button>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-bone sm:text-xs">
+                          <OnlineDot online={p.online} />
+                          {p.username}
+                        </span>
+                      )}
 
                       {p.programSubmitted ? (
                         <span className="text-[9px] font-bold uppercase text-verdigris">Ready</span>

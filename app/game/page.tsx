@@ -7,10 +7,18 @@ import Game from '@/components/Game';
 import HUD from '@/components/HUD';
 import { CardInfo } from '@/components/CardInfo';
 import { ChoicePanel } from '@/components/ChoicePanel';
+import { KickVotePanel } from '@/components/KickVotePanel';
 import { ProgrammingUpgradeBar } from '@/components/upgrades/ProgrammingUpgradeBar';
 import { UpgradeShop } from '@/components/UpgradeShop';
 import { getErrorMessage } from '@/lib/api/client';
-import { buyUpgrade, makeChoice, skipUpgrade, submitProgram } from '@/lib/api/game';
+import {
+  buyUpgrade,
+  makeChoice,
+  skipUpgrade,
+  startKickVote,
+  submitProgram,
+  voteOnKick,
+} from '@/lib/api/game';
 import { activePlayedRegister } from '@/lib/playedRegisters';
 import {
   cardFromInstruction,
@@ -117,6 +125,8 @@ function GameView() {
   // Turn action status flags
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isChoosing, setIsChoosing] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const [kickConfirm, setKickConfirm] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +151,7 @@ function GameView() {
   // page renders before the browser URL is updated.
   const gameId = useSearchParams().get('game');
   const playerState = usePlayerState(gameId, username);
-  const presence = usePresence(gameId, username);
+  const { players: presence, vote } = usePresence(gameId, username);
 
   const liveBoard = playerState?.board ?? null;
   const board = animatingBoard ?? liveBoard;
@@ -190,7 +200,8 @@ function GameView() {
       : null;
 
   // Did the game finish?
-  const showWinner = finished && completedBoard === board;
+  const showWinner =
+    finished && (completedBoard === board || (liveBoard?.steps?.length ?? 0) === 0);
 
   // If the live board is not the same as the held live board,
   // set the held live board to the live board and if the live board has steps,
@@ -393,6 +404,42 @@ function GameView() {
 
   // Answer the choice activation is waiting on. The buttons stay disabled until
   // the request is done, so a double click can not send two answers.
+  async function handleStartKickVote() {
+    if (!gameId || !username || !kickConfirm) {
+      return;
+    }
+    const target = kickConfirm;
+    setKickConfirm(null);
+    setIsVoting(true);
+    setError(null);
+    try {
+      await startKickVote(gameId, target);
+    } catch (kickError) {
+      setKickConfirm(target);
+      setError(getErrorMessage(kickError, 'Could not start a kick vote.'));
+    } finally {
+      setIsVoting(false);
+    }
+  }
+
+  async function handleKickBallot(yes: boolean) {
+    if (!gameId || !username) {
+      return;
+    }
+    setIsVoting(true);
+    setError(null);
+    try {
+      await voteOnKick(gameId, yes);
+      if (!yes) {
+        setKickConfirm(null);
+      }
+    } catch (voteError) {
+      setError(getErrorMessage(voteError, 'Could not vote.'));
+    } finally {
+      setIsVoting(false);
+    }
+  }
+
   async function handleChoose(option: string) {
     if (!gameId || !username) {
       return;
@@ -603,9 +650,10 @@ function GameView() {
             blockingPlayers.length > 0
               ? `Waiting for ${blockingPlayers.join(', ')}, who ${
                   blockingPlayers.length === 1 ? 'is' : 'are'
-                } offline.`
+                } offline. Click their name to start a kick vote.`
               : null
           }
+          onKickVote={setKickConfirm}
           waiting={waiting}
         >
           <Game
@@ -675,6 +723,18 @@ function GameView() {
           </div>
         </>
       )}
+
+      {vote || kickConfirm ? (
+        <KickVotePanel
+          disabled={isVoting || finished}
+          onBallot={(yes) => void handleKickBallot(yes)}
+          onCancel={() => setKickConfirm(null)}
+          onConfirm={() => void handleStartKickVote()}
+          target={vote?.target ?? kickConfirm ?? ''}
+          username={username}
+          vote={vote}
+        />
+      ) : null}
 
       {/* Wait for activation animation before asking - same gate as before */}
       {choice && !showingActivation ? (

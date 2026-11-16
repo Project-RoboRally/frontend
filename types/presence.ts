@@ -10,6 +10,15 @@ export type PlayerPresence = {
   blocking: boolean;
 };
 
+export type KickVote = {
+  target: string;
+  needed: string[];
+  yes: string[];
+};
+
 export type Presence = {
   players: PlayerPresence[];
+  /** Usernames asked "are you there?" this tick. Answer with a health ping. */
+  ask?: string[];
+  vote?: KickVote | null;
 };
