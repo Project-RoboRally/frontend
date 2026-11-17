@@ -2,9 +2,11 @@ import type { ReactNode } from 'react';
 import type { GameState } from '@/types/gameState';
 import type { Player } from '@/types/player';
 import { useState } from 'react';
+import Image from 'next/image';
 import { CardInfo } from '@/components/CardInfo';
 import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
+import { robotModelSprite } from '@/lib/playerColors';
 import { REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
@@ -22,8 +24,11 @@ function OnlineDot({ online }: { online?: boolean }) {
     <span
       aria-label={isOnline ? 'Online' : 'Offline'}
       title={isOnline ? 'Online' : 'Offline'}
+      // Colorblind mode also changes the shape: offline is a hollow ring.
       className={`inline-block h-2 w-2 shrink-0 rounded-full ${
-        isOnline ? 'bg-green-500' : 'bg-red-500'
+        isOnline
+          ? 'bg-online'
+          : 'bg-offline colorblind:border-2 colorblind:border-offline colorblind:bg-transparent'
       }`}
       role="img"
     />
@@ -131,6 +136,15 @@ export default function HUD({
                         backgroundColor: ROBOT_BG_COLORS[otherRobotModel],
                       }}
                     >
+                      {/* The sprite identifies the player without relying on the border color. */}
+                      <Image
+                        alt=""
+                        className="shrink-0 object-contain"
+                        height={20}
+                        src={robotModelSprite(otherRobotModel)}
+                        width={20}
+                      />
+
                       {p.online === false && onKickVote ? (
                         <button
                           type="button"
@@ -149,7 +163,9 @@ export default function HUD({
                       )}
 
                       {p.programSubmitted ? (
-                        <span className="text-[9px] font-bold uppercase text-verdigris">Ready</span>
+                        <span className="text-[9px] font-bold uppercase text-verdigris-light">
+                          Ready
+                        </span>
                       ) : null}
 
                       <div className="flex gap-0.5">

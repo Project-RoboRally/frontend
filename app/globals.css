@@ -11,6 +11,9 @@
   --foreground: #f5f1e8;
 }
 
+/* Matches elements inside <html class="colorblind-mode">, e.g. `colorblind:border-2`. */
+@custom-variant colorblind (&:where(.colorblind-mode, .colorblind-mode *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -26,6 +29,7 @@
 
   --color-verdigris: #4a7c6d;
   --color-verdigris-dark: #3a6357;
+  --color-verdigris-light: #7fb5a5;
 
   --color-steel: #3b5b70;
   --color-steel-dark: #2c4757;
@@ -36,6 +40,24 @@
   --color-iron: #44403c;
 
   --color-bone: #f5f1e8;
+
+  /* Online/offline status dots */
+  --color-online: #22c55e;
+  --color-offline: #ef4444;
+
+  /* Robot colors shown in the HUD, and the darker background for each */
+  --robot-red: #dd1313;
+  --robot-orange: #f16d24;
+  --robot-green: #00974e;
+  --robot-blue: #3498db;
+  --robot-purple: #a400c7;
+  --robot-pink: #fe7ede;
+  --robot-red-bg: #7f1010;
+  --robot-orange-bg: #993d0b;
+  --robot-green-bg: #0d5d36;
+  --robot-blue-bg: #205477;
+  --robot-purple-bg: #6d1a80;
+  --robot-pink-bg: #863873;
 }
 
 html,
@@ -60,16 +82,37 @@ html.dyslexic-mode {
   font-size: 95%;
 }
 
-/* Colorblind-friendly high-contrast adjustments */
+/*
+ * Colorblind mode swaps the red/green based colors for the Okabe-Ito palette, which stays
+ * distinguishable for the common kinds of color blindness. Everything reads these variables,
+ * so a component never has to know whether the mode is on.
+ */
 .colorblind-mode {
-  --color-verdigris: #1d4ed8;
-  --color-verdigris-dark: #18379c;
-  --color-amber: #b45309;
+  --color-verdigris: #0072b2;
+  --color-verdigris-dark: #005a8c;
+  --color-verdigris-light: #56b4e9;
+  --color-amber: #f0e442;
+
+  --color-online: #0072b2;
+  --color-offline: #d55e00;
+
+  --robot-red: #d55e00;
+  --robot-orange: #e69f00;
+  --robot-green: #009e73;
+  --robot-blue: #0072b2;
+  --robot-purple: #cc79a7;
+  --robot-pink: #f0e442;
+  --robot-red-bg: #6a2f00;
+  --robot-orange-bg: #734f00;
+  --robot-green-bg: #004f3a;
+  --robot-blue-bg: #003959;
+  --robot-purple-bg: #663c54;
+  --robot-pink-bg: #787221;
 }
 
-/* Add clear underline or border patterns for active states */
+/* Active states also get an outline, so they do not rely on color alone. */
 .colorblind-mode .ring-verdigris {
-  outline: 3px solid #60a5fa !important;
+  outline: 3px solid var(--color-verdigris-light);
   outline-offset: 2px;
 }
 
