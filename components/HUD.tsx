@@ -174,14 +174,14 @@ export default function HUD({
             </div>
 
             {/* Board fills leftover height without forcing page scroll */}
-            <div className="relative min-h-0 w-full flex-1">
+            <div className="relative z-0 min-h-0 w-full flex-1">
               <div className="absolute inset-0 flex items-center justify-center">{children}</div>
             </div>
           </div>
 
           {/* Programming bar - above hand modal while placing so drag-drop hits */}
           <div
-            className={`flex shrink-0 flex-col gap-1 rounded-md border-2 p-2 ${
+            className={`flex z-1 shrink-0 flex-col gap-1 rounded-md border-2 p-2 ${
               placingCard ? 'relative z-[60]' : ''
             }`}
             style={{ borderColor: playerColorHex, backgroundColor: backgroundColorHex }}
