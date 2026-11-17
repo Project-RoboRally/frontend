@@ -1,5 +1,7 @@
 import { apiGet, apiPatch, apiPost } from './client';
 import type {
+  ChangeBoardRequest,
+  ChangeCustomBoardRequest,
   CreateLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
@@ -46,6 +48,14 @@ export function setReady(id: string, body: SetReadyRequest) {
 
 export function setColor(id: string, body: SetColorRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/color`, body);
+}
+
+export function changeBoard(id: string, body: ChangeBoardRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
+}
+
+export function changeCustomBoard(id: string, body: ChangeCustomBoardRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
 }
 
 export function startGame(id: string) {

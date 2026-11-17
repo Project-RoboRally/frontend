@@ -22,6 +22,8 @@ export type Lobby = {
   kickedUsers?: string[];
   gameId?: string | null;
   started: boolean;
+  boardId?: string;
+  boardName?: string;
 };
 
 export type SetReadyRequest = {
@@ -42,6 +44,14 @@ export type KickFromLobbyRequest = {
 
 export type RenameLobbyRequest = {
   name: string;
+};
+
+export type ChangeBoardRequest = {
+  boardId: string;
+};
+
+export type ChangeCustomBoardRequest = {
+  level: unknown;
 };
 
 export type ProgramRequest = {
