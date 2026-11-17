@@ -70,7 +70,7 @@ export function GameOverlays({
             <div className="mb-2 pr-10 text-xs font-semibold text-bone/70">
               Draw {drawPileSize} - Discard {discardCount}
               {selectedCardId ? (
-                <span className="mt-1 block text-verdigris">
+                <span className="mt-1 block text-verdigris-light">
                   Card selected - click or drop on a register below.
                 </span>
               ) : (

@@ -274,7 +274,7 @@ export default function LobbyPage() {
           Exit
         </button>
         <h1 className="text-3xl font-bold">Lobby</h1>
-        <p className="absolute right-6 top-6">Logged in as: {username}</p>
+        <p className="absolute right-16 top-6">Logged in as: {username}</p>
       </header>
 
       {error ? (
