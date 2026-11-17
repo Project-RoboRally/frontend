@@ -191,7 +191,7 @@ export default function MainMenuPage() {
       <header className="mb-10 text-center">
         <h1 className="text-3xl font-bold">Main Menu</h1>
       </header>
-      <p className="absolute right-6 top-6">Logged in as: {username}</p>
+      <p className="absolute right-16 top-6">Logged in as: {username}</p>
 
       {visibleError && (
         <p className="mb-4 text-center" role="alert">

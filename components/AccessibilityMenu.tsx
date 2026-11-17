@@ -90,10 +90,7 @@ export function AccessibilityMenu() {
   }, [open]);
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed bottom-1 left-1 z-[100] flex flex-col items-start gap-2"
-    >
+    <div ref={containerRef} className="fixed right-2 top-2 z-[100] flex flex-col items-end gap-2">
       {open ? (
         <div
           role="dialog"
@@ -122,9 +119,21 @@ export function AccessibilityMenu() {
         aria-expanded={open}
         title="Accessibility settings"
         onClick={() => setOpen((isOpen) => !isOpen)}
-        className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-cobber-dark bg-charcoal text-sm font-bold text-bone opacity-80 shadow-md transition hover:border-cobber-light hover:opacity-100"
+        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-cobber-dark bg-charcoal text-bone opacity-90 shadow-md transition hover:border-cobber-light hover:opacity-100"
       >
-        <span aria-hidden="true">Aa</span>
+        <svg
+          aria-hidden="true"
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+        </svg>
       </button>
     </div>
   );
