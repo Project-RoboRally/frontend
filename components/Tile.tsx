@@ -46,11 +46,7 @@ export default function Tile({ x, y, elements }: TileProps) {
       aria-label={`Tile ${x}, ${y}: ${label}`}
       title={`(${x}, ${y}) ${label}`}
       style={{
-        backgroundColor: imageSrc
-          ? EMPTY_SPACE_COLOR
-          : elements
-            ? EMPTY_SPACE_COLOR
-            : MISSING_SPACE_COLOR,
+        backgroundColor: elements ? EMPTY_SPACE_COLOR : MISSING_SPACE_COLOR,
         ...wallBorders,
       }}
       className="relative flex h-full w-full items-center justify-center border border-stone-600 overflow-hidden"

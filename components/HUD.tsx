@@ -8,7 +8,7 @@ import { GameInfo } from '@/components/GameInfo';
 import { PlayerInfo } from '@/components/PlayerInfo';
 import { robotModelSprite } from '@/lib/playerColors';
 import { REGISTER_COUNT } from '@/lib/programCards';
-import { buttonClassName } from '@/lib/styles';
+import { buttonClassName, selectedClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 import { ProgrammingTimer } from '@/components/ProgrammingTimer';
 
@@ -241,7 +241,7 @@ export default function HUD({
                     key={register.registerNumber}
                     className={`flex h-12 w-9 cursor-pointer items-center justify-center rounded-md border-2 text-xs font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-10 ${
                       selectedIndex === index || activeRegisterIndex === index
-                        ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                        ? selectedClassName
                         : 'border-steel-dark bg-charcoal hover:border-cobber-light'
                     }`}
                   >

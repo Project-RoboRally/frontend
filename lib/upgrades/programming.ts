@@ -31,6 +31,10 @@ export const PROGRAMMING_UPGRADES: ProgrammingUpgradeSpec[] = [
 
 export const DAMAGE_INSTRUCTIONS = ['SPAM', 'TROJAN_HORSE', 'WORM', 'VIRUS'] as const;
 
+export function isDamageInstruction(instruction: string): boolean {
+  return (DAMAGE_INSTRUCTIONS as readonly string[]).includes(instruction);
+}
+
 export function isProgrammingUpgrade(type: UpgradeType): boolean {
   return PROGRAMMING_UPGRADES.some((spec) => spec.type === type);
 }
