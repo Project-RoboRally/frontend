@@ -1,12 +1,13 @@
 import { cardFromInstruction, REGISTER_COUNT } from '@/lib/programCards';
-import type { Board } from '@/types/board';
+import type { Board, BoardRobot } from '@/types/board';
+import type { ProgrammingCard } from '@/types/cards';
 import type { GameState } from '@/types/gameState';
 import type { PlayerColor } from '@/types/lobby';
 import type { Player } from '@/types/player';
 import type { GamePlayer, PlayerGameState } from '@/types/playerGameState';
 import type { PlayerPresence } from '@/types/presence';
 import type { Register } from '@/types/register';
-import type { RobotModel } from '@/types/robot';
+import type { Robot, RobotModel, RobotPosition } from '@/types/robot';
 
 /**
  * Maps websocket state onto the Player objects and registers the HUD shows.
@@ -18,32 +19,31 @@ export function robotModelFromColor(color: PlayerColor | undefined): RobotModel 
   return color ? (`${color.toLowerCase()}Robot` as RobotModel) : 'orangeRobot';
 }
 
+/** Builds the five registers, asking cardAt for the card (if any) in each slot. */
+function buildRegisters(cardAt: (index: number) => ProgrammingCard | null): Register[] {
+  return Array.from({ length: REGISTER_COUNT }, (_, index) => ({
+    registerNumber: (index + 1) as Register['registerNumber'],
+    registerRevealed: true,
+    registerCard: cardAt(index),
+  }));
+}
+
 function registersFromPlayed(board: Board | null, username: string): Register[] {
-  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
+  return buildRegisters((index) => {
     const played = board?.registers
       ?.find((register) => register.register === index)
       ?.cards.find((card) => card.username === username);
 
-    return {
-      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
-      registerRevealed: true,
-      registerCard: played
-        ? cardFromInstruction(played.card.instruction, `${username}-${index}`)
-        : null,
-    };
+    return played ? cardFromInstruction(played.card.instruction, `${username}-${index}`) : null;
   });
 }
 
 function registersFromMat(
   matRegisters: { index: number; card: { instruction: string } | null }[] | undefined,
 ): Register[] {
-  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
-    const mat = matRegisters?.find((register) => register.index === index);
-    return {
-      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
-      registerRevealed: true,
-      registerCard: mat?.card ? cardFromInstruction(mat.card.instruction, `mat-${index}`) : null,
-    };
+  return buildRegisters((index) => {
+    const card = matRegisters?.find((register) => register.index === index)?.card;
+    return card ? cardFromInstruction(card.instruction, `mat-${index}`) : null;
   });
 }
 
@@ -51,16 +51,30 @@ function registersFromProgram(
   program: ({ instruction: string } | null)[] | undefined,
   username: string,
 ): Register[] {
-  return Array.from({ length: REGISTER_COUNT }, (_, index) => {
-    const card = program?.[index] ?? null;
-    return {
-      registerNumber: (index + 1) as 1 | 2 | 3 | 4 | 5,
-      registerRevealed: true,
-      registerCard: card
-        ? cardFromInstruction(card.instruction, `${username}-program-${index}`)
-        : null,
-    };
+  return buildRegisters((index) => {
+    const card = program?.[index];
+    return card ? cardFromInstruction(card.instruction, `${username}-program-${index}`) : null;
   });
+}
+
+/** The robot the HUD shows for a player, read from the board and the player's game stats. */
+function hudRobot(
+  boardRobot: BoardRobot | undefined,
+  checkpointsReached: number,
+  energy: number,
+): Robot {
+  return {
+    robotModel: robotModelFromColor(boardRobot?.color),
+    position: {
+      row: boardRobot?.y ?? 0,
+      column: boardRobot?.x ?? 0,
+      direction: (boardRobot?.orientation.toLowerCase() as RobotPosition['direction']) ?? 'north',
+    },
+    checkpointsCollected: checkpointsReached,
+    energycubesCollected: energy,
+    outOfGame: false,
+    damageCount: 0,
+  };
 }
 
 export function shownRegistersForYou(
@@ -89,19 +103,7 @@ export function youAsHudPlayer(
   const robot = board?.robots?.find((r) => r.username === username);
   return {
     username,
-    robot: {
-      robotModel: robotModelFromColor(robot?.color),
-      position: {
-        row: robot?.y ?? 0,
-        column: robot?.x ?? 0,
-        direction:
-          (robot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ?? 'north',
-      },
-      checkpointsCollected: you?.checkpointsReached ?? 0,
-      energycubesCollected: you?.energy ?? 0,
-      outOfGame: false,
-      damageCount: 0,
-    },
+    robot: hudRobot(robot, you?.checkpointsReached ?? 0, you?.energy ?? 0),
     register: registers,
     priorityOrder: false,
     programSubmitted: you?.programSubmitted ?? false,
@@ -129,20 +131,7 @@ export function othersAsHudPlayers(
           : registersFromPlayed(board, gamePlayer.username);
       return {
         username: gamePlayer.username,
-        robot: {
-          robotModel: robotModelFromColor(boardRobot?.color),
-          position: {
-            row: boardRobot?.y ?? 0,
-            column: boardRobot?.x ?? 0,
-            direction:
-              (boardRobot?.orientation.toLowerCase() as 'north' | 'south' | 'east' | 'west') ??
-              'north',
-          },
-          checkpointsCollected: gamePlayer.checkpointsReached,
-          energycubesCollected: gamePlayer.energy,
-          outOfGame: false,
-          damageCount: 0,
-        },
+        robot: hudRobot(boardRobot, gamePlayer.checkpointsReached, gamePlayer.energy),
         register: otherRegisters,
         priorityOrder: false,
         programSubmitted: gamePlayer.programSubmitted,
