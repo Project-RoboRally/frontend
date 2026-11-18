@@ -4,15 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Game from '@/components/Game';
-import { getBoardLayout, getBoards } from '@/lib/api/boards';
 import { ApiError, getErrorMessage } from '@/lib/api/client';
 import {
   changeBoard,
+  changeCustomBoard,
   getLobby,
+  getBoards,
+  getLobbyBoard,
   kickPlayer,
   leaveLobby,
   renameLobby,
-  changeCustomBoard,
   setColor,
   setReady,
   startGame,
@@ -145,7 +146,7 @@ export default function LobbyPage() {
       return;
     }
     let cancelled = false;
-    getBoardLayout(boardId)
+    getLobbyBoard(gameId)
       .then((board) => {
         if (!cancelled) {
           setPreview({ id: boardId, board });
@@ -159,7 +160,7 @@ export default function LobbyPage() {
     return () => {
       cancelled = true;
     };
-  }, [boardId]);
+  }, [gameId, boardId]);
 
   const players = lobby?.users ?? [];
   const isOwner = lobby?.createdBy === username;
@@ -311,7 +312,7 @@ export default function LobbyPage() {
         throw new Error('The selected file is not valid JSON.');
       }
 
-      const updated = await changeCustomBoard(lobby.id, { level });
+      const updated = await changeCustomBoard(lobby.id, level);
       setLobby(updated);
     } catch (error) {
       setError(getErrorMessage(error, 'Failed to load custom board'));
@@ -546,6 +547,12 @@ export default function LobbyPage() {
                             {board.name}
                           </option>
                         ))}
+                        {/* upload board */}
+                        {!boards.some((board) => board.id === lobby.boardId) && (
+                          <option value={lobby.boardId} disabled>
+                            {lobby.boardName} (uploaded)
+                          </option>
+                        )}
                       </select>
                       <p className="mb-4 text-sm text-bone/70">
                         Changing the board asks everyone to press Ready again.

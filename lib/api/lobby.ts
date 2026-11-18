@@ -1,7 +1,7 @@
 import { apiGet, apiPatch, apiPost } from './client';
+import type { Board, BoardOption } from '@/types/board';
 import type {
   ChangeBoardRequest,
-  ChangeCustomBoardRequest,
   CreateLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
@@ -54,10 +54,17 @@ export function changeBoard(id: string, body: ChangeBoardRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
 }
 
-export function changeCustomBoard(id: string, body: ChangeCustomBoardRequest) {
-  return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
+export function changeCustomBoard(id: string, level: unknown) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/board/custom`, level);
 }
 
+export function getBoards() {
+  return apiGet<BoardOption[]>('/api/boards');
+}
+
+export function getLobbyBoard(id: string) {
+  return apiGet<Board>(`/api/lobbies/${id}/board`);
+}
 
 export function startGame(id: string) {
   return apiPost<Lobby>(`/api/lobbies/${id}/start`, {});

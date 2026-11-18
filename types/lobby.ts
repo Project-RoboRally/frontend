@@ -50,10 +50,6 @@ export type ChangeBoardRequest = {
   boardId: string;
 };
 
-export type ChangeCustomBoardRequest = {
-  level: unknown;
-};
-
 export type ProgramRequest = {
   registers: string[];
 };
