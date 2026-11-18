@@ -250,6 +250,50 @@ export default function HUD({
                     )}
                   </button>
                 ))}
+
+                <div className="mx-3 h-10 w-px shrink-0 bg-steel-dark" />
+                {/* Permanent and Temporary Upgrade Slots/Registers */}
+                <div className="flex items-center gap-10">
+                  {/* Permanent Upgrades Slots */}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-1" aria-label="Permanent Upgrades">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={`perm-${index}`}
+                          className={`flex h-12 w-9 cursor-pointer items-center justify-center rounded-md border-2 text-xs font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-10 ${
+                            selectedIndex === index || activeRegisterIndex === index
+                              ? selectedClassName
+                              : 'border-steel-dark bg-charcoal hover:border-cobber-light'
+                          }`}
+                          title="Permanent Upgrade Slot"
+                        >
+                          {/* Render upgrade if available in player structure */}
+                          {/* player.permanentUpgrades?[index] ? ... : '' */}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Temporary Upgrades Slots */}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-1" aria-label="Temporary Upgrades">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={`temp-${index}`}
+                          className={`flex h-12 w-9 cursor-pointer items-center justify-center rounded-md border-2 text-xs font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-10 ${
+                            selectedIndex === index || activeRegisterIndex === index
+                              ? selectedClassName
+                              : 'border-steel-dark bg-charcoal hover:border-cobber-light'
+                          }`}
+                          title="Temporary Upgrade Slot"
+                        >
+                          {/* Render upgrade if available in player structure */}
+                          {/* player.temporaryUpgrades?[index] ? ... : '' */}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
