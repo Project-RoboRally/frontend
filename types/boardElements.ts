@@ -31,11 +31,11 @@ function pushPanelImage(registers: number[]) {
 
 // Handle the energy space tile based on the amount of enrgy left
 function energySpaceImage(cubeAmount: number) {
-  if (cubeAmount === 2) {
+  if (cubeAmount >= 2) {
     return '/boardElements/double_energy_space.png';
   }
   if (cubeAmount === 1) {
-    ('/boardElements/single_energy_space.png');
+    return '/boardElements/single_energy_space.png';
   }
   return '/boardElements/empty_tile.png';
 }
