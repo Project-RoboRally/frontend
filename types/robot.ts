@@ -24,7 +24,7 @@ export type RobotModel =
 
 // The colors are CSS variables (see globals.css) so colorblind mode can swap them.
 const robotColorVar = (model: RobotModel, suffix = '') =>
-  `var(--robot-${model.replace('Robot', '')}${suffix})`;
+  `var(--color-robot-${model.replace('Robot', '')}${suffix})`;
 
 const ROBOT_MODELS: RobotModel[] = [
   'redRobot',

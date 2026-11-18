@@ -9,6 +9,20 @@
 :root {
   --background: #1a2229;
   --foreground: #f5f1e8;
+
+  /* Robot colors shown in the HUD, and the darker background for each */
+  --color-robot-red: #dd1313;
+  --color-robot-orange: #f16d24;
+  --color-robot-green: #00974e;
+  --color-robot-blue: #3498db;
+  --color-robot-purple: #a400c7;
+  --color-robot-pink: #fe7ede;
+  --color-robot-red-bg: #7f1010;
+  --color-robot-orange-bg: #993d0b;
+  --color-robot-green-bg: #0d5d36;
+  --color-robot-blue-bg: #205477;
+  --color-robot-purple-bg: #6d1a80;
+  --color-robot-pink-bg: #863873;
 }
 
 /* Matches elements inside <html class="colorblind-mode">, e.g. `colorblind:border-2`. */
@@ -44,20 +58,6 @@
   /* Online/offline status dots */
   --color-online: #22c55e;
   --color-offline: #ef4444;
-
-  /* Robot colors shown in the HUD, and the darker background for each */
-  --robot-red: #dd1313;
-  --robot-orange: #f16d24;
-  --robot-green: #00974e;
-  --robot-blue: #3498db;
-  --robot-purple: #a400c7;
-  --robot-pink: #fe7ede;
-  --robot-red-bg: #7f1010;
-  --robot-orange-bg: #993d0b;
-  --robot-green-bg: #0d5d36;
-  --robot-blue-bg: #205477;
-  --robot-purple-bg: #6d1a80;
-  --robot-pink-bg: #863873;
 }
 
 html,
@@ -96,18 +96,18 @@ html.dyslexic-mode {
   --color-online: #0072b2;
   --color-offline: #d55e00;
 
-  --robot-red: #d55e00;
-  --robot-orange: #e69f00;
-  --robot-green: #009e73;
-  --robot-blue: #0072b2;
-  --robot-purple: #cc79a7;
-  --robot-pink: #f0e442;
-  --robot-red-bg: #6a2f00;
-  --robot-orange-bg: #734f00;
-  --robot-green-bg: #004f3a;
-  --robot-blue-bg: #003959;
-  --robot-purple-bg: #663c54;
-  --robot-pink-bg: #787221;
+  --color-robot-red: #d55e00;
+  --color-robot-orange: #e69f00;
+  --color-robot-green: #009e73;
+  --color-robot-blue: #0072b2;
+  --color-robot-purple: #cc79a7;
+  --color-robot-pink: #f0e442;
+  --color-robot-red-bg: #6a2f00;
+  --color-robot-orange-bg: #734f00;
+  --color-robot-green-bg: #004f3a;
+  --color-robot-blue-bg: #003959;
+  --color-robot-purple-bg: #663c54;
+  --color-robot-pink-bg: #787221;
 }
 
 /* Active states also get an outline, so they do not rely on color alone. */
