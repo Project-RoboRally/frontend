@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from './client';
+import { apiGet, apiPost } from './client';
 import type { Board, BoardOption } from '@/types/board';
 import type {
   ChangeBoardRequest,

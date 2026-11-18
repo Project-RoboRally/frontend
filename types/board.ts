@@ -18,9 +18,13 @@ export type BoardElement =
         | 'BLUE_STRAIGHT'
         | 'BLUE_LEFT_CURVE'
         | 'BLUE_RIGHT_CURVE'
+        | 'BLUE_LEFT_COMBINE'
+        | 'BLUE_RIGHT_COMBINE'
         | 'GREEN_STRAIGHT'
         | 'GREEN_LEFT_CURVE'
-        | 'GREEN_RIGHT_CURVE';
+        | 'GREEN_RIGHT_CURVE'
+        | 'GREEN_LEFT_COMBINE'
+        | 'GREEN_RIGHT_COMBINE';
       length: number;
     }
   | { type: 'GEAR'; rotationDirection: 'CLOCKWISE' | 'COUNTERCLOCKWISE' }

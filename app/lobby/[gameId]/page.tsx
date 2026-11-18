@@ -82,20 +82,11 @@ export default function LobbyPage() {
         if (cancelled) {
           return;
         }
-        const status =
-          loadError instanceof ApiError
-            ? loadError.status
-            : typeof loadError === 'object' &&
-                loadError !== null &&
-                'status' in loadError &&
-                typeof loadError.status === 'number'
-              ? loadError.status
-              : 0;
-        const message = getErrorMessage(loadError, '');
+        const message = getErrorMessage(loadError, '').toLowerCase();
         if (
-          status === 404 ||
-          message.toLowerCase().includes('lobby was not found') ||
-          message.toLowerCase().includes('lobby not found')
+          (loadError instanceof ApiError && loadError.status === 404) ||
+          message.includes('lobby was not found') ||
+          message.includes('lobby not found')
         ) {
           router.replace('/main-menu');
           return;
@@ -241,22 +232,34 @@ export default function LobbyPage() {
     }
   }
 
+  /** Runs a lobby request, shows the returned lobby, and reports a failure as the page error. */
+  async function updateLobby(
+    request: () => Promise<Lobby>,
+    fallbackMessage: string,
+    setBusy?: (busy: boolean) => void,
+  ) {
+    setError(null);
+    setBusy?.(true);
+
+    try {
+      setLobby(await request());
+    } catch (updateError) {
+      setError(getErrorMessage(updateError, fallbackMessage));
+    } finally {
+      setBusy?.(false);
+    }
+  }
+
   async function handleToggleReady() {
     if (!lobby || !username) {
       return;
     }
 
-    setError(null);
-    setIsTogglingReady(true);
-
-    try {
-      const updated = await setReady(lobby.id, { ready: !isPlayerReady(username) });
-      setLobby(updated);
-    } catch (readyError) {
-      setError(getErrorMessage(readyError, 'Failed to change ready state'));
-    } finally {
-      setIsTogglingReady(false);
-    }
+    await updateLobby(
+      () => setReady(lobby.id, { ready: !isPlayerReady(username) }),
+      'Failed to change ready state',
+      setIsTogglingReady,
+    );
   }
 
   async function handleChangeColor(color: PlayerColor) {
@@ -264,17 +267,11 @@ export default function LobbyPage() {
       return;
     }
 
-    setError(null);
-    setIsChangingColor(true);
-
-    try {
-      const updated = await setColor(lobby.id, { color });
-      setLobby(updated);
-    } catch (colorError) {
-      setError(getErrorMessage(colorError, 'Failed to change color'));
-    } finally {
-      setIsChangingColor(false);
-    }
+    await updateLobby(
+      () => setColor(lobby.id, { color }),
+      'Failed to change color',
+      setIsChangingColor,
+    );
   }
 
   async function handleChangeBoard(nextBoardId: string) {
@@ -326,14 +323,10 @@ export default function LobbyPage() {
       return;
     }
 
-    try {
-      const updated = await kickPlayer(lobby.id, {
-        userKicked: playerKicked,
-      });
-      setLobby(updated);
-    } catch (kickError) {
-      setError(getErrorMessage(kickError, 'Failed to kick player'));
-    }
+    await updateLobby(
+      () => kickPlayer(lobby.id, { userKicked: playerKicked }),
+      'Failed to kick player',
+    );
   }
 
   async function handleUnkick(player: string) {
@@ -341,14 +334,10 @@ export default function LobbyPage() {
       return;
     }
 
-    try {
-      const updated = await unkickPlayer(lobby.id, {
-        userKicked: player,
-      });
-      setLobby(updated);
-    } catch (unkickError) {
-      setError(getErrorMessage(unkickError, 'Failed to allow player back'));
-    }
+    await updateLobby(
+      () => unkickPlayer(lobby.id, { userKicked: player }),
+      'Failed to allow player back',
+    );
   }
 
   if (!username) {
@@ -366,7 +355,7 @@ export default function LobbyPage() {
           Exit
         </button>
         <h1 className="text-3xl font-bold">Lobby</h1>
-        <p className="absolute right-6 top-6">Logged in as: {username}</p>
+        <p className="absolute right-16 top-6">Logged in as: {username}</p>
       </header>
 
       {error ? (
