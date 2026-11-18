@@ -1,5 +1,4 @@
 import type { BoardElement } from '@/types/board';
-import { register } from 'module';
 
 /**
  * Returns the image path for the highest priority board element.
