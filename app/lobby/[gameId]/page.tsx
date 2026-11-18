@@ -299,7 +299,6 @@ export default function LobbyPage() {
 
     setError(null);
     setIsChangingBoard(true);
-    setIsChangingBoard(true);
 
     try {
       const text = await file.text();
@@ -307,7 +306,7 @@ export default function LobbyPage() {
       let level: unknown;
 
       try {
-        const level: unknown = JSON.parse(text);
+        level = JSON.parse(text);
       } catch {
         throw new Error('The selected file is not valid JSON.');
       }

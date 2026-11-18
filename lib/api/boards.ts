@@ -1,6 +1,5 @@
 import { apiGet, apiPost } from './client';
 import type { Board, BoardOption } from '@/types/board';
-import type { Lobby, ChangeCustomBoardRequest } from '@/types/lobby';
 
 /**
  * The boards a lobby can be played on, and each one's layout for the lobby
@@ -14,8 +13,4 @@ export function getBoards() {
 
 export function getBoardLayout(id: string) {
   return apiGet<Board>(`/api/boards/${id}`);
-}
-
-export function changeCustomBoard(id: string, body: ChangeCustomBoardRequest) {
-  return apiPost<Lobby>(`/api/lobbies/${id}/board/custom`, body);
 }

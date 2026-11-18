@@ -58,6 +58,7 @@ export function changeCustomBoard(id: string, body: ChangeCustomBoardRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
 }
 
+
 export function startGame(id: string) {
   return apiPost<Lobby>(`/api/lobbies/${id}/start`, {});
 }
