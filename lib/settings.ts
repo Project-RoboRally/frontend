@@ -1,7 +1,7 @@
 /**
- * Application-wide display preferences. Values are stored independently of the signed-in user
- * and mirrored onto <html> so the application can style itself without component-level themes.
- * Different browser logins and devices can have different preferences, but the same browser will share them across
+ * Persistent display preferences, extending the accessibility store by Caroline and Katarina.
+ *
+ * @author Anton, Caroline, Katarina
  */
 
 export type FontPreference = 'geist-sans' | 'geist-mono' | 'open-dyslexic';

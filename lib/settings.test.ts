@@ -1,3 +1,5 @@
+// Tests display preference defaults, migration, persistence, and validation.
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 function installBrowser(storage: Record<string, string> = {}) {

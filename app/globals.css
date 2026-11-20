@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 /**
- * CSS Tailwind code
- * 
+ * Global Tailwind theme tokens and shared application styles.
+ *
  * @author Kerem, Anton, Katarina, Caroline
  */
 
@@ -144,4 +144,9 @@ html[data-color-scheme='blueprint'] {
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+}
+
+.settings-dialog::backdrop {
+  background: rgb(0 0 0 / 75%);
+  backdrop-filter: blur(2px);
 }
