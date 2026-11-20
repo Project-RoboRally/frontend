@@ -13,6 +13,7 @@ import {
   type FontPreference,
 } from '@/lib/settings';
 import { buttonClassName } from '@/lib/styles';
+import { useBackgroundMusic } from './BackgroundMusicProvider';
 
 /**
  * Shared settings dialog; display controls build on Caroline and Katarina's accessibility menu.
@@ -42,6 +43,14 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const settings = useSyncExternalStore(subscribe, getSettings, () => DEFAULT_SETTINGS);
+  const { playbackStatus, requestPlayback } = useBackgroundMusic();
+
+  function toggleMusic() {
+    if (settings.musicMuted) {
+      void requestPlayback();
+    }
+    setSettings({ musicMuted: !settings.musicMuted });
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -154,7 +163,60 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           <h3 id="settings-sound-title" className="mb-2 text-lg font-bold text-cobber-light">
             Sound
           </h3>
-          <p className="text-sm text-bone/80">Audio settings are planned for a future update.</p>
+          <div className="grid gap-4 sm:grid-cols-2 sm:items-end">
+            <div className="flex flex-col items-start gap-2">
+              <p className="text-sm text-bone/80">Background music</p>
+              <button
+                type="button"
+                aria-label={
+                  settings.musicMuted ? 'Unmute background music' : 'Mute background music'
+                }
+                aria-pressed={!settings.musicMuted}
+                onClick={toggleMusic}
+                className={buttonClassName}
+              >
+                {settings.musicMuted ? 'Unmute music' : 'Mute music'}
+              </button>
+            </div>
+            <label className="flex flex-col gap-2 text-sm font-semibold">
+              <span className="flex justify-between">
+                <span>Music volume</span>
+                <output>{Math.round(settings.musicVolume * 100)}%</output>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                aria-label="Music volume"
+                aria-valuetext={`${Math.round(settings.musicVolume * 100)}%`}
+                className="w-full accent-cobber"
+                value={Math.round(settings.musicVolume * 100)}
+                onChange={(event) =>
+                  setSettings({ musicVolume: Number(event.currentTarget.value) / 100 })
+                }
+              />
+            </label>
+          </div>
+          {playbackStatus === 'blocked' && (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <p role="status" className="text-sm text-bone/80">
+                Your browser blocked automatic playback.
+              </p>
+              <button
+                type="button"
+                onClick={() => void requestPlayback()}
+                className={`${buttonClassName} px-3 py-1.5 text-sm`}
+              >
+                Start music
+              </button>
+            </div>
+          )}
+          {playbackStatus === 'error' && (
+            <p role="alert" className="mt-4 text-sm text-bone/80">
+              Background music could not be played. Try again after checking the audio file.
+            </p>
+          )}
         </section>
 
         <section

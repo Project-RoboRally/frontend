@@ -12,14 +12,23 @@ export type DisplaySettings = {
   colorScheme: ColorScheme;
 };
 
+export type MusicSettings = {
+  musicMuted: boolean;
+  musicVolume: number;
+};
+
+export type AppSettings = DisplaySettings & MusicSettings;
+
 export const SETTINGS_STORAGE_KEY = 'roborally.settings';
 
 const LEGACY_FONT_KEY = 'dyslexic-font';
 const LEGACY_COLOR_SCHEME_KEY = 'colorblind-mode';
 
-export const DEFAULT_SETTINGS: DisplaySettings = {
+export const DEFAULT_SETTINGS: AppSettings = {
   font: 'geist-sans',
   colorScheme: 'industrial',
+  musicMuted: true,
+  musicVolume: 0.5,
 };
 
 export function isFontPreference(value: string): value is FontPreference {
@@ -34,9 +43,10 @@ export function isColorScheme(value: string): value is ColorScheme {
 export function parseStoredSettings(
   raw: string | null,
   legacy: { dyslexicFont?: string | null; colorblindMode?: string | null } = {},
-): DisplaySettings {
+): AppSettings {
   if (raw === null) {
     return {
+      ...DEFAULT_SETTINGS,
       font: legacy.dyslexicFont === 'true' ? 'open-dyslexic' : DEFAULT_SETTINGS.font,
       colorScheme:
         legacy.colorblindMode === 'true' ? 'high-contrast' : DEFAULT_SETTINGS.colorScheme,
@@ -56,6 +66,15 @@ export function parseStoredSettings(
 
   const saved = value as Record<string, unknown>;
   return {
+    musicMuted:
+      typeof saved.musicMuted === 'boolean' ? saved.musicMuted : DEFAULT_SETTINGS.musicMuted,
+    musicVolume:
+      typeof saved.musicVolume === 'number' &&
+      Number.isFinite(saved.musicVolume) &&
+      saved.musicVolume >= 0 &&
+      saved.musicVolume <= 1
+        ? saved.musicVolume
+        : DEFAULT_SETTINGS.musicVolume,
     font:
       typeof saved.font === 'string' && isFontPreference(saved.font)
         ? saved.font
@@ -67,7 +86,7 @@ export function parseStoredSettings(
   };
 }
 
-function readSavedSettings(): DisplaySettings {
+function readSavedSettings(): AppSettings {
   try {
     const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (raw !== null) {
@@ -110,9 +129,9 @@ export const SETTINGS_BOOT_SCRIPT = `try{var r=document.documentElement,s=localS
 )} )==='true'?'high-contrast':'industrial');r.dataset.fontFamily=f;r.dataset.colorScheme=c;r.classList.toggle('dyslexic-mode',f==='open-dyslexic');r.classList.toggle('colorblind-mode',c==='high-contrast')}catch(e){}`;
 
 const listeners = new Set<() => void>();
-let current: DisplaySettings | null = null;
+let current: AppSettings | null = null;
 
-export function getSettings(): DisplaySettings {
+export function getSettings(): AppSettings {
   if (typeof window === 'undefined') {
     return DEFAULT_SETTINGS;
   }
@@ -147,7 +166,7 @@ export function subscribe(listener: () => void) {
   };
 }
 
-export function setSettings(patch: Partial<DisplaySettings>) {
+export function setSettings(patch: Partial<AppSettings>) {
   const next = { ...getSettings(), ...patch };
 
   if (typeof window !== 'undefined') {

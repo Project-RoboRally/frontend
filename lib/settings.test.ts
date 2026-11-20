@@ -33,6 +33,7 @@ describe('display settings', () => {
     vi.resetModules();
     const { DEFAULT_SETTINGS, parseStoredSettings } = await import('./settings');
 
+    expect(DEFAULT_SETTINGS).toMatchObject({ musicMuted: true, musicVolume: 0.5 });
     expect(parseStoredSettings(null)).toEqual(DEFAULT_SETTINGS);
     expect(parseStoredSettings('{invalid')).toEqual(DEFAULT_SETTINGS);
     expect(parseStoredSettings('{"font":"comic-sans","colorScheme":"neon"}')).toEqual(
@@ -41,6 +42,13 @@ describe('display settings', () => {
     expect(parseStoredSettings('{"font":"geist-mono","colorScheme":"neon"}')).toEqual({
       font: 'geist-mono',
       colorScheme: 'industrial',
+      musicMuted: true,
+      musicVolume: 0.5,
+    });
+    expect(parseStoredSettings('{"musicMuted":"false","musicVolume":2}')).toEqual(DEFAULT_SETTINGS);
+    expect(parseStoredSettings('{"musicMuted":false,"musicVolume":0.8}')).toMatchObject({
+      musicMuted: false,
+      musicVolume: 0.8,
     });
   });
 
@@ -55,14 +63,23 @@ describe('display settings', () => {
     expect(getSettings()).toEqual({
       font: 'open-dyslexic',
       colorScheme: 'high-contrast',
+      musicMuted: true,
+      musicVolume: 0.5,
     });
     expect(JSON.parse(browser.values.get(SETTINGS_STORAGE_KEY)!)).toEqual(getSettings());
 
-    setSettings({ font: 'geist-mono', colorScheme: 'blueprint' });
+    setSettings({
+      font: 'geist-mono',
+      colorScheme: 'blueprint',
+      musicMuted: false,
+      musicVolume: 0.75,
+    });
 
     expect(getSettings()).toEqual({
       font: 'geist-mono',
       colorScheme: 'blueprint',
+      musicMuted: false,
+      musicVolume: 0.75,
     });
     expect(JSON.parse(browser.values.get(SETTINGS_STORAGE_KEY)!)).toEqual(getSettings());
     expect(browser.root.dataset).toEqual({
@@ -83,7 +100,12 @@ describe('display settings', () => {
     const settings = getSettings();
     applyToDocument(settings);
 
-    expect(settings).toEqual({ font: 'geist-mono', colorScheme: 'blueprint' });
+    expect(settings).toEqual({
+      font: 'geist-mono',
+      colorScheme: 'blueprint',
+      musicMuted: true,
+      musicVolume: 0.5,
+    });
     expect(browser.root.dataset).toEqual({
       fontFamily: 'geist-mono',
       colorScheme: 'blueprint',
