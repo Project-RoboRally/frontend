@@ -4,7 +4,7 @@
  * Renders the game board grid loaded from the backend. Robots are drawn over
  * the grid and step through each turn and move instead of jumping to the end.
  *
- * @author Matthias, Caroline, Katarina, Elias
+ * @author Matthias, Caroline, Katarina, Elias, August
  */
 
 import Image from 'next/image';

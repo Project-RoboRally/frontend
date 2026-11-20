@@ -3,7 +3,7 @@ import type { Player } from './player';
 /**
  * Type definition for the game states
  *
- * @author Kerem
+ * @author Kerem, Matthias, Elias
  */
 
 export type GameState = {

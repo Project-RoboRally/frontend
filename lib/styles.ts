@@ -1,5 +1,5 @@
 /**
- * @author Kerem, Anton
+ * @author Kerem, Anton, Elias
  */
 
 export const buttonClassName =

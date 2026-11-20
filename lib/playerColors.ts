@@ -4,7 +4,7 @@ import type { RobotModel } from '@/types/robot';
 /**
  * The robot colors a player can pick, in the same order as the backend's PlayerColor enum.
  *
- * @author August
+ * @author August, Sebastian
  */
 export const PLAYER_COLORS: PlayerColor[] = ['RED', 'BLUE', 'PINK', 'GREEN', 'PURPLE', 'ORANGE'];
 

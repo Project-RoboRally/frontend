@@ -10,7 +10,7 @@ import { passwordError, saveToken, saveUsername, usernameError } from '@/lib/use
 /**
  * Login page for user authentication
  *
- * @author Anton, Kerem, Katarina, Caroline
+ * @author Anton, Kerem, Katarina, Caroline, Elias, Nicoleta
  */
 
 export default function LoginPage() {

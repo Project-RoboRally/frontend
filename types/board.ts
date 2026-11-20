@@ -2,7 +2,7 @@
  * Type definitions for the board sent by the backend over the websocket.
  * Coordinates use the backend's convention: x grows east, y grows south.
  *
- * @author Elias
+ * @author Elias, August
  */
 
 import type { PlayerColor } from '@/types/lobby';

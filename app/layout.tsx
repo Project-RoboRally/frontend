@@ -5,6 +5,9 @@ import SessionGuard from '@/components/SessionGuard';
 import { ACCESSIBILITY_BOOT_SCRIPT } from '@/lib/accessibility';
 import './globals.css';
 
+/**
+ * @author Elias, Sebastian
+ */
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],

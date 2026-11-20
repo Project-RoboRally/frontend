@@ -14,7 +14,7 @@ import {
  * Floating button on every page that opens the accessibility settings, so the dyslexic font
  * and colorblind mode can be changed from anywhere (login, menus, lobby and game).
  *
- * @author Katarina, Caroline
+ * @author Katarina, Caroline, Sebastian
  */
 
 const TOGGLES: { setting: AccessibilitySetting; label: string }[] = [
