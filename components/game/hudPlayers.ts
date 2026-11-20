@@ -12,7 +12,7 @@ import type { Robot, RobotModel, RobotPosition } from '@/types/robot';
 /**
  * Maps websocket state onto the Player objects and registers the HUD shows.
  *
- * @author Caroline, Katarina, Kerem, Elias
+ * @author Caroline, Katarina, Kerem, Elias, Sebastian
  */
 
 export function robotModelFromColor(color: PlayerColor | undefined): RobotModel {

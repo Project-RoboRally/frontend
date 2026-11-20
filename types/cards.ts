@@ -1,7 +1,7 @@
 /**
  * Type definitions for the programming cards
  *
- * @author Kerem
+ * @author Kerem, Matthias, Elias
  */
 
 export type ProgrammingCard =

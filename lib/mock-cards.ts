@@ -1,5 +1,8 @@
 import type { ProgrammingCard } from '@/types/cards';
 
+/**
+ * @author Kerem
+ */
 export const MockCards: Record<string, ProgrammingCard> = {
   '1move3': {
     cardId: '1move3',

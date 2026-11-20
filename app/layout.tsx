@@ -9,6 +9,9 @@ import './globals.css';
 
 // Root document layout with global fonts, session guard, and application providers.
 
+/**
+ * @author Elias, Sebastian, Anton
+ */
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],

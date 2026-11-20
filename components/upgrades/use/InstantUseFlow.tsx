@@ -7,7 +7,7 @@ import { useBusyAction } from '@/components/upgrades/use/useBusyAction';
 
 /**
  * One-click programming upgrades: Recharge, Recompile, Spam Blocker.
- * @author Elias
+ * @author Elias, Sebastian
  */
 
 export function InstantUseFlow({
