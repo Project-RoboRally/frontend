@@ -4,7 +4,7 @@ import { getErrorMessage } from '@/lib/api/client';
 /**
  * Tracks whether an upgrade request is in flight and reports failures through onError.
  *
- * @author Elias
+ * @author Elias, Sebastian
  */
 export function useBusyAction(onError: (message: string) => void) {
   const [busy, setBusy] = useState(false);

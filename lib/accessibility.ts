@@ -3,7 +3,7 @@
  * mirrored as classes on <html> so the CSS in globals.css can react to them, and exposed as
  * an external store so any component can read or change them.
  *
- * @author Katarina, Caroline
+ * @author Katarina, Caroline, Sebastian
  */
 
 export type AccessibilitySettings = {

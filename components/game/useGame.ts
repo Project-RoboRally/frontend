@@ -38,7 +38,7 @@ import {
 /**
  * All live state and actions for a running game.
  *
- * @author Caroline, Katarina, Kerem, Elias
+ * @author Caroline, Katarina, Kerem, Elias, Sebastian
  */
 export function useGame() {
   const router = useRouter();

@@ -11,7 +11,7 @@ import { useBusyAction } from '@/components/upgrades/use/useBusyAction';
 /**
  * Defrag Gizmo: permanently discard one damage card from hand, draw 1.
  * Once per round - pick exactly one of SPAM / TROJAN_HORSE / WORM / VIRUS.
- * @author Elias
+ * @author Elias, Sebastian
  */
 
 export function DefragGizmoFlow({

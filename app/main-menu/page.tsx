@@ -14,7 +14,7 @@ import type { Lobby } from '@/types/lobby';
  * Players can return to an existing match or leave a waiting lobby after
  * confirming their choice.
  *
- * @author Anton, Kerem, Matthias, Elias
+ * @author Anton, Kerem, Matthias, Elias, Sebastian, Nicoleta
  */
 export default function MainMenuPage() {
   const router = useRouter();

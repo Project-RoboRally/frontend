@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { activePlayedRegister } from './playedRegisters';
 import type { BoardRegister } from '@/types/board';
 
+/**
+ * @author Elias
+ */
 const registers: BoardRegister[] = [
   {
     register: 0,

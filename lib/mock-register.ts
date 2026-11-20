@@ -1,6 +1,9 @@
 import type { Register } from '@/types/register';
 import { MockCards } from '@/lib/mock-cards';
 
+/**
+ * @author Kerem
+ */
 // Fjern når backend for register er implementeret
 export const mockRegister: Register[] = [
   { registerNumber: 1, registerRevealed: true, registerCard: null },

@@ -1,6 +1,9 @@
 import { expect, test } from 'vitest';
 import { passwordError, usernameError } from './username';
 
+/**
+ * @author Nicoleta
+ */
 test('alice is a valid username', () => {
   expect(usernameError('alice')).toBeNull();
 });

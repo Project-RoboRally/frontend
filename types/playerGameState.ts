@@ -2,7 +2,7 @@
  * Type definitions for the game state the backend sends to one player over the
  * websocket.
  *
- * @author Nicoleta, Elias
+ * @author Nicoleta, Elias, Kerem, August
  */
 
 import type { Board, Direction } from '@/types/board';

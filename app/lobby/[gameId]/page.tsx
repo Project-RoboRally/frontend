@@ -19,6 +19,9 @@ import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib
 import { getUsername } from '@/lib/username';
 import type { Lobby, PlayerColor } from '@/types/lobby';
 
+/**
+ * @author Anton, Sebastian, Elias, August
+ */
 export default function LobbyPage() {
   const router = useRouter();
   const { gameId } = useParams<{ gameId: string }>();
