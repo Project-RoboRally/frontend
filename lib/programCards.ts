@@ -1,7 +1,7 @@
 /**
  * Cards a player can place in the five registers.
  * A new card is another entry here; the squares render from this list.
-  * @author Elias, August
+ * @author Elias, August
  */
 
 import type { ProgrammingCard } from '@/types/cards';

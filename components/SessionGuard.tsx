@@ -8,7 +8,7 @@ import { clearSession, getToken } from '@/lib/username';
 /**
  * Keeps a backend User alive for every page except login.
  * Missing users are sent to login, which signs them in with the saved username.
-  * @author Elias
+ * @author Elias
  */
 export default function SessionGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
