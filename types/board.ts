@@ -64,6 +64,11 @@ export type BoardRegister = {
   cards: PlayedCard[];
 };
 
+export type BoardOption = {
+  id: string;
+  name: string;
+};
+
 export type Board = {
   width: number;
   height: number;
