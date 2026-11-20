@@ -4,7 +4,7 @@ import type { ProgrammingCard } from '@/types/cards';
 /**
  * Assigns each register with a card type (Communication between backend and frontend)
  *
- * @author Kerem, Matthias
+ * @author Kerem, Matthias, Elias
  */
 
 export function CardInfo({ card }: { card: ProgrammingCard | string }) {

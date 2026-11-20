@@ -1,5 +1,5 @@
 /**
- * @author Elias
+ * @author Elias, Nicoleta, August
  */
 
 import type { UpgradeType } from '@/types/playerGameState';

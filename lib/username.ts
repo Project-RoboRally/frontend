@@ -1,3 +1,6 @@
+/**
+ * @author Anton, Elias, Nicoleta
+ */
 const USERNAME_KEY = 'username';
 const TOKEN_KEY = 'token';
 

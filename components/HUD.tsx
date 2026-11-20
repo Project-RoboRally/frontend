@@ -15,7 +15,7 @@ import { ProgrammingTimer } from '@/components/ProgrammingTimer';
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
  *
- * @author Kerem, Matthias, Caroline, Katarina, Elias
+ * @author Kerem, Matthias, Caroline, Katarina, Elias, Sebastian
  */
 
 function OnlineDot({ online }: { online?: boolean }) {

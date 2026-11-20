@@ -12,7 +12,7 @@ import { buttonClassName } from '@/lib/styles';
 /**
  * Page for the frontend of the gameboard.
  *
- * @author Caroline, Katarina, Kerem, Elias
+ * @author Caroline, Katarina, Kerem, Elias, Matthias
  */
 export default function GamePage() {
   return (

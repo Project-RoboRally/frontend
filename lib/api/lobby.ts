@@ -10,6 +10,9 @@ import type {
   SetReadyRequest,
 } from '@/types/lobby';
 
+/**
+ * @author Nicoleta, August
+ */
 export function getLobbies() {
   return apiGet<Lobby[]>('/api/lobbies');
 }
