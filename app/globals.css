@@ -9,6 +9,7 @@
 :root {
   --background: #1a2229;
   --foreground: #f5f1e8;
+  --app-font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 /* Matches elements inside <html class="colorblind-mode">, e.g. `colorblind:border-2`. */
@@ -69,7 +70,11 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--app-font-family);
+}
+
+html[data-font-family='geist-mono'] {
+  --app-font-family: var(--font-geist-mono), 'Courier New', monospace;
 }
 
 /* Dyslexic font for accessibility */
@@ -80,6 +85,7 @@ body {
 
 html.dyslexic-mode {
   font-size: 95%;
+  --app-font-family: var(--font-dyslexic);
 }
 
 /*
@@ -114,6 +120,22 @@ html.dyslexic-mode {
 .colorblind-mode .ring-verdigris {
   outline: 3px solid var(--color-verdigris-light);
   outline-offset: 2px;
+}
+
+html[data-color-scheme='blueprint'] {
+  --background: #111c28;
+  --foreground: #e4f2ff;
+  --color-cobber: #087e9b;
+  --color-cobber-light: #26a6c5;
+  --color-cobber-dark: #075c73;
+  --color-verdigris: #168aad;
+  --color-verdigris-dark: #126782;
+  --color-verdigris-light: #55c2dc;
+  --color-steel: #315b77;
+  --color-steel-dark: #213e55;
+  --color-charcoal: #1c2936;
+  --color-iron: #35485a;
+  --color-bone: #e4f2ff;
 }
 
 @font-face {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AccessibilityMenu } from '@/components/AccessibilityMenu';
 import SessionGuard from '@/components/SessionGuard';
-import { ACCESSIBILITY_BOOT_SCRIPT } from '@/lib/accessibility';
+import { SETTINGS_BOOT_SCRIPT } from '@/lib/settings';
 import './globals.css';
 
 const geistSans = Geist({
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    // suppressHydrationWarning: the boot script adds the accessibility classes to <html>.
+    // suppressHydrationWarning: the boot script adds display preferences to <html>.
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: ACCESSIBILITY_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SETTINGS_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
         <SessionGuard>{children}</SessionGuard>
