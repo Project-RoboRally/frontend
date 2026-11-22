@@ -267,7 +267,6 @@ export default function MainMenuPage() {
 
       {/* --- Bottom side (Lobby creation + list) --- */}
       <div className="grid gap-8 md:grid-cols-2">
-
         {/* –_ Left side _- */}
         <section className="flex flex-col items-center gap-4">
           <input
