@@ -4,40 +4,45 @@
  * @author Kerem
  */
 
-
 // --- The structure of a slide ---
 
-export type Item = string; // Think of it as when making a list on latex overleaf (\begin{itemize}) where each point is \item 
+export type Item = string; // Think of it as when making a list on latex overleaf (\begin{itemize}) where each point is \item
 
-export type Block = // One piece of component, that we can build the slides up as
-    | { type: 'p'; text: string }
-    | { type: 'list'; items: Item[]; ordered?: boolean }
-    | { type: 'note'; tone: 'warning' | 'joke' | 'tip'; text: string };
+export type Block =
+  // One piece of component, that we can build the slides up as
+  | { type: 'p'; text: string }
+  | { type: 'list'; items: Item[]; ordered?: boolean }
+  | { type: 'note'; tone: 'warning' | 'joke' | 'tip'; text: string }
+  | { type: 'link'; label: string; href: string };
 // And its shortcuts, so we can for example write p('text') instead of { type: 'p', text: 'text } every single time
 const p = (text: string): Block => ({ type: 'p', text });
-const list = (items: Item[], ordered = false): Block => ({ type: 'list', items, ordered});
-const note = (tone: 'warning' | 'joke' | 'tip', text: string): Block => ({ type: 'note', tone, text, });
+const list = (items: Item[], ordered = false): Block => ({ type: 'list', items, ordered });
+const note = (tone: 'warning' | 'joke' | 'tip', text: string): Block => ({
+  type: 'note',
+  tone,
+  text,
+});
+const link = (label: string, href: string): Block => ({ type: 'link', label, href });
 
 export type Slide = {
-    section: number;
-    title: string;
-    image?: string;
-    blocks: Block[];
-}
+  section: number;
+  title: string;
+  image?: string;
+  blocks: Block[];
+};
 
 export const SECTIONS = [
-    'Welcome',
-    'Getting started',
-    'The basics',
-    'Upgrade phase',
-    'Programming phase',
-    'Offline players',
-    'Activation phase',
-    'Next round',
+  'Welcome',
+  'Getting started',
+  'The basics',
+  'Upgrade phase',
+  'Programming phase',
+  'Offline players',
+  'Activation phase',
+  'Next round',
 ];
 
-
-// --- All of the slides that will be implemented for the tutorial  ---
+// --- All of the slides that will be implemented for the tutorial (scripts improved via. Claude)   ---
 
 export const SLIDES: Slide[] = [
   {
@@ -49,6 +54,9 @@ export const SLIDES: Slide[] = [
       ),
       p(
         'You program a robot with movement cards, race it across a hazardous factory floor and try to reach every checkpoint before anyone else. Expect your plans to go wrong when rival robots push and shoot their way through.',
+      ),
+      p(
+        'This is a quick-start guide. For the complete rules, see the official game guide linked on the last slide.',
       ),
     ],
   },
@@ -65,7 +73,7 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Login',
-    image: '/public/tutorial/01.png',
+    image: '/tutorial/01.png',
     blocks: [
       p('Enter your username and password and press Login.'),
       note(
@@ -80,13 +88,13 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Main menu',
-    image: '/public/tutorial/02.png',
+    image: '/tutorial/02.png',
     blocks: [
       p('This is your home screen. Your username is shown in the top right.'),
       list([
-        'My Games: lobbies and games you\'re already part of.',
+        "My Games: lobbies and games you're already part of.",
         'Create Lobby: type a name and press the button to host a game.',
-        'Search available lobbies: open lobbies you can join appear on the right.' ,
+        'Search available lobbies: open lobbies you can join appear on the right.',
         'Tutorial / Sign Out: open this guide, or log out.',
       ]),
     ],
@@ -94,7 +102,7 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Your lobby',
-    image: '/public/tutorial/03.png',
+    image: '/tutorial/03.png',
     blocks: [
       p(
         'You created the lobby, so you have the Owner badge and can rename the lobby by clicking its name.',
@@ -107,7 +115,7 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Joining a lobby',
-    image: '/public/tutorial/04.png',
+    image: '/tutorial/04.png',
     blocks: [
       p(
         'This is the main menu of a second player (AnonNOTser). The new lobby shows up in the list on the right. Click its name to join.',
@@ -117,7 +125,7 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Waiting for everyone to be ready',
-    image: '/public/tutorial/05.png',
+    image: '/tutorial/05.png',
     blocks: [
       p(
         'The new player appears with the robot they chose. Robots that are already taken are greyed out, so everyone gets a different one.',
@@ -130,7 +138,7 @@ export const SLIDES: Slide[] = [
   {
     section: 1,
     title: 'Ready to start',
-    image: '/public/tutorial/06.png',
+    image: '/tutorial/06.png',
     blocks: [
       p(
         'The owner renamed the lobby to Tournament, and the checkmark shows the other player is ready. The Start button is now active. Press it to begin.',
@@ -145,7 +153,8 @@ export const SLIDES: Slide[] = [
         'Goal: program your robot to reach every checkpoint in numerical order. A checkpoint only counts if your robot ends a register on it. The first robot to do this on the final checkpoint wins.',
       ),
       p('Every round has three phases:'),
-      list([
+      list(
+        [
           'Upgrade: spend energy on upgrades.',
           'Programming: everyone programs their robot at the same time.',
           'Activation: the programs run, one register at a time.',
@@ -160,11 +169,11 @@ export const SLIDES: Slide[] = [
   {
     section: 2,
     title: 'The game board',
-    image: '/public/tutorial/07.png',
+    image: '/tutorial/07.png',
     blocks: [
       list([
         'Board: the factory. Reach the numbered checkpoint flags in order.',
-        'Top: your opponent\'s name and their five register slots.',
+        "Top: your opponent's name and their five register slots.",
         'Right side: the round, the phase, your checkpoints, energy (everyone starts with 5) and upgrades.',
         'Upgrade shop: one upgrade per player. You buy in priority order and may buy only one, or press Skip.',
         'Bottom: your deck counter and five registers. Press Run when ready.',
@@ -174,7 +183,7 @@ export const SLIDES: Slide[] = [
   {
     section: 3,
     title: 'Upgrade tooltips',
-    image: '/public/tutorial/08.png',
+    image: '/tutorial/08.png',
     blocks: [
       p(
         'Hover over an upgrade to read what it does. Recharge (cost 0) gives you three energy. The cost in energy is shown on each button.',
@@ -187,7 +196,7 @@ export const SLIDES: Slide[] = [
   {
     section: 3,
     title: 'Upgrade bought',
-    image: '/public/tutorial/09.png',
+    image: '/tutorial/09.png',
     blocks: [
       p(
         'Recharge now appears under Upgrades. The shop says Waiting for AnonNOTser, because upgrades are bought in priority order. When everyone is done, the game moves on to programming.',
@@ -197,7 +206,7 @@ export const SLIDES: Slide[] = [
   {
     section: 4,
     title: 'Programming phase',
-    image: '/public/tutorial/10.png',
+    image: '/tutorial/10.png',
     blocks: [
       p(
         'The phase changed to Programming. Everyone programs at the same time. You can also use temporary upgrades now, for example Use Recharge.',
@@ -210,7 +219,7 @@ export const SLIDES: Slide[] = [
   {
     section: 4,
     title: 'Pick your cards',
-    image: '/public/tutorial/11.png',
+    image: '/tutorial/11.png',
     blocks: [
       p(
         'You draw 9 cards and choose 5, one for each register. Drag a card onto a register, or click a card and then a slot.',
@@ -237,7 +246,7 @@ export const SLIDES: Slide[] = [
   {
     section: 4,
     title: 'Waiting for others',
-    image: '/public/tutorial/12.png',
+    image: '/tutorial/12.png',
     blocks: [
       p(
         'After you press Run, your cards are locked in and the game waits for the other players. The cards you did not use go to the discard pile.',
@@ -250,7 +259,7 @@ export const SLIDES: Slide[] = [
   {
     section: 5,
     title: 'A player is offline',
-    image: '/public/tutorial/13.png',
+    image: '/tutorial/13.png',
     blocks: [
       p(
         'A red banner says Waiting for AnonNOTser, who is offline. Click their name to start a kick vote. My five cards are placed and Run is ready, but the round cannot continue without him.',
@@ -264,7 +273,7 @@ export const SLIDES: Slide[] = [
   {
     section: 5,
     title: 'Kick vote',
-    image: '/public/tutorial/14.png',
+    image: '/tutorial/14.png',
     blocks: [
       p(
         'A window asks: Start a vote to kick AnonNOTser? Their robot leaves the game only if every online player votes yes. Press Start vote to begin or Cancel to keep waiting.',
@@ -275,10 +284,10 @@ export const SLIDES: Slide[] = [
   {
     section: 6,
     title: 'Activation phase',
-    image: '/public/tutorial/15.png',
+    image: '/tutorial/15.png',
     blocks: [
       p(
-        'Now the programs run. Everyone\'s cards are revealed and register 1 runs first, in priority order. Then board elements and lasers fire, and the next register starts. The highlighted card is the register being executed.',
+        "Now the programs run. Everyone's cards are revealed and register 1 runs first, in priority order. Then board elements and lasers fire, and the next register starts. The highlighted card is the register being executed.",
       ),
       p('In this round my robot reached checkpoint 1 and my energy went up to 6.'),
     ],
@@ -320,7 +329,7 @@ export const SLIDES: Slide[] = [
   {
     section: 7,
     title: 'Round 3: more upgrades',
-    image: '/public/tutorial/16.png',
+    image: '/tutorial/16.png',
     blocks: [
       p(
         'After register 5 your cards go to the discard pile and a new Upgrade phase starts. The shop now offers:',
@@ -335,10 +344,18 @@ export const SLIDES: Slide[] = [
   {
     section: 7,
     title: 'Game over',
-    image: '/public/tutorial/17.png',
+    image: '/tutorial/17.png',
     blocks: [
       p(
         'The first robot to end a register on the final checkpoint wins. Press Back to Main Menu to play again. Good luck, and have fun!',
+      ),
+      note(
+        'tip',
+        'Want the full rules, all racing courses and every upgrade card? This tutorial only covers the basics. Read the official rulebook:',
+      ),
+      link(
+        'Richard Garfield: RoboRally Game Guide, Hasbro Gaming, 2015',
+        'http://media.wizards.com/2017/rules/roborally_rules.pdf',
       ),
     ],
   },
