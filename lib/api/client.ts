@@ -1,5 +1,8 @@
 import { clearSession, getToken } from '@/lib/username';
 
+/**
+ * @author Elias, Nicoleta
+ */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
@@ -209,15 +212,4 @@ export function apiPost<T>(path: string, body: unknown) {
     method: 'POST',
     body: JSON.stringify(body ?? {}),
   });
-}
-
-export function apiPatch<T>(path: string, body: unknown) {
-  return request<T>(path, {
-    method: 'PATCH',
-    body: JSON.stringify(body ?? {}),
-  });
-}
-
-export function getApiUrl() {
-  return API_URL;
 }

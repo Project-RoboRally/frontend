@@ -38,7 +38,7 @@ import {
 /**
  * All live state and actions for a running game.
  *
- * @author Caroline, Katarina, Kerem, Elias
+ * @author Caroline, Katarina, Kerem, Elias, Sebastian
  */
 export function useGame() {
   const router = useRouter();
@@ -252,50 +252,42 @@ export function useGame() {
     }
   }
 
-  async function handleBuy(upgrade: UpgradeType, replace?: UpgradeType | null) {
+  /** Runs a request with its busy flag set, clearing the old error and reporting a new one. */
+  async function runAction(
+    setBusy: (busy: boolean) => void,
+    task: () => Promise<void>,
+    fallbackMessage: string,
+  ) {
     if (!gameId || !username) {
       return;
     }
-    setIsUpgrading(true);
+    setBusy(true);
     setError(null);
     try {
-      await buyUpgrade(gameId, { upgrade, replace: replace ?? null });
-    } catch (buyError) {
-      setError(getErrorMessage(buyError, 'Could not buy that upgrade.'));
+      await task();
+    } catch (actionError) {
+      setError(getErrorMessage(actionError, fallbackMessage));
     } finally {
-      setIsUpgrading(false);
+      setBusy(false);
     }
   }
 
-  async function handleSkip() {
-    if (!gameId || !username) {
-      return;
-    }
-    setIsUpgrading(true);
-    setError(null);
-    try {
-      await skipUpgrade(gameId);
-    } catch (skipError) {
-      setError(getErrorMessage(skipError, 'Could not skip the upgrade.'));
-    } finally {
-      setIsUpgrading(false);
-    }
-  }
+  const handleBuy = (upgrade: UpgradeType, replace?: UpgradeType | null) =>
+    runAction(
+      setIsUpgrading,
+      () => buyUpgrade(gameId!, { upgrade, replace: replace ?? null }),
+      'Could not buy that upgrade.',
+    );
 
-  async function handleChoose(option: string) {
-    if (!gameId || !username) {
-      return;
-    }
-    setIsChoosing(true);
-    setError(null);
-    try {
-      await makeChoice(gameId, { choice: option });
-    } catch (chooseError) {
-      setError(getErrorMessage(chooseError, 'Could not make that choice.'));
-    } finally {
-      setIsChoosing(false);
-    }
-  }
+  const handleSkip = () =>
+    runAction(setIsUpgrading, () => skipUpgrade(gameId!), 'Could not skip the upgrade.');
+
+  const handleChoose = (option: string) =>
+    runAction(
+      setIsChoosing,
+      () => makeChoice(gameId!, { choice: option }),
+      'Could not make that choice.',
+    );
 
   async function handleStartKickVote() {
     if (!gameId || !username || !kickConfirm) {
@@ -315,23 +307,17 @@ export function useGame() {
     }
   }
 
-  async function handleKickBallot(yes: boolean) {
-    if (!gameId || !username) {
-      return;
-    }
-    setIsVoting(true);
-    setError(null);
-    try {
-      await voteOnKick(gameId, yes);
-      if (!yes) {
-        setKickConfirm(null);
-      }
-    } catch (voteError) {
-      setError(getErrorMessage(voteError, 'Could not vote.'));
-    } finally {
-      setIsVoting(false);
-    }
-  }
+  const handleKickBallot = (yes: boolean) =>
+    runAction(
+      setIsVoting,
+      async () => {
+        await voteOnKick(gameId!, yes);
+        if (!yes) {
+          setKickConfirm(null);
+        }
+      },
+      'Could not vote.',
+    );
 
   const isActivationView = showingActivation || phase === 'ACTIVATION';
   const player =
@@ -399,7 +385,7 @@ export function useGame() {
     setHandOpen,
     selectedCardId,
     setSelectedCardId,
-    canRun: canRun,
+    canRun,
     locked,
     waiting,
     swapRegisters,

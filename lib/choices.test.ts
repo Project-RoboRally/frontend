@@ -1,5 +1,5 @@
 /**
- * @author Elias
+ * @author Elias, August
  */
 
 import { describe, expect, it } from 'vitest';

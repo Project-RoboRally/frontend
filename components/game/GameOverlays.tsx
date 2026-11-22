@@ -3,6 +3,7 @@
 import { CardInfo } from '@/components/CardInfo';
 import { ChoicePanel } from '@/components/ChoicePanel';
 import { KickVotePanel } from '@/components/KickVotePanel';
+import { selectedClassName } from '@/lib/styles';
 import type { ProgrammingCard } from '@/types/cards';
 import type { PendingChoice } from '@/types/playerGameState';
 import type { KickVote } from '@/types/presence';
@@ -70,7 +71,7 @@ export function GameOverlays({
             <div className="mb-2 pr-10 text-xs font-semibold text-bone/70">
               Draw {drawPileSize} - Discard {discardCount}
               {selectedCardId ? (
-                <span className="mt-1 block text-verdigris">
+                <span className="mt-1 block text-verdigris-light">
                   Card selected - click or drop on a register below.
                 </span>
               ) : (
@@ -94,7 +95,7 @@ export function GameOverlays({
                   onClick={() => onSelectCard(selectedCardId === card.cardId ? null : card.cardId)}
                   className={`flex h-24 w-16 cursor-grab items-center justify-center rounded-md border-2 text-sm font-bold text-bone transition active:cursor-grabbing ${
                     selectedCardId === card.cardId
-                      ? 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris'
+                      ? selectedClassName
                       : 'border-steel-dark bg-charcoal hover:border-cobber-light'
                   }`}
                 >

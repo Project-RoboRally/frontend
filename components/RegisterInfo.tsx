@@ -4,7 +4,7 @@ import { CardInfo } from '@/components/CardInfo';
 /**
  * Displays the type of each card in the register (Can be hidden too)
  *
- * @author Kerem, Matthias
+ * @author Kerem, Matthias, Elias
  */
 
 export function RegisterInfo({ player }: { player: Player }) {

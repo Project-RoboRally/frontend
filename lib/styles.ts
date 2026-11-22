@@ -1,5 +1,5 @@
 /**
- * @author Kerem, Anton
+ * @author Kerem, Anton, Elias
  */
 
 export const buttonClassName =
@@ -13,3 +13,6 @@ export const inputClassName =
 
 export const panelClassName =
   'rounded-lg border-2 border-cobber-dark bg-panel p-8 shadow-xl shadow-black/40';
+
+/** Highlight for a selected card, register or upgrade choice. */
+export const selectedClassName = 'border-verdigris bg-verdigris-dark/40 ring-2 ring-verdigris';

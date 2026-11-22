@@ -12,7 +12,7 @@ import { buttonClassName } from '@/lib/styles';
 /**
  * Page for the frontend of the gameboard.
  *
- * @author Caroline, Katarina, Kerem, Elias
+ * @author Caroline, Katarina, Kerem, Elias, Matthias
  */
 export default function GamePage() {
   return (
@@ -56,7 +56,7 @@ function GameBoard() {
 
   return (
     <main className="mx-auto flex h-dvh max-h-dvh w-full max-w-7xl flex-col overflow-hidden p-3 text-center">
-      <header className="mb-2 flex shrink-0 items-center justify-between gap-3">
+      <header className="mb-2 flex shrink-0 items-center justify-between gap-3 pr-10">
         <h1 className="text-xl font-bold sm:text-2xl">Game Board</h1>
         <button
           className={`${buttonClassName} shrink-0 px-3 py-1.5 text-sm`}

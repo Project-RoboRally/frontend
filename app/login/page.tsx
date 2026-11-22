@@ -4,15 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
 import { login } from '@/lib/api/login';
-import { AccessibilitySettings } from '@/components/Dyslexic';
-
 import { buttonClassName, inputClassName, panelClassName } from '@/lib/styles';
 import { passwordError, saveToken, saveUsername, usernameError } from '@/lib/username';
 
 /**
  * Login page for user authentication
  *
- * @author Anton, Kerem, Katarina, Caroline
+ * @author Anton, Kerem, Katarina, Caroline, Elias, Nicoleta
  */
 
 export default function LoginPage() {
@@ -99,9 +97,6 @@ export default function LoginPage() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
-      </div>
-      <div className="mb-6 top-0 flex w-full justify-center p-6">
-        <AccessibilitySettings />
       </div>
     </main>
   );

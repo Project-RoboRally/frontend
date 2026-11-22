@@ -26,7 +26,7 @@ export function skipUpgrade(gameId: string) {
   return apiPost<void>(`/api/games/${gameId}/upgrade/skip`, {});
 }
 
-export function useUpgrade(gameId: string, body: UseUpgradeRequest) {
+export function postUseUpgrade(gameId: string, body: UseUpgradeRequest) {
   return apiPost<void>(`/api/games/${gameId}/upgrade/use`, body);
 }
 

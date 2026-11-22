@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { getErrorMessage } from '@/lib/api/client';
-import { useUpgrade as postUseUpgrade } from '@/lib/api/game';
+import { postUseUpgrade } from '@/lib/api/game';
 import { labelForInstruction } from '@/lib/programCards';
 import { secondaryButtonClassName } from '@/lib/styles';
 import type { ProgrammingFlowProps } from '@/components/upgrades/flows/types';
+import { HandCardPicker, withIndices } from '@/components/upgrades/use/HandCardPicker';
+import { useBusyAction } from '@/components/upgrades/use/useBusyAction';
 
 /**
  * Cache Memory: pick hand cards to put on top of the deck (first = top).
- * @author Elias
+ * @author Elias, Sebastian
  */
 
 export function CacheMemoryFlow({
@@ -22,7 +23,7 @@ export function CacheMemoryFlow({
 }: ProgrammingFlowProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useBusyAction(onError);
 
   function toggle(index: number) {
     setSelected((current) =>
@@ -30,23 +31,22 @@ export function CacheMemoryFlow({
     );
   }
 
+  function reset() {
+    setOpen(false);
+    setSelected([]);
+  }
+
   async function handleConfirm() {
     if (selected.length === 0) {
       onError('Pick at least one card to put on your deck.');
       return;
     }
-    setBusy(true);
-    try {
+    await run(async () => {
       const cards = selected.map((index) => hand[index].instruction);
       await postUseUpgrade(gameId, { upgrade, cards });
-      setOpen(false);
-      setSelected([]);
+      reset();
       onDone();
-    } catch (error) {
-      onError(getErrorMessage(error, 'Could not use Cache Memory.'));
-    } finally {
-      setBusy(false);
-    }
+    }, 'Could not use Cache Memory.');
   }
 
   if (!open) {
@@ -67,28 +67,13 @@ export function CacheMemoryFlow({
       <p className="mb-2 text-[10px] font-semibold text-bone">
         Cache Memory: put cards on top of your deck (first selected ends on top).
       </p>
-      <div className="mb-2 flex flex-wrap gap-1">
-        {hand.map((card, index) => {
-          const active = selected.includes(index);
-          const order = selected.indexOf(index);
-          return (
-            <button
-              key={`${card.instruction}-${index}`}
-              type="button"
-              disabled={disabled || busy}
-              onClick={() => toggle(index)}
-              className={`rounded border px-2 py-1 text-[10px] font-bold ${
-                active
-                  ? 'border-cobber-light bg-cobber-dark/40 text-bone'
-                  : 'border-steel-dark bg-charcoal text-bone/80'
-              }`}
-            >
-              {labelForInstruction(card.instruction)}
-              {active ? ` - ${order + 1}` : ''}
-            </button>
-          );
-        })}
-      </div>
+      <HandCardPicker
+        cards={withIndices(hand)}
+        selected={selected}
+        disabled={disabled || busy}
+        showOrder
+        onToggle={toggle}
+      />
       {selected.length > 0 ? (
         <p className="mb-2 text-[10px] text-bone/70">
           Top of deck:{' '}
@@ -108,10 +93,7 @@ export function CacheMemoryFlow({
           type="button"
           className={`${secondaryButtonClassName} flex-1 text-xs`}
           disabled={busy}
-          onClick={() => {
-            setOpen(false);
-            setSelected([]);
-          }}
+          onClick={reset}
         >
           Cancel
         </button>

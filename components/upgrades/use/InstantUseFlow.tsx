@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { getErrorMessage } from '@/lib/api/client';
-import { useUpgrade } from '@/lib/api/game';
+import { postUseUpgrade } from '@/lib/api/game';
 import { secondaryButtonClassName } from '@/lib/styles';
 import type { ProgrammingFlowProps } from '@/components/upgrades/flows/types';
+import { useBusyAction } from '@/components/upgrades/use/useBusyAction';
 
 /**
  * One-click programming upgrades: Recharge, Recompile, Spam Blocker.
- * @author Elias
+ * @author Elias, Sebastian
  */
 
 export function InstantUseFlow({
@@ -19,26 +18,19 @@ export function InstantUseFlow({
   onDone,
   onError,
 }: ProgrammingFlowProps & { label: string }) {
-  const [busy, setBusy] = useState(false);
-
-  async function handleUse() {
-    setBusy(true);
-    try {
-      await useUpgrade(gameId, { upgrade, cards: [] });
-      onDone();
-    } catch (error) {
-      onError(getErrorMessage(error, `Could not use ${label}.`));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { busy, run } = useBusyAction(onError);
 
   return (
     <button
       type="button"
       className={`${secondaryButtonClassName} w-full text-xs`}
       disabled={disabled || busy}
-      onClick={() => void handleUse()}
+      onClick={() =>
+        void run(async () => {
+          await postUseUpgrade(gameId, { upgrade, cards: [] });
+          onDone();
+        }, `Could not use ${label}.`)
+      }
     >
       Use {label}
     </button>

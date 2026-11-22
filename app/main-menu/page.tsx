@@ -14,7 +14,7 @@ import type { Lobby } from '@/types/lobby';
  * Players can return to an existing match or leave a waiting lobby after
  * confirming their choice.
  *
- * @author Anton, Kerem, Matthias, Elias
+ * @author Anton, Kerem, Matthias, Elias, Sebastian, Nicoleta
  */
 export default function MainMenuPage() {
   const router = useRouter();
@@ -191,7 +191,7 @@ export default function MainMenuPage() {
       <header className="mb-10 text-center">
         <h1 className="text-3xl font-bold">Main Menu</h1>
       </header>
-      <p className="absolute right-6 top-6">Logged in as: {username}</p>
+      <p className="absolute right-16 top-6">Logged in as: {username}</p>
 
       {visibleError && (
         <p className="mb-4 text-center" role="alert">
