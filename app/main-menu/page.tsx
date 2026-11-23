@@ -199,6 +199,7 @@ export default function MainMenuPage() {
         </p>
       )}
 
+      {/* --- Top side (My Games) --- */}
       <section className="mb-8 border-2 border-white p-4">
         <h2 className="mb-3 text-xl font-bold">My Games</h2>
 
@@ -264,7 +265,9 @@ export default function MainMenuPage() {
         )}
       </section>
 
+      {/* --- Bottom side (Lobby creation + list) --- */}
       <div className="grid gap-8 md:grid-cols-2">
+        {/* –_ Left side _- */}
         <section className="flex flex-col items-center gap-4">
           <input
             aria-label="Lobby name"
@@ -274,14 +277,26 @@ export default function MainMenuPage() {
             type="text"
             value={lobbyName}
           />
-          <button
-            className={buttonClassName}
-            disabled={busy}
-            onClick={() => void handleCreateLobby()}
-            type="button"
-          >
-            {isCreating ? 'Creating...' : 'Create Lobby'}
-          </button>
+
+          <section className="flex flex-row items-center gap-4">
+            <button
+              className={buttonClassName}
+              disabled={busy}
+              onClick={() => void handleCreateLobby()}
+              type="button"
+            >
+              {isCreating ? 'Creating...' : 'Create Lobby'}
+            </button>
+
+            <button
+              className={buttonClassName}
+              disabled={busy}
+              onClick={() => router.push('/tutorial')}
+              type="button"
+            >
+              Tutorial
+            </button>
+          </section>
 
           <button
             className={buttonClassName}
@@ -293,6 +308,7 @@ export default function MainMenuPage() {
           </button>
         </section>
 
+        {/* –_ Right side _- */}
         <section className="border-2 border-white p-4">
           <input
             aria-label="Search available lobbies"
