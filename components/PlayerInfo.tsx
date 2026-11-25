@@ -26,9 +26,6 @@ export function PlayerInfo({ player }: { player: Player }) {
 
           <span className="font-bold text-bone">{player.robot.energycubesCollected}</span>
         </div>
-
-        <div className="h-px bg-steel-dark" />
-        <OwnedUpgrades upgrades={player.upgrades ?? []} />
       </div>
     </div>
   );

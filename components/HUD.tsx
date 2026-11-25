@@ -11,6 +11,10 @@ import { REGISTER_COUNT } from '@/lib/programCards';
 import { buttonClassName, selectedClassName } from '@/lib/styles';
 import { ROBOT_COLORS, ROBOT_BG_COLORS } from '@/types/robot';
 import { ProgrammingTimer } from '@/components/ProgrammingTimer';
+import { FloatingTooltip } from '@/components/FloatingTooltip';
+import { kindOf } from '@/components/upgrades/shop/ReplaceUpgradePicker';
+import { UPGRADE_INFO } from '@/lib/upgrades';
+import type { UpgradeType } from '@/types/playerGameState';
 
 /**
  * CSS Tailwind code for the overall HUD of the gameboard scene
@@ -100,6 +104,10 @@ export default function HUD({
   const robotModel = player.robot?.robotModel;
   const playerColorHex = robotModel ? ROBOT_COLORS[robotModel] : undefined;
   const backgroundColorHex = robotModel ? ROBOT_BG_COLORS[robotModel] : undefined;
+  const upgrades: UpgradeType[] = player.upgrades ?? [];
+  const permanentUpgrades = upgrades.filter((type) => kindOf(type) === 'PERMANENT');
+  const temporaryUpgrades = upgrades.filter((type) => kindOf(type) === 'TEMPORARY');
+
   return (
     <section
       className={`flex h-full min-h-0 w-full flex-col rounded-xl border-2 border-cobber-dark bg-iron p-2 shadow-2xl shadow-black/50 sm:p-3 ${
@@ -257,40 +265,87 @@ export default function HUD({
                   {/* Permanent Upgrades Slots */}
                   <div className="flex flex-col gap-3">
                     <div className="flex gap-1" aria-label="Permanent Upgrades">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div
-                          key={`perm-${index}`}
-                          className={`flex h-12 w-9 cursor-pointer items-center justify-center rounded-md border-2 text-xs font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-10 ${
-                            selectedIndex === index || activeRegisterIndex === index
-                              ? selectedClassName
-                              : 'border-steel-dark bg-charcoal hover:border-cobber-light'
-                          }`}
-                          title="Permanent Upgrade Slot"
-                        >
-                          {/* Render upgrade if available in player structure */}
-                          {/* player.permanentUpgrades?[index] ? ... : '' */}
-                        </div>
-                      ))}
+                      {Array.from({ length: 3 }).map((_, index) => {
+                        const upgradeType = permanentUpgrades[index] ?? null;
+                        const info = upgradeType ? UPGRADE_INFO[upgradeType] : null;
+
+                        const slot = (
+                          <div
+                            key={`perm-${index}`}
+                            className="flex h-12 w-full items-center justify-center rounded-md border-2 border-steel-dark bg-charcoal p-1 text-center text-[8px] font-bold leading-tight text-bone shadow-md shadow-black/30 sm:h-14 sm:w-10"
+                            title={
+                              info ? `${info.label}: ${info.description}` : 'Permanent Upgrade Slot'
+                            }
+                          >
+                            {info ? <span className="line-clamp-3">{info.label}</span> : null}
+                          </div>
+                        );
+                        return info ? (
+                          <FloatingTooltip
+                            key={`perm-tip-${index}`}
+                            label={info.label}
+                            description={info.description}
+                          >
+                            {(tip) => (
+                              <div
+                                onMouseEnter={tip.onMouseEnter}
+                                onMouseLeave={tip.onMouseLeave}
+                                onFocus={tip.onFocus}
+                                onBlur={tip.onBlur}
+                                aria-describedby={tip['aria-describedby']}
+                              >
+                                {slot}
+                              </div>
+                            )}
+                          </FloatingTooltip>
+                        ) : (
+                          slot
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* Temporary Upgrades Slots */}
                   <div className="flex flex-col gap-3">
                     <div className="flex gap-1" aria-label="Temporary Upgrades">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div
-                          key={`temp-${index}`}
-                          className={`flex h-12 w-9 cursor-pointer items-center justify-center rounded-md border-2 text-xs font-bold text-bone shadow-md shadow-black/30 transition disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-10 ${
-                            selectedIndex === index || activeRegisterIndex === index
-                              ? selectedClassName
-                              : 'border-steel-dark bg-charcoal hover:border-cobber-light'
-                          }`}
-                          title="Temporary Upgrade Slot"
-                        >
-                          {/* Render upgrade if available in player structure */}
-                          {/* player.temporaryUpgrades?[index] ? ... : '' */}
-                        </div>
-                      ))}
+                      {Array.from({ length: 3 }).map((_, index) => {
+                        const upgradeType = temporaryUpgrades[index] ?? null;
+                        const info = upgradeType ? UPGRADE_INFO[upgradeType] : null;
+
+                        const slot = (
+                          <div
+                            key={`temp-${index}`}
+                            className="flex h-12 w-9 items-center justify-center rounded-md border-2 border-steel-dark bg-charcoal p-1 text-center text-[9px] font-bold leading-tight text-bone shadow-md shadow-black/30 sm:h-14 sm:w-10"
+                            title={
+                              info ? `${info.label}: ${info.description}` : 'Temporary Upgrade Slot'
+                            }
+                          >
+                            {info ? <span className="line-clamp-3">{info.label}</span> : null}
+                          </div>
+                        );
+
+                        return info ? (
+                          <FloatingTooltip
+                            key={`temp-tip-${index}`}
+                            label={info.label}
+                            description={info.description}
+                          >
+                            {(tip) => (
+                              <div
+                                onMouseEnter={tip.onMouseEnter}
+                                onMouseLeave={tip.onMouseLeave}
+                                onFocus={tip.onFocus}
+                                onBlur={tip.onBlur}
+                                aria-describedby={tip['aria-describedby']}
+                              >
+                                {slot}
+                              </div>
+                            )}
+                          </FloatingTooltip>
+                        ) : (
+                          slot
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
