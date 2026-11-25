@@ -3,9 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import Game from '@/components/Game';
 import { ApiError, getErrorMessage } from '@/lib/api/client';
 import {
+  changeBoard,
+  changeCustomBoard,
   getLobby,
+  getBoards,
+  getLobbyBoard,
   kickPlayer,
   leaveLobby,
   renameLobby,
@@ -17,8 +22,12 @@ import {
 import { colorLabel, PLAYER_COLORS, robotSprite } from '@/lib/playerColors';
 import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib/styles';
 import { getUsername } from '@/lib/username';
+import type { Board, BoardOption } from '@/types/board';
 import type { Lobby, PlayerColor } from '@/types/lobby';
 
+/**
+ * @author Anton, Sebastian, Elias, August
+ */
 export default function LobbyPage() {
   const router = useRouter();
   const { gameId } = useParams<{ gameId: string }>();
@@ -31,6 +40,10 @@ export default function LobbyPage() {
   const [isStarting, setIsStarting] = useState(false);
   const [isTogglingReady, setIsTogglingReady] = useState(false);
   const [isChangingColor, setIsChangingColor] = useState(false);
+  const [boards, setBoards] = useState<BoardOption[]>([]);
+  // board is null when the preview could not be loaded.
+  const [preview, setPreview] = useState<{ id: string; board: Board | null } | null>(null);
+  const [isChangingBoard, setIsChangingBoard] = useState(false);
   const isRenamingRef = useRef(false);
 
   useEffect(() => {
@@ -104,6 +117,44 @@ export default function LobbyPage() {
       window.clearInterval(interval);
     };
   }, [gameId, router, username]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getBoards()
+      .then((options) => {
+        if (!cancelled) {
+          setBoards(options);
+        }
+      })
+      .catch(() => {
+        // Without the list the owner cannot switch, but the preview still works.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const boardId = lobby?.boardId;
+  useEffect(() => {
+    if (!boardId) {
+      return;
+    }
+    let cancelled = false;
+    getLobbyBoard(gameId)
+      .then((board) => {
+        if (!cancelled) {
+          setPreview({ id: boardId, board });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreview({ id: boardId, board: null });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [gameId, boardId]);
 
   const players = lobby?.users ?? [];
   const isOwner = lobby?.createdBy === username;
@@ -226,6 +277,50 @@ export default function LobbyPage() {
     );
   }
 
+  async function handleChangeBoard(nextBoardId: string) {
+    if (!lobby || !username || nextBoardId === lobby.boardId) {
+      return;
+    }
+
+    setError(null);
+    setIsChangingBoard(true);
+
+    try {
+      const updated = await changeBoard(lobby.id, { boardId: nextBoardId });
+      setLobby(updated);
+    } catch (boardError) {
+      setError(getErrorMessage(boardError, 'Failed to change board'));
+    } finally {
+      setIsChangingBoard(false);
+    }
+  }
+
+  async function handleCustomBoard(file: File) {
+    if (!lobby || !isOwner) return;
+
+    setError(null);
+    setIsChangingBoard(true);
+
+    try {
+      const text = await file.text();
+
+      let level: unknown;
+
+      try {
+        level = JSON.parse(text);
+      } catch {
+        throw new Error('The selected file is not valid JSON.');
+      }
+
+      const updated = await changeCustomBoard(lobby.id, level);
+      setLobby(updated);
+    } catch (error) {
+      setError(getErrorMessage(error, 'Failed to load custom board'));
+    } finally {
+      setIsChangingBoard(false);
+    }
+  }
+
   async function handleKick(playerKicked: string) {
     if (!lobby || !username) {
       return;
@@ -253,7 +348,7 @@ export default function LobbyPage() {
   }
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-3xl p-6 pt-20">
+    <main className="relative mx-auto h-dvh w-full max-w-6xl overflow-y-auto p-6 pt-20">
       <header className="mb-10 text-center">
         <button
           className={`${buttonClassName} absolute left-6 top-6`}
@@ -296,128 +391,209 @@ export default function LobbyPage() {
           ) : (
             <h2 className="mb-4 text-2xl font-semibold">{lobby.name}</h2>
           )}
-          <h3 className="mb-2 text-lg font-semibold">Players</h3>
-          <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
-            {players.map((player) => {
-              const color = colorOf(player);
-              return (
-                <li
-                  className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
-                  key={player}
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {player === lobby.createdBy ? (
-                      <span className="shrink-0 rounded bg-cobber px-1.5 text-xs font-bold text-bone">
-                        Owner
-                      </span>
-                    ) : readyKnown ? (
-                      isPlayerReady(player) ? (
-                        <span
-                          aria-label="Ready"
-                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verdigris font-bold text-bone"
-                          role="img"
-                          title="Ready"
-                        >
-                          ✓
-                        </span>
-                      ) : (
-                        <span
-                          aria-label="Not ready"
-                          className="h-6 w-6 shrink-0 rounded-full border-2 border-bone/30"
-                          role="img"
-                          title="Not ready"
-                        />
-                      )
-                    ) : null}
-                    {color ? (
-                      <Image
-                        alt={`${colorLabel(color)} robot`}
-                        className="shrink-0 object-contain"
-                        height={28}
-                        src={robotSprite(color)}
-                        title={`${colorLabel(color)} robot`}
-                        width={28}
-                      />
-                    ) : null}
-                    <span className="truncate">{player}</span>
-                  </span>
-                  {isOwner && player !== username ? (
-                    <button
-                      aria-label={`Kick ${player}`}
-                      className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
-                      onClick={() => void handleKick(player)}
-                      type="button"
-                    >
-                      x
-                    </button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-          {isOwner && kickedPlayers.length > 0 ? (
-            <>
-              <h3 className="mb-2 text-lg font-semibold">Kicked players</h3>
-              <ul className="mb-8 flex w-full max-w-xl flex-col gap-2 text-left">
-                {kickedPlayers.map((player) => (
-                  <li
-                    className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
-                    key={player}
-                  >
-                    <span className="truncate">{player}</span>
-                    <button
-                      className={`${secondaryButtonClassName} ml-2 shrink-0`}
-                      onClick={() => void handleUnkick(player)}
-                      type="button"
-                    >
-                      Allow back
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
 
-          {myColor ? (
-            <>
-              <h3 className="mb-2 text-lg font-semibold">Your robot</h3>
-              <div
-                aria-label="Robot color"
-                className="mb-8 flex flex-wrap justify-center gap-3"
-                role="radiogroup"
-              >
-                {PLAYER_COLORS.map((color) => {
-                  const selected = color === myColor;
-                  const owner = takenBy(color);
+          <div className="grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-2">
+            <div className="mx-auto w-full min-w-0 max-w-xl">
+              <h3 className="mb-2 text-lg font-semibold">Players</h3>
+              <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
+                {players.map((player) => {
+                  const color = colorOf(player);
                   return (
-                    <button
-                      aria-checked={selected}
-                      aria-label={colorLabel(color)}
-                      className={`flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-                        selected
-                          ? 'border-cobber bg-iron ring-2 ring-cobber'
-                          : 'border-iron hover:border-cobber-light'
-                      }`}
-                      disabled={owner !== undefined || isChangingColor}
-                      key={color}
-                      onClick={() => void handleChangeColor(color)}
-                      role="radio"
-                      title={owner ? `${colorLabel(color)}: taken by ${owner}` : colorLabel(color)}
-                      type="button"
+                    <li
+                      className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
+                      key={player}
                     >
-                      <Image
-                        alt=""
-                        className="object-contain"
-                        height={48}
-                        src={robotSprite(color)}
-                        width={48}
-                      />
-                    </button>
+                      <span className="flex min-w-0 items-center gap-2">
+                        {player === lobby.createdBy ? (
+                          <span className="shrink-0 rounded bg-cobber px-1.5 text-xs font-bold text-bone">
+                            Owner
+                          </span>
+                        ) : readyKnown ? (
+                          isPlayerReady(player) ? (
+                            <span
+                              aria-label="Ready"
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verdigris font-bold text-bone"
+                              role="img"
+                              title="Ready"
+                            >
+                              ✓
+                            </span>
+                          ) : (
+                            <span
+                              aria-label="Not ready"
+                              className="h-6 w-6 shrink-0 rounded-full border-2 border-bone/30"
+                              role="img"
+                              title="Not ready"
+                            />
+                          )
+                        ) : null}
+                        {color ? (
+                          <Image
+                            alt={`${colorLabel(color)} robot`}
+                            className="shrink-0 object-contain"
+                            height={28}
+                            src={robotSprite(color)}
+                            title={`${colorLabel(color)} robot`}
+                            width={28}
+                          />
+                        ) : null}
+                        <span className="truncate">{player}</span>
+                      </span>
+                      {isOwner && player !== username ? (
+                        <button
+                          aria-label={`Kick ${player}`}
+                          className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded border hover:bg-gray-100"
+                          onClick={() => void handleKick(player)}
+                          type="button"
+                        >
+                          x
+                        </button>
+                      ) : null}
+                    </li>
                   );
                 })}
-              </div>
-            </>
-          ) : null}
+              </ul>
+              {isOwner && kickedPlayers.length > 0 ? (
+                <>
+                  <h3 className="mb-2 text-lg font-semibold">Kicked players</h3>
+                  <ul className="mb-8 flex w-full max-w-xl flex-col gap-2 text-left">
+                    {kickedPlayers.map((player) => (
+                      <li
+                        className="flex min-w-0 items-center justify-between rounded border px-3 py-2"
+                        key={player}
+                      >
+                        <span className="truncate">{player}</span>
+                        <button
+                          className={`${secondaryButtonClassName} ml-2 shrink-0`}
+                          onClick={() => void handleUnkick(player)}
+                          type="button"
+                        >
+                          Allow back
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+
+              {myColor ? (
+                <>
+                  <h3 className="mb-2 text-lg font-semibold">Your robot</h3>
+                  <div
+                    aria-label="Robot color"
+                    className="mb-8 flex flex-wrap justify-center gap-3"
+                    role="radiogroup"
+                  >
+                    {PLAYER_COLORS.map((color) => {
+                      const selected = color === myColor;
+                      const owner = takenBy(color);
+                      return (
+                        <button
+                          aria-checked={selected}
+                          aria-label={colorLabel(color)}
+                          className={`flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+                            selected
+                              ? 'border-cobber bg-iron ring-2 ring-cobber'
+                              : 'border-iron hover:border-cobber-light'
+                          }`}
+                          disabled={owner !== undefined || isChangingColor}
+                          key={color}
+                          onClick={() => void handleChangeColor(color)}
+                          role="radio"
+                          title={
+                            owner ? `${colorLabel(color)}: taken by ${owner}` : colorLabel(color)
+                          }
+                          type="button"
+                        >
+                          <Image
+                            alt=""
+                            className="object-contain"
+                            height={48}
+                            src={robotSprite(color)}
+                            width={48}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="mx-auto w-full min-w-0 max-w-xl">
+              {lobby.boardId ? (
+                <>
+                  <h3 className="mb-2 text-lg font-semibold">Board</h3>
+
+                  {isOwner && boards.length > 0 ? (
+                    <>
+                      <select
+                        aria-label="Board"
+                        className="mb-2 w-full rounded-md border-2 border-steel-dark bg-charcoal p-3 text-bone"
+                        value={lobby.boardId}
+                        disabled={isChangingBoard}
+                        onChange={(event) => void handleChangeBoard(event.target.value)}
+                      >
+                        {boards.map((board) => (
+                          <option key={board.id} value={board.id}>
+                            {board.name}
+                          </option>
+                        ))}
+                        {/* upload board */}
+                        {!boards.some((board) => board.id === lobby.boardId) && (
+                          <option value={lobby.boardId} disabled>
+                            {lobby.boardName} (uploaded)
+                          </option>
+                        )}
+                      </select>
+                      <p className="mb-4 text-sm text-bone/70">
+                        Changing the board asks everyone to press Ready again.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mb-4 font-semibold">{lobby.boardName}</p>
+                  )}
+
+                  {isOwner && (
+                    <label className="mt-3 block">
+                      <span className="mb-2 block">Upload custom board</span>
+
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        disabled={isChangingBoard}
+                        onChange={(event) => {
+                          const file = event.currentTarget.files?.[0];
+
+                          // Allow choosing the same file again after editing it.
+                          event.currentTarget.value = '';
+
+                          if (file) {
+                            void handleCustomBoard(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+
+                  <div
+                    aria-label={`Preview of ${lobby.boardName ?? 'the board'}`}
+                    className="mb-8 h-72 w-full max-w-xl"
+                  >
+                    {preview?.id === lobby.boardId ? (
+                      preview.board ? (
+                        <Game board={preview.board} />
+                      ) : (
+                        <p className="text-sm text-bone/70">Preview unavailable.</p>
+                      )
+                    ) : (
+                      <p className="text-sm text-bone/70">Loading preview...</p>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          </div>
         </section>
       ) : null}
 

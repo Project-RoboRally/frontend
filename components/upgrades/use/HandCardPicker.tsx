@@ -6,7 +6,7 @@ import type { Card } from '@/types/playerGameState';
  * Row of hand cards to pick from. Selecting is by hand index, and when showOrder is set
  * the position in the selection is shown next to each picked card.
  *
- * @author Elias
+ * @author Elias, Sebastian
  */
 
 export function HandCardPicker({

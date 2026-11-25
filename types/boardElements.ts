@@ -3,7 +3,7 @@ import type { BoardElement } from '@/types/board';
 /**
  * Returns the image path for the highest priority board element.
  *
- * @author Caroline, Katarina, Matthias
+ * @author Caroline, Katarina, Matthias, Elias, August
  */
 
 // Handle checkpoints based on their number

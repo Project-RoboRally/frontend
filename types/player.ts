@@ -5,7 +5,7 @@ import type { UpgradeType } from './playerGameState';
 /**
  * Type definition for the players
  *
- * @author Kerem, Elias
+ * @author Kerem, Elias, Matthias
  */
 
 export type Player = {

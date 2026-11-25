@@ -1,3 +1,6 @@
+/**
+ * @author Elias
+ */
 export type LoginRequest = {
   username: string;
   password: string;

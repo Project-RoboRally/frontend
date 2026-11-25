@@ -3,6 +3,7 @@ import type { BoardRegister } from '@/types/board';
 /**
  * Which register is playing for this animation frame. Cards with no frames
  * (energy) still count when their firstStep matches the current frame.
+ * @author Elias
  */
 export function activePlayedRegister(
   registers: BoardRegister[] | undefined,

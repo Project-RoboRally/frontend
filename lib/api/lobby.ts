@@ -1,5 +1,7 @@
 import { apiGet, apiPost } from './client';
+import type { Board, BoardOption } from '@/types/board';
 import type {
+  ChangeBoardRequest,
   CreateLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
@@ -8,6 +10,9 @@ import type {
   SetReadyRequest,
 } from '@/types/lobby';
 
+/**
+ * @author Nicoleta, August
+ */
 export function getLobbies() {
   return apiGet<Lobby[]>('/api/lobbies');
 }
@@ -46,6 +51,22 @@ export function setReady(id: string, body: SetReadyRequest) {
 
 export function setColor(id: string, body: SetColorRequest) {
   return apiPost<Lobby>(`/api/lobbies/${id}/color`, body);
+}
+
+export function changeBoard(id: string, body: ChangeBoardRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/board`, body);
+}
+
+export function changeCustomBoard(id: string, level: unknown) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/board/custom`, level);
+}
+
+export function getBoards() {
+  return apiGet<BoardOption[]>('/api/boards');
+}
+
+export function getLobbyBoard(id: string) {
+  return apiGet<Board>(`/api/lobbies/${id}/board`);
 }
 
 export function startGame(id: string) {

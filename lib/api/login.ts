@@ -1,6 +1,9 @@
 import { apiGet, apiPost, ApiError } from './client';
 import type { LoginRequest, LoginResponse } from '@/types/auth';
 
+/**
+ * @author Elias, Nicoleta
+ */
 export function login(body: LoginRequest) {
   return apiPost<LoginResponse>('/api/login', body);
 }
