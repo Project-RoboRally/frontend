@@ -148,9 +148,7 @@ export function laserBeams(
     if (shooter?.rebooted) continue;
     const upgrades = shooter?.upgrades ?? [];
     const lines = upgrades.includes('DOUBLE_BARREL_LASER') ? 2 : 1;
-    beams.push(
-      ...trace(robot.x, robot.y, robot.orientation, lines, upgrades.includes('RAIL_GUN')),
-    );
+    beams.push(...trace(robot.x, robot.y, robot.orientation, lines, upgrades.includes('RAIL_GUN')));
     if (upgrades.includes('REAR_LASER')) {
       beams.push(...trace(robot.x, robot.y, OPPOSITE[robot.orientation], lines, false));
     }

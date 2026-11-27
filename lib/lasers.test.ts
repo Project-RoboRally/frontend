@@ -12,8 +12,7 @@ function robot(username: string, x: number, orientation: BoardRobot['orientation
   return { username, color: 'RED', x, y: 0, orientation } as BoardRobot;
 }
 
-const tiles = (beams: ReturnType<typeof laserBeams>) =>
-  beams.map((beam) => [beam.x, beam.hit]);
+const tiles = (beams: ReturnType<typeof laserBeams>) => beams.map((beam) => [beam.x, beam.hit]);
 
 describe('laserBeams', () => {
   it('stops a robot laser on the first robot it hits', () => {
