@@ -24,6 +24,7 @@ export type Lobby = {
   started: boolean;
   boardId?: string;
   boardName?: string;
+  userAmountAllowed?: number;
 };
 
 export type SetReadyRequest = {
@@ -48,6 +49,9 @@ export type RenameLobbyRequest = {
 
 export type ChangeBoardRequest = {
   boardId: string;
+};
+export type ChangeUserAmountAllowedRequest = {
+  userAmountAllowed: number;
 };
 
 export type ProgramRequest = {

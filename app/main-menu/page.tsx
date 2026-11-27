@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getErrorMessage } from '@/lib/api/client';
-import { createLobby, getLobbies, getLobby, joinLobby, leaveLobby } from '@/lib/api/lobby';
+import {
+  createLobby,
+  getLobbies,
+  getLobby,
+  joinLobby,
+  leaveLobby,
+  MAX_PLAYERS,
+} from '@/lib/api/lobby';
 import { logout } from '@/lib/api/login';
 import { buttonClassName, inputClassName } from '@/lib/styles';
 import { clearSession, getUsername } from '@/lib/username';
@@ -323,18 +330,24 @@ export default function MainMenuPage() {
             <p className="mt-3">No matching lobbies.</p>
           ) : (
             <ul className="mt-3 h-48 space-y-2 overflow-y-auto pr-2">
-              {availableLobbies.map((lobby) => (
-                <li key={lobby.id}>
-                  <button
-                    className={`${buttonClassName} w-full px-4 py-3 text-left`}
-                    disabled={busy}
-                    onClick={() => void handleOpenLobby(lobby.id)}
-                    type="button"
-                  >
-                    {lobby.name}
-                  </button>
-                </li>
-              ))}
+              {availableLobbies.map((lobby) => {
+                const playerCount = (lobby.users ?? []).length;
+                const limit = lobby.userAmountAllowed ?? MAX_PLAYERS;
+                // The backend refuses to add anyone to a full lobby.
+                const full = playerCount >= limit;
+                return (
+                  <li key={lobby.id}>
+                    <button
+                      className={`${buttonClassName} w-full px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50`}
+                      disabled={busy || full}
+                      onClick={() => void handleOpenLobby(lobby.id)}
+                      type="button"
+                    >
+                      {lobby.name} ({playerCount}/{limit}){full ? ' - Full' : ''}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

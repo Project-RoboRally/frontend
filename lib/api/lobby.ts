@@ -2,6 +2,7 @@ import { apiGet, apiPost } from './client';
 import type { Board, BoardOption } from '@/types/board';
 import type {
   ChangeBoardRequest,
+  ChangeUserAmountAllowedRequest,
   CreateLobbyRequest,
   KickFromLobbyRequest,
   Lobby,
@@ -67,6 +68,14 @@ export function getBoards() {
 
 export function getLobbyBoard(id: string) {
   return apiGet<Board>(`/api/lobbies/${id}/board`);
+}
+
+/** The player limits the backend accepts (GameLobby MIN_USERS and MAX_USERS). */
+export const MIN_PLAYERS = 2;
+export const MAX_PLAYERS = 6;
+
+export function changeUserAmountAllowed(id: string, body: ChangeUserAmountAllowedRequest) {
+  return apiPost<Lobby>(`/api/lobbies/${id}/amount`, body);
 }
 
 export function startGame(id: string) {
