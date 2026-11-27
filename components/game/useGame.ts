@@ -36,6 +36,9 @@ import {
   youAsHudPlayer,
 } from './hudPlayers';
 
+const NO_LASERS: LaserBeat[] = [];
+type PlaybackBatch = { board: Board; lasers: LaserBeat[] };
+
 /**
  * All live state and actions for a running game.
  *
@@ -52,11 +55,11 @@ export function useGame() {
 
   const [error, setError] = useState<string | null>(null);
   const [completedBoard, setCompletedBoard] = useState<Board | null>(null);
-  const [animatingBoard, setAnimatingBoard] = useState<Board | null>(null);
+  const [pending, setPending] = useState<PlaybackBatch[]>([]);
+  const animatingBoard = pending[0]?.board ?? null;
   const [heldLiveBoard, setHeldLiveBoard] = useState<Board | null>(null);
   const [stepIndex, setStepIndex] = useState<number | null>(null);
-  const [animatingLasers, setAnimatingLasers] = useState<LaserBeat[]>([]);
-  const [laserRegister, setLaserRegister] = useState<number | null>(null);
+  const [playbackRegister, setPlaybackRegister] = useState<number | null>(null);
   // Activation arrives in several messages when it pauses for a choice, so
   // remember which registers already fired this round.
   const [lasersFired, setLasersFired] = useState({ round: -1, upTo: -1 });
@@ -130,9 +133,11 @@ export function useGame() {
         setLasersFired({ round, upTo: firedUpTo });
       }
     }
-    setAnimatingLasers(beats);
-    if ((liveBoard?.steps?.length ?? 0) > 0 || beats.length > 0) {
-      setAnimatingBoard(liveBoard);
+    if (
+      liveBoard &&
+      (liveBoard.steps?.length || liveBoard.registers?.some((r) => r.cards.length) || beats.length)
+    ) {
+      setPending((queue) => [...queue, { board: liveBoard, lasers: beats }]);
     }
   }
 
@@ -154,18 +159,18 @@ export function useGame() {
   }
 
   const handleStepIndexChange = useCallback(
-    (index: number | null, firingRegister: number | null = null) => {
+    (index: number | null, register: number | null = null) => {
       setStepIndex(index);
-      setLaserRegister(firingRegister);
+      setPlaybackRegister(register);
     },
     [],
   );
 
   const handleAnimationComplete = useCallback((animatedBoard: Board) => {
     setCompletedBoard(animatedBoard);
-    setAnimatingBoard((current) => (current === animatedBoard ? null : current));
+    setPending((queue) => (queue[0]?.board === animatedBoard ? queue.slice(1) : queue));
     setStepIndex(null);
-    setLaserRegister(null);
+    setPlaybackRegister(null);
   }, []);
 
   const shooters: Record<string, Shooter> = Object.fromEntries(
@@ -175,14 +180,13 @@ export function useGame() {
     ]),
   );
 
-  const showingActivation =
-    ((animatingBoard?.steps?.length ?? 0) > 0 || animatingLasers.length > 0) &&
-    animatingBoard !== null &&
-    stepIndex !== null;
+  const showingActivation = animatingBoard !== null;
   const hasPlayedCards = (board?.registers?.length ?? 0) > 0;
-  const activeRegisterIndex = laserRegister ?? activePlayedRegister(board?.registers, stepIndex);
+  const activeRegisterIndex = playbackRegister ?? activePlayedRegister(board?.registers, stepIndex);
   const showWinner =
-    finished && (completedBoard === board || (liveBoard?.steps?.length ?? 0) === 0);
+    finished &&
+    !showingActivation &&
+    (completedBoard === board || (liveBoard?.steps?.length ?? 0) === 0);
 
   const handCards = handCardsFromMat(playerState?.playerMat?.hand);
   const availableHand = handCards.filter(
@@ -453,7 +457,7 @@ export function useGame() {
     handleKickBallot,
     handleAnimationComplete,
     handleStepIndexChange,
-    laserBeats: animatingLasers,
+    laserBeats: pending[0]?.lasers ?? NO_LASERS,
     shooters,
     offlineNotice: username ? offlineNoticeFor(presence, username) : null,
   };

@@ -9,17 +9,18 @@
  */
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 
 import { laserBeams, type LaserBeam, type LaserBeat, type Shooter } from '@/lib/lasers';
 import { robotSprite } from '@/lib/playerColors';
 
+import { labelForInstruction } from '@/lib/programCards';
+import { ACTION_MS } from '@/lib/registerPlayback';
+import { useRegisterPlayback } from './game/useRegisterPlayback';
 import Tile from './Tile';
 import type { Board, BoardElement, BoardRobot, Direction } from '@/types/board';
 
 const FALLBACK_SIZE = 12;
-const STEP_MS = 420;
-const LASER_MS = 800;
 const NO_LASERS: LaserBeat[] = [];
 const NO_SHOOTERS: Record<string, Shooter> = {};
 
@@ -69,96 +70,10 @@ function RobotSprite({ robot }: { robot: BoardRobot }) {
       alt={`${robot.username}'s robot`}
       width={40}
       height={40}
-      className="h-4/5 w-4/5 object-contain transition-transform duration-300 ease-linear"
+      className="h-4/5 w-4/5 object-contain transition-transform duration-(--frame-duration) ease-linear"
       style={{ transform: `rotate(${angle}deg)` }}
     />
   );
-}
-
-// One beat of the animation: a move frame, or the lasers firing from a pose.
-type Beat = {
-  robots: BoardRobot[];
-  stepIndex: number;
-  laserRegister: number | null;
-};
-
-// The pose lasers are firing from, numbered so each volley restarts its fade.
-type Volley = { robots: BoardRobot[]; beat: number };
-
-function useAnimatedRobots(
-  board: Board | null,
-  lasers: LaserBeat[],
-  onAnimationComplete?: (board: Board) => void,
-  onStepIndexChange?: (index: number | null, laserRegister?: number | null) => void,
-) {
-  const [robots, setRobots] = useState<BoardRobot[]>(board?.robots ?? []);
-  const [volley, setVolley] = useState<Volley | null>(null);
-  const shownRobots = useRef(robots);
-
-  useEffect(() => {
-    shownRobots.current = robots;
-  }, [robots]);
-
-  useEffect(() => {
-    if (!board) {
-      onStepIndexChange?.(null);
-      return;
-    }
-
-    const frames = board.steps ?? [];
-    const startPose = shownRobots.current;
-    const beats: Beat[] = [];
-    for (let step = 0; step <= frames.length; step++) {
-      for (const laser of lasers) {
-        if (laser.afterStep === step) {
-          beats.push({
-            robots: step > 0 ? frames[step - 1] : startPose,
-            stepIndex: Math.max(step - 1, 0),
-            laserRegister: laser.register,
-          });
-        }
-      }
-      if (step < frames.length) {
-        beats.push({ robots: frames[step], stepIndex: step, laserRegister: null });
-      }
-    }
-
-    if (beats.length === 0) {
-      setRobots(board.robots ?? []);
-      onStepIndexChange?.(null);
-      onAnimationComplete?.(board);
-      return;
-    }
-
-    let index = 0;
-    let timer = 0;
-    const show = () => {
-      const beat = beats[index];
-      setRobots(beat.robots);
-      setVolley(beat.laserRegister === null ? null : { robots: beat.robots, beat: index });
-      onStepIndexChange?.(beat.stepIndex, beat.laserRegister);
-      index += 1;
-      timer = window.setTimeout(advance, beat.laserRegister === null ? STEP_MS : LASER_MS);
-    };
-    const advance = () => {
-      if (index >= beats.length) {
-        setRobots(board.robots ?? []);
-        setVolley(null);
-        onStepIndexChange?.(null);
-        onAnimationComplete?.(board);
-        return;
-      }
-      show();
-    };
-    show();
-
-    return () => {
-      window.clearTimeout(timer);
-      setVolley(null);
-    };
-  }, [board, lasers, onAnimationComplete, onStepIndexChange]);
-
-  return { robots, volley };
 }
 
 // One continuous shot: from the tile it leaves (the robot or the emitter)
@@ -243,7 +158,7 @@ interface GameProps {
   laserBeats?: LaserBeat[];
   shooters?: Record<string, Shooter>;
   onAnimationComplete?: (board: Board) => void;
-  onStepIndexChange?: (index: number | null, laserRegister?: number | null) => void;
+  onStepIndexChange?: (index: number | null, register?: number | null) => void;
 }
 
 export default function Game({
@@ -260,35 +175,31 @@ export default function Game({
     (board?.spaces ?? []).map((space) => [`${space.x},${space.y}`, space.elements]),
   );
 
-  const { robots, volley } = useAnimatedRobots(
-    board,
-    laserBeats,
-    onAnimationComplete,
-    onStepIndexChange,
-  );
-  const beams = volley && board ? laserBeams(board.spaces, volley.robots, shooters) : [];
+  const {
+    robots,
+    frame,
+    index: frameIndex,
+  } = useRegisterPlayback(board, laserBeats, onAnimationComplete, onStepIndexChange);
+  const beams = frame?.laser && board ? laserBeams(board.spaces, robots, shooters) : [];
   const shots = shotsOf(beams);
-  const struck = beams.flatMap((beam) => {
-    if (!beam.hit || !volley) return [];
-    const robot = volley.robots.find(
-      (candidate) => candidate.x === beam.x && candidate.y === beam.y,
-    );
-    return robot ? [robot.username] : [];
-  });
-  const struckKey = `${volley?.beat ?? ''}:${struck.join('|')}`;
-  const [hitNames, setHitNames] = useState<string[]>([]);
-  const flashTimer = useRef(0);
-
-  useEffect(() => {
-    const names = struckKey.split(':')[1];
-    if (!names) return;
-    setHitNames(names.split('|'));
-    window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => setHitNames([]), 900);
-  }, [struckKey]);
+  const hitTiles = new Set(beams.filter((beam) => beam.hit).map((beam) => `${beam.x},${beam.y}`));
 
   return (
-    <div className="flex h-full w-full items-center justify-center [container-type:size]">
+    <div
+      className="relative flex h-full w-full items-center justify-center [container-type:size]"
+      style={
+        {
+          '--frame-duration': `${frame?.duration ?? 0}ms`,
+          '--action-duration': `${ACTION_MS}ms`,
+        } as CSSProperties
+      }
+    >
+      {frame?.card && (
+        <span className="pointer-events-none absolute top-1 z-30 rounded bg-charcoal px-2 py-1 text-sm text-bone">
+          {frame.card.username} ·{' '}
+          {labelForInstruction(frame.card.card.instruction ?? frame.card.card.type)}
+        </span>
+      )}
       <section
         className="box-content shadow-[0_12px_30px_10px_rgba(0,0,0,0.9)]"
         style={{
@@ -311,11 +222,11 @@ export default function Game({
             return <Tile key={index} x={x} y={y} elements={elementsAt.get(`${x},${y}`)} />;
           })}
 
-          {volley && shots.length > 0 ? (
+          {frame?.laser && shots.length > 0 ? (
             <div
-              key={volley.beat}
+              key={frameIndex}
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-10 animate-[laser-fire_800ms_ease-out_both]"
+              className="pointer-events-none absolute inset-0 z-10 animate-[laser-fire_var(--action-duration)_ease-out_both]"
             >
               {shots.map((shot, index) => (
                 <LaserShotLine key={index} shot={shot} width={width} height={height} />
@@ -327,9 +238,7 @@ export default function Game({
             {robots.map((robot) => (
               <div
                 key={robot.username}
-                className={`absolute flex items-center justify-center rounded-full transition-[left,top] duration-300 ease-linear ${
-                  hitNames.includes(robot.username) ? 'animate-[robot-hit_900ms_ease-out_both]' : ''
-                }`}
+                className="absolute flex items-center justify-center rounded-full transition-[left,top] duration-(--frame-duration) ease-linear"
                 style={{
                   left: `${(robot.x / width) * 100}%`,
                   top: `${(robot.y / height) * 100}%`,
@@ -337,6 +246,20 @@ export default function Game({
                   height: `${100 / height}%`,
                 }}
               >
+                {hitTiles.has(`${robot.x},${robot.y}`) && (
+                  <span
+                    key={frameIndex}
+                    aria-hidden
+                    className="absolute inset-0 rounded-full animate-[robot-hit_var(--action-duration)_ease-out_both]"
+                  />
+                )}
+                {frame?.card?.stepCount === 0 && frame.card.username === robot.username && (
+                  <span
+                    key={frameIndex}
+                    aria-hidden
+                    className="absolute inset-1 rounded-full border-2 border-amber animate-[ping_var(--action-duration)_ease-out_both] motion-reduce:animate-none"
+                  />
+                )}
                 <RobotSprite robot={robot} />
               </div>
             ))}
