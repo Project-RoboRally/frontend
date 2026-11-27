@@ -107,6 +107,8 @@ function GameBoard() {
         >
           <Game
             board={game.board}
+            laserBeats={game.laserBeats}
+            shooters={game.shooters}
             onAnimationComplete={game.handleAnimationComplete}
             onStepIndexChange={game.handleStepIndexChange}
           />

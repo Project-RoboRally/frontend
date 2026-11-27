@@ -12,6 +12,7 @@ import {
   submitProgram,
   voteOnKick,
 } from '@/lib/api/game';
+import { laserBeats, lastFiredRegister, type LaserBeat, type Shooter } from '@/lib/lasers';
 import { activePlayedRegister } from '@/lib/playedRegisters';
 import {
   emptyRegisters,
@@ -54,6 +55,11 @@ export function useGame() {
   const [animatingBoard, setAnimatingBoard] = useState<Board | null>(null);
   const [heldLiveBoard, setHeldLiveBoard] = useState<Board | null>(null);
   const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [animatingLasers, setAnimatingLasers] = useState<LaserBeat[]>([]);
+  const [laserRegister, setLaserRegister] = useState<number | null>(null);
+  // Activation arrives in several messages when it pauses for a choice, so
+  // remember which registers already fired this round.
+  const [lasersFired, setLasersFired] = useState({ round: -1, upTo: -1 });
   const [registers, setRegisters] = useState<Register[]>(emptyRegisters);
   const [handOpen, setHandOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -105,7 +111,27 @@ export function useGame() {
 
   if (liveBoard !== heldLiveBoard) {
     setHeldLiveBoard(liveBoard);
-    if ((liveBoard?.steps?.length ?? 0) > 0) {
+    let beats: LaserBeat[] = [];
+    if (playerState && (liveBoard?.registers?.length ?? 0) > 0) {
+      const round = playerState.round.number;
+      const firedBefore = lasersFired.round === round ? lasersFired.upTo : -1;
+      const firedUpTo = lastFiredRegister(
+        playerState.round.currentRegisterIndex,
+        playerState.choice?.type ?? null,
+        liveBoard?.registers,
+      );
+      beats = laserBeats(
+        liveBoard?.registers,
+        liveBoard?.steps?.length ?? 0,
+        firedBefore,
+        firedUpTo,
+      );
+      if (firedUpTo > firedBefore) {
+        setLasersFired({ round, upTo: firedUpTo });
+      }
+    }
+    setAnimatingLasers(beats);
+    if ((liveBoard?.steps?.length ?? 0) > 0 || beats.length > 0) {
       setAnimatingBoard(liveBoard);
     }
   }
@@ -127,19 +153,34 @@ export function useGame() {
     }
   }
 
-  const handleStepIndexChange = useCallback((index: number | null) => {
-    setStepIndex(index);
-  }, []);
+  const handleStepIndexChange = useCallback(
+    (index: number | null, firingRegister: number | null = null) => {
+      setStepIndex(index);
+      setLaserRegister(firingRegister);
+    },
+    [],
+  );
 
   const handleAnimationComplete = useCallback((animatedBoard: Board) => {
     setCompletedBoard(animatedBoard);
     setAnimatingBoard((current) => (current === animatedBoard ? null : current));
     setStepIndex(null);
+    setLaserRegister(null);
   }, []);
 
-  const showingActivation = (animatingBoard?.steps?.length ?? 0) > 0 && stepIndex !== null;
+  const shooters: Record<string, Shooter> = Object.fromEntries(
+    (playerState?.players ?? []).map((player) => [
+      player.username,
+      { upgrades: player.upgrades ?? [], rebooted: player.robot.rebootedThisRound },
+    ]),
+  );
+
+  const showingActivation =
+    ((animatingBoard?.steps?.length ?? 0) > 0 || animatingLasers.length > 0) &&
+    animatingBoard !== null &&
+    stepIndex !== null;
   const hasPlayedCards = (board?.registers?.length ?? 0) > 0;
-  const activeRegisterIndex = activePlayedRegister(board?.registers, stepIndex);
+  const activeRegisterIndex = laserRegister ?? activePlayedRegister(board?.registers, stepIndex);
   const showWinner =
     finished && (completedBoard === board || (liveBoard?.steps?.length ?? 0) === 0);
 
@@ -412,6 +453,8 @@ export function useGame() {
     handleKickBallot,
     handleAnimationComplete,
     handleStepIndexChange,
+    laserBeats: animatingLasers,
+    shooters,
     offlineNotice: username ? offlineNoticeFor(presence, username) : null,
   };
 }
