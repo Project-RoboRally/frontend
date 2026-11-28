@@ -116,6 +116,33 @@ html.dyslexic-mode {
   outline-offset: 2px;
 }
 
+/* A laser shot holds bright, then drops out */
+@keyframes laser-fire {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A robot that was hit flashes red */
+@keyframes robot-hit {
+  0%,
+  45% {
+    filter: sepia(1) saturate(12) hue-rotate(-30deg) brightness(0.85);
+    box-shadow: 0 0 14px 6px rgba(255, 30, 20, 0.95);
+  }
+  100% {
+    filter: none;
+    box-shadow: none;
+  }
+}
+
 @font-face {
   font-family: 'Open Dyslexic';
   src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
