@@ -8,6 +8,7 @@ import { ApiError, getErrorMessage } from '@/lib/api/client';
 import {
   changeBoard,
   changeCustomBoard,
+  changeUserAmountAllowed,
   getLobby,
   getBoards,
   getLobbyBoard,
@@ -16,6 +17,8 @@ import {
   renameLobby,
   setColor,
   setReady,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
   startGame,
   unkickPlayer,
 } from '@/lib/api/lobby';
@@ -24,6 +27,12 @@ import { buttonClassName, inputClassName, secondaryButtonClassName } from '@/lib
 import { getUsername } from '@/lib/username';
 import type { Board, BoardOption } from '@/types/board';
 import type { Lobby, PlayerColor } from '@/types/lobby';
+
+/** The limits the owner can pick from: 2, 3, 4, 5, 6. */
+const PLAYER_LIMIT_OPTIONS = Array.from(
+  { length: MAX_PLAYERS - MIN_PLAYERS + 1 },
+  (_, index) => MIN_PLAYERS + index,
+);
 
 /**
  * @author Anton, Sebastian, Elias, August
@@ -44,6 +53,7 @@ export default function LobbyPage() {
   // board is null when the preview could not be loaded.
   const [preview, setPreview] = useState<{ id: string; board: Board | null } | null>(null);
   const [isChangingBoard, setIsChangingBoard] = useState(false);
+  const [isChangingUserAmount, setIsChangingUserAmount] = useState(false);
   const isRenamingRef = useRef(false);
 
   useEffect(() => {
@@ -157,6 +167,7 @@ export default function LobbyPage() {
   }, [gameId, boardId]);
 
   const players = lobby?.users ?? [];
+  const userAmountAllowed = lobby?.userAmountAllowed ?? MAX_PLAYERS;
   const isOwner = lobby?.createdBy === username;
   const kickedPlayers = lobby?.kickedUsers ?? [];
   // Without member data (older backend) readiness is unknown, so don't gate Start on it.
@@ -179,7 +190,7 @@ export default function LobbyPage() {
 
   const otherPlayers = players.filter((player) => player !== lobby?.createdBy);
   const readyCount = otherPlayers.filter(isPlayerReady).length;
-  const hasEnoughPlayers = players.length >= 2;
+  const hasEnoughPlayers = players.length >= MIN_PLAYERS;
   const canStart = hasEnoughPlayers && (!readyKnown || readyCount === otherPlayers.length);
 
   async function handleRename(name: string) {
@@ -321,6 +332,18 @@ export default function LobbyPage() {
     }
   }
 
+  async function handleChangeUserAmount(amount: number) {
+    if (!lobby || !isOwner || amount === lobby.userAmountAllowed) {
+      return;
+    }
+
+    await updateLobby(
+      () => changeUserAmountAllowed(lobby.id, { userAmountAllowed: amount }),
+      'Failed to change the player limit',
+      setIsChangingUserAmount,
+    );
+  }
+
   async function handleKick(playerKicked: string) {
     if (!lobby || !username) {
       return;
@@ -394,7 +417,27 @@ export default function LobbyPage() {
 
           <div className="grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-2">
             <div className="mx-auto w-full min-w-0 max-w-xl">
-              <h3 className="mb-2 text-lg font-semibold">Players</h3>
+              <h3 className="mb-2 text-lg font-semibold">
+                Players ({players.length}/{userAmountAllowed})
+              </h3>
+              {isOwner ? (
+                <label className="mb-2 flex items-center justify-center gap-2 text-sm">
+                  <span>Max players</span>
+                  <select
+                    className="rounded-md border-2 border-steel-dark bg-charcoal px-2 py-1 text-bone"
+                    disabled={isChangingUserAmount}
+                    onChange={(event) => void handleChangeUserAmount(Number(event.target.value))}
+                    value={userAmountAllowed}
+                  >
+                    {PLAYER_LIMIT_OPTIONS.map((amount) => (
+                      // The backend refuses a limit below the players already here.
+                      <option disabled={amount < players.length} key={amount} value={amount}>
+                        {amount}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
               <ul className="mb-8 grid h-48 w-full max-w-xl grid-cols-2 grid-rows-3 gap-2 border-2 border-white p-2 text-left">
                 {players.map((player) => {
                   const color = colorOf(player);
